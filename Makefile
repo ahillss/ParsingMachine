@@ -1,5 +1,6 @@
 OUTDIR = bin
-OUTFILE = $(OUTDIR)/mtcl
+OUTFILE = $(OUTDIR)/parmac
+
 CC = gcc
 EXT = c
 
@@ -9,7 +10,6 @@ LDFLAGS :=
 
 #DEBUG_BUILD = -g
 #DEBUG_TEST = gdb --eval-command=run
-
 
 objs := $(patsubst %.$(EXT),$(OUTDIR)/%.o,$(wildcard *.$(EXT)))
 deps := $(objs:.o=.dep)
