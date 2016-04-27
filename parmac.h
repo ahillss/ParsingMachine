@@ -5,19 +5,16 @@
 #include <stdbool.h>
 #endif
 
-// #define PARMAC_DEBUG_STEPS
+//#define PARMAC_DEBUG_STEPS
 #define PARMAC_DEBUG_CALLBACKS
 // #define PARMAC_DEBUG_INSTANCES
-
 // #define PARMAC_NO_EXCUR
 
 struct parmac;
 
 typedef const char *(*parmac_event)(const char*,bool*,const char**);
 typedef void (*parmac_machine)(struct parmac*,const char*);
-typedef void (*parmac_state_enter)(const char*,const char*,bool,
-                                        const char**,const char**);
-//
+typedef void (*parmac_state_enter)(const char*,const char*,bool,const char**,const char**);
 typedef void (*parmac_state_leave)(const char*,const char*,bool);
 
 struct parmac_state {
@@ -43,9 +40,9 @@ struct parmac {
   const struct parmac_state *state,*startState, *endState;
 
   struct parmac *prev,*next; //here
-#ifndef PARMAC_NO_EXCUR
+// #ifndef PARMAC_NO_EXCUR
   struct parmac *excurUp,*excurDown; //here
-#endif
+// #endif
   const char *name;
   const char *markStart,*markEnd;
   struct parmac_expecting *expecting; //here
@@ -60,9 +57,7 @@ extern "C" {
                             const struct parmac_transition *startTrsn,
                             const struct parmac_transition *endTrsn);
 
-
-
-  struct parmac *parmac_run(struct parmac *p,void *data,bool *err,char *errMsg);
+  struct parmac *parmac_run(struct parmac *p,void *data,bool *err,char *errMsg,int errMsgSize,bool excurs);
 #ifdef __cplusplus
 }
 #endif

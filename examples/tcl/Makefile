@@ -1,5 +1,5 @@
 OUTDIR = bin
-OUTFILE = $(OUTDIR)/parmac
+OUTFILE = $(OUTDIR)/tcltest
 
 CC = gcc
 EXT = c
@@ -24,12 +24,15 @@ $(OUTDIR)/%.o: %.$(EXT)
 	$(CC) $(DEBUG_BUILD) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 	@$(CC) $(CPPFLAGS) $(CFLAGS) -MM $< | sed -e '1,1 s|[^:]*:|$@:|' > $(OUTDIR)/$*.dep
 
-$(OUTFILE) : $(objs)
+$(OUTDIR)/parmac.o: ../../parmac.c ../../parmac.h
+	$(CC) $(DEBUG_BUILD) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	
+$(OUTFILE) : $(objs) $(OUTDIR)/parmac.o
 	$(CC) $(DEBUG_BUILD) $^ $(LDFLAGS) -o $@
 
 test: $(OUTFILE)
 	@$(DEBUG_TEST) $(OUTFILE) tests/b.tcl
 
 clean:
-	@rm -f $(deps) $(objs) $(OUTFILE) $(OUTFILE).exe
+	@rm -f $(deps) $(objs) $(OUTFILE) $(OUTFILE).exe $(OUTDIR)/parmac.o
 	@rmdir --ignore-fail-on-non-empty $(OUTDIR)

@@ -1,35 +1,33 @@
 #include "tcl_parser.h"
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stddef.h>
 
 #define endof(x) (x+sizeof(x)/sizeof(*x))
 
-#define parse_sep lang_parser_parse_sep
-#define parse_eol lang_parser_parse_eol
-#define parse_spc lang_parser_parse_spc
-#define parse_any lang_parser_parse_any
-#define parse_hash lang_parser_parse_hash
-#define parse_cmnt lang_parser_parse_cmnt
-#define parse_lquote lang_parser_parse_lquote
-#define parse_rquote lang_parser_parse_rquote
-#define parse_lsqr lang_parser_parse_lsqr
-#define parse_rsqr lang_parser_parse_rsqr
-#define parse_lbrace lang_parser_parse_lbrace
-#define parse_rbrace lang_parser_parse_rbrace
-#define parse_schar lang_parser_parse_schar
-#define parse_dollar lang_parser_parse_dollar
-#define parse_idn lang_parser_parse_idn
+#define parse_sep tcl_parser_parse_sep
+#define parse_eol tcl_parser_parse_eol
+#define parse_spc tcl_parser_parse_spc
+#define parse_any tcl_parser_parse_any
+#define parse_hash tcl_parser_parse_hash
+#define parse_cmnt tcl_parser_parse_cmnt
+#define parse_lquote tcl_parser_parse_lquote
+#define parse_rquote tcl_parser_parse_rquote
+#define parse_lsqr tcl_parser_parse_lsqr
+#define parse_rsqr tcl_parser_parse_rsqr
+#define parse_lbrace tcl_parser_parse_lbrace
+#define parse_rbrace tcl_parser_parse_rbrace
+#define parse_schar tcl_parser_parse_schar
+#define parse_dollar tcl_parser_parse_dollar
+#define parse_idn tcl_parser_parse_idn
 
-#define main_machine lang_parser_main_machine
-#define word_machine lang_parser_word_machine
-#define bstr_machine lang_parser_bstr_machine
-#define qstr_machine lang_parser_qstr_machine
-#define sstr_machine lang_parser_sstr_machine
-#define cmd_machine lang_parser_cmd_machine
-#define vstr_machine lang_parser_vstr_machine
+#define main_machine tcl_parser_main_machine
+#define word_machine tcl_parser_word_machine
+#define bstr_machine tcl_parser_bstr_machine
+#define qstr_machine tcl_parser_qstr_machine
+#define sstr_machine tcl_parser_sstr_machine
+#define cmd_machine tcl_parser_cmd_machine
+#define vstr_machine tcl_parser_vstr_machine
 
 
 
@@ -573,37 +571,4 @@ void cmd_machine(struct parmac *p,const char *src) {
   };
 
   parmac_set(p,"cmd",src,&state_start,&state_end,trsns, endof(trsns));
-}
-
-char *string_from_file(const char *fn) {
-  FILE *file = fopen(fn, "rb");
-  if(!file) { return 0;  }
-  fseek(file,0L,SEEK_END);
-  unsigned int dataSize = ftell(file);
-  fseek(file,0L,SEEK_SET);
-  char *str=(char*)malloc(dataSize+1);
-  str[dataSize]='\0';
-  fread(str,1,dataSize,file);
-  fclose(file);
-  return str;
-}
-
-int main() {
-  char *txt=string_from_file("test.tcl");
-
-  struct lang_syntax_stmt *stmts=NULL;
-
-  struct parmac stk[2048];
-  struct parmac *p=stk;
-  main_machine(p,txt);
-
-  bool err;
-  char errMsg[2048];
-
-  while(p=parmac_run(p,NULL,&err,errMsg) ) {
-
-  }
-  // printf("done '%s\n",);
-  return 0;
-
 }
