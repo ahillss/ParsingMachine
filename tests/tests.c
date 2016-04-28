@@ -1,4 +1,4 @@
-#include "../../parmac.h"
+#include "../parmac.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,12 +7,22 @@
 
 #define endof(x) (x+sizeof(x)/sizeof(*x))
 
-void char_enter(const char *srcStart,const char *srcEnd,bool first,
-                const char **markStart,const char **markEnd) {
+struct TestData {
+  char data[2048];
+  unsigned int dataPos;
+  const char *answers;
+};
 
-  if(first) {
+void test_enter(const char *srcStart,const char *srcEnd,bool dif,
+                const char **markStart,const char **markEnd,
+                void *data) {
+  struct TestData *t=(struct TestData*)data;
+
+
+
+  if(dif) {
     *markStart=srcStart;
-    //   printf("str '");
+  //   //   printf("str '");
   }
 
   *markEnd=srcEnd;
@@ -20,13 +30,16 @@ void char_enter(const char *srcStart,const char *srcEnd,bool first,
   // printf("%.*s",srcEnd-srcStart,srcStart);
 }
 
-void sub_str_leave(const char *markStart,const char *markEnd, bool dif) {
+void test_leave(const char *markStart,const char *markEnd, bool dif,
+                void *data) {
+  struct TestData *t=(struct TestData*)data;
+
   if(dif) {
     printf("sub_str '%.*s'\n",markEnd-markStart,markStart);
   }
 }
 
-const char *parse_a(const char *src,bool *err,const char **name) {
+const char *parse_a(const char *src,bool *err,const char **name,void *data) {
   *name="a";
 
   if(src[0]=='a') {
@@ -37,7 +50,7 @@ const char *parse_a(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_b(const char *src,bool *err,const char **name) {
+const char *parse_b(const char *src,bool *err,const char **name,void *data) {
   *name="b";
 
   if(src[0]=='b') {
@@ -48,7 +61,7 @@ const char *parse_b(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_c(const char *src,bool *err,const char **name) {
+const char *parse_c(const char *src,bool *err,const char **name,void *data) {
   *name="c";
 
   if(src[0]=='c') {
@@ -59,7 +72,7 @@ const char *parse_c(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_d(const char *src,bool *err,const char **name) {
+const char *parse_d(const char *src,bool *err,const char **name,void *data) {
   *name="d";
 
   if(src[0]=='d') {
@@ -70,7 +83,7 @@ const char *parse_d(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_x(const char *src,bool *err,const char **name) {
+const char *parse_x(const char *src,bool *err,const char **name,void *data) {
   *name="x";
 
   if(src[0]=='x') {
@@ -135,6 +148,10 @@ void main_machine(struct parmac *p,const char *src) {
   parmac_set(p,"main",src,&state_start,&state_end,trsns, endof(trsns));
 }
 
+void test_B040() {
+}
+
+
 int main() {
 
   struct parmac stk[2048];
@@ -146,7 +163,9 @@ int main() {
   char errMsg[2048];
   errMsg[0]='\0';
 
-  while(p=parmac_run(p,NULL,&err,errMsg,sizeof(errMsg),false)) {
+  struct TestData t;
+
+  while(p=parmac_run(p,&t,&err,errMsg,sizeof(errMsg),false)) {
 
   }
 

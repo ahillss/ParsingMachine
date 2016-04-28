@@ -31,10 +31,10 @@
 
 
 
-void char_enter(const char *srcStart,const char *srcEnd,bool first,
-                const char **markStart,const char **markEnd) {
+void char_enter(const char *srcStart,const char *srcEnd,bool dif,
+                const char **markStart,const char **markEnd,void *data) {
 
-  if(first) {
+  if(dif) {
     *markStart=srcStart;
     //   printf("str '");
   }
@@ -44,34 +44,34 @@ void char_enter(const char *srcStart,const char *srcEnd,bool first,
   // printf("%.*s",srcEnd-srcStart,srcStart);
 }
 
-void sub_str_leave(const char *markStart,const char *markEnd, bool dif) {
+void sub_str_leave(const char *markStart,const char *markEnd, bool dif,void *data) {
   if(dif) {
     printf("sub_str '%.*s'\n",markEnd-markStart,markStart);
   }
 }
 
-void var_leave(const char *markStart,const char *markEnd, bool dif) {
+void var_leave(const char *markStart,const char *markEnd, bool dif,void *data) {
   printf("var '%.*s'\n",markEnd-markStart,markStart);
 }
 
-void word_leave(const char *markStart,const char *markEnd, bool dif) {
+void word_leave(const char *markStart,const char *markEnd, bool dif,void *data) {
   printf("--\n");
 }
 
-void stmt_leave(const char *markStart,const char *markEnd, bool dif) {
+void stmt_leave(const char *markStart,const char *markEnd, bool dif,void *data) {
   printf("----\n");
 }
 
-// void test_enter(const char *srcStart,const char *srcEnd,bool first,
+// void test_enter(const char *srcStart,const char *srcEnd,bool dif,
 //                 const char **markStart,const char **markEnd) {
 
-//   if(first) {
+//   if(dif) {
 //     // *markStart=srcStart;
 //   }
 
 //   // *markEnd=srcEnd;
 
-//   printf("test enter '%.*s' %i\n",srcEnd-srcStart,srcStart,first);
+//   printf("test enter '%.*s' %i\n",srcEnd-srcStart,srcStart,dif);
 // }
 
 // void test_leave(const char *markStart,const char *markEnd, bool dif) {
@@ -92,7 +92,7 @@ void stmt_leave(const char *markStart,const char *markEnd, bool dif) {
 //   // }
 // }
 
-const char *parse_sep(const char *src,bool *err,const char **name) {
+const char *parse_sep(const char *src,bool *err,const char **name,void *data) {
   *name="sep";
 
   if(src[0]==';') {
@@ -103,7 +103,7 @@ const char *parse_sep(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_eol(const char *src,bool *err,const char **name) {
+const char *parse_eol(const char *src,bool *err,const char **name,void *data) {
   *name="eol";
 
   if(src[0]=='\r' && src[1]=='\n') {
@@ -118,7 +118,7 @@ const char *parse_eol(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_spc(const char *src,bool *err,const char **name) {
+const char *parse_spc(const char *src,bool *err,const char **name,void *data) {
   *name="spc";
 
   if(src[0]==' ' || src[0]=='\t') {
@@ -129,7 +129,7 @@ const char *parse_spc(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_any(const char *src,bool *err,const char **name) {
+const char *parse_any(const char *src,bool *err,const char **name,void *data) {
   *name="any";
 
   if(src[0]!='\0') {
@@ -140,7 +140,7 @@ const char *parse_any(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_hash(const char *src,bool *err,const char **name) {
+const char *parse_hash(const char *src,bool *err,const char **name,void *data) {
   *name="hash";
 
   if(src[0]=='#') {
@@ -151,7 +151,7 @@ const char *parse_hash(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_cmnt(const char *src,bool *err,const char **name) {
+const char *parse_cmnt(const char *src,bool *err,const char **name,void *data) {
   *name="cmnt";
 
   while(src[0]==' ' || src[0]=='\t') {
@@ -174,7 +174,7 @@ const char *parse_cmnt(const char *src,bool *err,const char **name) {
   return src;
 }
 
-const char *parse_lquote(const char *src,bool *err,const char **name) {
+const char *parse_lquote(const char *src,bool *err,const char **name,void *data) {
   *name="lquote";
 
   if(src[0]=='"') {
@@ -186,7 +186,7 @@ const char *parse_lquote(const char *src,bool *err,const char **name) {
 }
 
 
-const char *parse_rquote(const char *src,bool *err,const char **name) {
+const char *parse_rquote(const char *src,bool *err,const char **name,void *data) {
   *name="rquote";
 
   if(src[0]=='"') {
@@ -197,7 +197,7 @@ const char *parse_rquote(const char *src,bool *err,const char **name) {
   return "Expecting '\"'.";
 }
 
-const char *parse_lsqr(const char *src,bool *err,const char **name) {
+const char *parse_lsqr(const char *src,bool *err,const char **name,void *data) {
   *name="lsqr";
 
   if(src[0]=='[') {
@@ -208,7 +208,7 @@ const char *parse_lsqr(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_rsqr(const char *src,bool *err,const char **name) {
+const char *parse_rsqr(const char *src,bool *err,const char **name,void *data) {
   *name="rsqr";
 
   if(src[0]==']') {
@@ -219,7 +219,7 @@ const char *parse_rsqr(const char *src,bool *err,const char **name) {
   return "Expecting ']'.";
 }
 
-const char *parse_lbrace(const char *src,bool *err,const char **name) {
+const char *parse_lbrace(const char *src,bool *err,const char **name,void *data) {
   *name="lbrace";
 
   if(src[0]=='{') {
@@ -230,7 +230,7 @@ const char *parse_lbrace(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_rbrace(const char *src,bool *err,const char **name) {
+const char *parse_rbrace(const char *src,bool *err,const char **name,void *data) {
   *name="rbrace";
 
   if(src[0]=='}') {
@@ -241,7 +241,7 @@ const char *parse_rbrace(const char *src,bool *err,const char **name) {
   return "Expecting '}'.";
 }
 
-const char *parse_schar(const char *src,bool *err,const char **name) {
+const char *parse_schar(const char *src,bool *err,const char **name,void *data) {
   *name="schar";
 
   if(src[0]==' ' || src[0]=='\t' || src[0]==';' || src[0]=='\0' ||
@@ -253,7 +253,7 @@ const char *parse_schar(const char *src,bool *err,const char **name) {
   return src+1;
 }
 
-const char *parse_dollar(const char *src,bool *err,const char **name) {
+const char *parse_dollar(const char *src,bool *err,const char **name,void *data) {
   *name="dollar";
 
   if(src[0]=='$') {
@@ -264,7 +264,7 @@ const char *parse_dollar(const char *src,bool *err,const char **name) {
   return 0;
 }
 
-const char *parse_idn(const char *src,bool *err,const char **name) {
+const char *parse_idn(const char *src,bool *err,const char **name,void *data) {
   *name="idn";
 
   if(src[0]=='_' ||

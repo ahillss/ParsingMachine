@@ -12,10 +12,10 @@
 
 struct parmac;
 
-typedef const char *(*parmac_event)(const char*,bool*,const char**);
-typedef void (*parmac_machine)(struct parmac*,const char*);
-typedef void (*parmac_state_enter)(const char*,const char*,bool,const char**,const char**);
-typedef void (*parmac_state_leave)(const char*,const char*,bool);
+typedef const char *(*parmac_event)(const char *src,bool *err,const char **name,void *data);
+typedef void (*parmac_machine)(struct parmac *p,const char *src);
+typedef void (*parmac_state_enter)(const char *srcStart,const char *srcEnd,bool dif,const char **markStart,const char **markEnd,void *data);
+typedef void (*parmac_state_leave)(const char *markStart,const char *markEnd,bool dif,void *data);
 
 struct parmac_state {
   const char *name;
