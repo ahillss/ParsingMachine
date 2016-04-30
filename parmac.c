@@ -21,7 +21,6 @@
 int parmac_debug_count=0;
 #endif
 
-
 struct parmac *parmac_set(struct parmac *p,const char *name,const char *src,
                           const struct parmac_state *startState,
                           const struct parmac_state *endState,
@@ -31,7 +30,6 @@ struct parmac *parmac_set(struct parmac *p,const char *name,const char *src,
   parmac_debug_count++;
   printf("push_inst_p=%i\n",parmac_debug_count);
 #endif
-
 
   p->src=src;
   p->state=startState;
@@ -46,16 +44,9 @@ struct parmac *parmac_set(struct parmac *p,const char *name,const char *src,
   p->next=NULL;
 
   p->name=name;
-  p->markStart=src;//(*stk)?(*stk)->markStart:src;
-  p->markEnd=src;//(*stk)?(*stk)->markEnd:src;
 
-  p->expecting=NULL;
-
-
-  //#ifndef PARMAC_NO_EXCUR
   p->excurUp=NULL;
   p->excurDown=NULL;
-  //#endif
 
   return p;
 
@@ -118,14 +109,6 @@ void parmac_print_parse_pos(struct parmac *p,bool end) {
 
   if(end) {
     PARMAC_DEBUG_STEPS_PRINTF("\n");
-  }
-}
-
-void parmac_free_expectings(struct parmac_expecting *e) {
-  while(e) {
-    struct parmac_expecting *tmp=e->next;
-    free(e);
-    e=tmp;
   }
 }
 
@@ -200,47 +183,20 @@ struct parmac *parmac_push_excur(struct parmac *p) {
 
   p->name=prev->name;
 
-  p->markStart=prev->markStart;
-  p->markEnd=prev->markEnd;
-  p->expecting=NULL;
-
   // *stk=p;
   return p;
 }
 
 //#endif
 
-void parmac_run_state_enter(struct parmac *p,
-                            const struct parmac_state *state,
-                            const char *srcStart,
-                            const char *srcEnd,
-                            bool dif,void *data) {
-#ifdef PARMAC_DEBUG_CALLBACKS
-  if(dif) {
-    p->markStart=srcStart;
-  }
-
-  p->markEnd=srcEnd;
-
-  printf("- %s_%s_enter(%i) '%.*s'\n",p->name,
-         state->name,dif,srcEnd-srcStart,srcStart);
-#else
-  state->enter(srcStart,srcEnd,dif,&p->markStart,&p->markEnd,data);
-#endif
+void parmac_run_state_enter(struct parmac *p,const struct parmac_state *state,const char *srcStart,const char *srcEnd,bool dif,void *data) {
+  state->enter(srcStart,srcEnd,dif,data);
 }
 
-void parmac_run_state_leave(struct parmac *p,
-                            const struct parmac_state *state,
-                            bool dif,void *data) {
-#ifdef PARMAC_DEBUG_CALLBACKS
-  printf("- %s_%s_leave(%i) '%.*s'\n",p->name,state->name,dif,
-         p->markEnd-p->markStart,p->markStart);
-#else
-  state->leave(p->markStart,p->markEnd,dif,data);
-#endif
+void parmac_run_state_leave(struct parmac *p,const struct parmac_state *state,bool dif,void *data) {
+  state->leave(dif,data);
 }
 
-//#ifndef PARMAC_NO_EXCUR
 void parmac_on_event_success_excurs(struct parmac *p,void *data) {
 
   //on excur downwards
@@ -285,8 +241,6 @@ void parmac_on_event_success_excurs(struct parmac *p,void *data) {
   PARMAC_DEBUG_CALLBACKS_PRINTF("--\n");
 
 }
-//#endif
-
 
 void parmac_on_event_success(struct parmac *p,
                              const char *srcStart,
@@ -405,15 +359,12 @@ void parmac_on_event_success(struct parmac *p,
 
   PARMAC_DEBUG_STEPS_PRINTF("==aaa\n");
 
-  //pop error messages
-  parmac_free_expectings(p->expecting);
-  p->expecting=0;
 
   printf("ok\n");
 
 }
 
-struct parmac *parmac_run(struct parmac *p,void *data,bool *err,char *errMsg,int errMsgSize,bool excurs) {
+struct parmac *parmac_run(struct parmac *p,void *data,bool excurs) {
   //===> on empty stack, stop and do nothing
   if(!p) {
     PARMAC_DEBUG_STEPS_PRINTF("=stk empty\n");
@@ -543,13 +494,8 @@ struct parmac *parmac_run(struct parmac *p,void *data,bool *err,char *errMsg,int
       PARMAC_DEBUG_CALLBACKS_PRINTF("x");
       parmac_run_state_leave(p,p->state,true,data);
 
-      //pop error messages
-      parmac_free_expectings(p->expecting);
-      p->expecting=NULL;
-
       //pop machine
       p=parmac_pop(p);
-
 
       if(p) {
         //temporary (for what?)
@@ -571,10 +517,6 @@ struct parmac *parmac_run(struct parmac *p,void *data,bool *err,char *errMsg,int
 
       PARMAC_DEBUG_CALLBACKS_PRINTF("x2");
       parmac_run_state_leave(p,p->state,true,data);
-
-      //pop error messages
-      parmac_free_expectings(p->expecting);
-      p->expecting=NULL;
 
       //
       const char *src2=p->src;
@@ -633,22 +575,9 @@ struct parmac *parmac_run(struct parmac *p,void *data,bool *err,char *errMsg,int
     PARMAC_DEBUG_STEPS_PRINTF("=err no trsns\n");
 
     //
-    struct parmac_expecting *e=p->expecting;
-
-    while(e) {
-      PARMAC_DEBUG_STEPS_PRINTF("\n%s\n",e->msg);
-      e=e->next;
-    }
-
-    //
-    parmac_free_expectings(p->expecting);
-
-    //
     p=parmac_pop(p);
 
-    strncpy(errMsg,"out of transitions",errMsgSize);
-    errMsg[errMsgSize-1]='\0';
-    *err=true;
+    //*err=true;
 
     //
     return NULL;
@@ -669,9 +598,7 @@ struct parmac *parmac_run(struct parmac *p,void *data,bool *err,char *errMsg,int
     } else {
       PARMAC_DEBUG_STEPS_PRINTF("==end\n");
 
-      strncpy(errMsg,"out of transitions 2",errMsgSize);
-      errMsg[errMsgSize-1]='\0';
-      *err=true;
+      //*err=true;
     }
 
     //
@@ -729,15 +656,6 @@ struct parmac *parmac_run(struct parmac *p,void *data,bool *err,char *errMsg,int
 
     //=========> event failed
     if(eventErr) {
-      //on error message
-      if(eventRet) {
-        struct parmac_expecting *expecting;
-        size_t s=sizeof(struct parmac_expecting);
-        expecting=(struct parmac_expecting*)malloc(s);
-        expecting->next=p->expecting;
-        expecting->msg=eventRet;
-        p->expecting=expecting;
-      }
 
       //event failed, try next transition
       p->trsnIt++;

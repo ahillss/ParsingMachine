@@ -13,30 +13,33 @@ struct TestData {
   const char *answers;
 };
 
-void test_enter(const char *srcStart,const char *srcEnd,bool dif,
-                const char **markStart,const char **markEnd,
-                void *data) {
-  struct TestData *t=(struct TestData*)data;
+struct ParserData {
+  const char *errMsg;
+  int pos,row,col;
+  const char *markStart,*markEnd;
+};
 
-
+void test_enter(const char *srcStart,const char *srcEnd,bool dif,void *data) {
+  struct ParserData *pd=(struct ParserData*)data;
 
   if(dif) {
-    *markStart=srcStart;
-  //   //   printf("str '");
+    pd->markStart=srcStart;
   }
 
-  *markEnd=srcEnd;
+  pd->markEnd=srcEnd;
 
-  // printf("%.*s",srcEnd-srcStart,srcStart);
+  //printf(" : enter '%.*s'\n",srcEnd-srcStart,srcStart);
+  // printf("- %s_%s_enter(%i) '%.*s'\n","p->name", state->name,dif, srcEnd-srcStart,srcStart);
 }
 
-void test_leave(const char *markStart,const char *markEnd, bool dif,
-                void *data) {
-  struct TestData *t=(struct TestData*)data;
+void test_leave(bool dif,void *data) {
+  struct ParserData *pd=(struct ParserData*)data;
 
   if(dif) {
-    printf("sub_str '%.*s'\n",markEnd-markStart,markStart);
   }
+  //printf(" : leave '%.*s'\n",pd->markEnd-pd->markStart,pd->markStart);
+
+  // printf("- %s_%s_leave(%i) '%.*s'\n","p->name", state->name,dif, pd->markEnd-pd->markStart,pd->markStart);
 }
 
 const char *parse_a(const char *src,bool *err,const char **name,void *data) {
@@ -96,9 +99,9 @@ const char *parse_x(const char *src,bool *err,const char **name,void *data) {
 
 void foo_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_d={"d",NULL,NULL},
-    state_end={"end",NULL,NULL};
+    state_start={"start",test_enter,test_leave},
+    state_d={"d",test_enter,test_leave},
+    state_end={"end",test_enter,test_leave};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_d, parse_d,  NULL},
@@ -110,10 +113,10 @@ void foo_machine(struct parmac *p,const char *src) {
 
 void sub_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_c={"c",NULL,NULL},
-    state_foo={"foo",NULL,NULL},
-    state_end={"end",NULL,NULL};
+    state_start={"start",test_enter,test_leave},
+    state_c={"c",test_enter,test_leave},
+    state_foo={"foo",test_enter,test_leave},
+    state_end={"end",test_enter,test_leave};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_c, parse_c,  NULL},
@@ -127,12 +130,12 @@ void sub_machine(struct parmac *p,const char *src) {
 
 void main_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_a={"a",NULL,NULL},
-    state_b={"b",NULL,NULL},
-    state_sub={"sub",NULL,NULL},
-    state_x={"x",NULL,NULL},
-    state_end={"end",NULL,NULL};
+    state_start={"start",test_enter,test_leave},
+    state_a={"a",test_enter,test_leave},
+    state_b={"b",test_enter,test_leave},
+    state_sub={"sub",test_enter,test_leave},
+    state_x={"x",test_enter,test_leave},
+    state_end={"end",test_enter,test_leave};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_a,   parse_a,  NULL},
@@ -140,6 +143,7 @@ void main_machine(struct parmac *p,const char *src) {
     {&state_b, &state_sub,   NULL,  sub_machine},
     {&state_b, &state_b,   parse_b,  NULL},
     {&state_b, &state_x,   parse_x,  NULL},
+    {&state_sub, &state_b, parse_b,  NULL},
     {&state_sub, &state_x, parse_x,  NULL},
     {&state_sub, &state_end, NULL,  NULL},
     {&state_x, &state_end, NULL,  NULL}
@@ -148,7 +152,10 @@ void main_machine(struct parmac *p,const char *src) {
   parmac_set(p,"main",src,&state_start,&state_end,trsns, endof(trsns));
 }
 
-void test_B040() {
+void test_B040(struct parmac *p,struct TestData *t) {
+  printf("testing B040\n");
+
+
 }
 
 
@@ -156,24 +163,35 @@ int main() {
 
   struct parmac stk[2048];
   struct parmac *p=stk;
-  const char *str="abdx";
-  main_machine(p,str);
+  const char *src="abbbc";
+  main_machine(p,src);
 
-  bool err;
-  char errMsg[2048];
-  errMsg[0]='\0';
+  struct ParserData d;
+d.errMsg=NULL;
+d.pos=d.row=d.col=0;
+d.markStart=src;
+d.markEnd=src;
 
-  struct TestData t;
-
-  while(p=parmac_run(p,&t,&err,errMsg,sizeof(errMsg),false)) {
+  while(p=parmac_run(p,&d,false)) {
 
   }
 
-  if(err) {
+/*
+  if(error.it!=NULL) {
     printf("\n-----------\nErr\n");
-    printf("'%s'\n",errMsg);
 
-  }
+    const char **msg=errorMsgs;
+
+    printf("Expecting");
+
+    while(msg!=error.it+1) {
+      printf(" '%s'%s",*msg,(msg+1==error.it+1)?".":((msg+2==error.it+1)?" or":","));
+
+      msg++;
+    }
+
+    printf("\n");
+  }*/
 
   printf("done\n");
   // printf("done %i\n",(p-1)->src==endof(str));
