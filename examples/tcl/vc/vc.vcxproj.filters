@@ -18,10 +18,10 @@
     <ClCompile Include="..\tcl_parser.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\tests.c">
+    <ClCompile Include="..\..\..\parmac.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\parmac.c">
+    <ClCompile Include="..\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -5,16 +5,26 @@
 #include <stdbool.h>
 #endif
 
-#define PARMAC_DEBUG_STEPS
+// #define PARMAC_DEBUG_STEPS
 #define PARMAC_DEBUG_CALLBACKS
 // #define PARMAC_DEBUG_INSTANCES
 
 struct parmac;
+struct parmac_state;
 
-typedef const char *(*parmac_event)(const char *src,bool *err,const char **name,void *data);
+typedef const char *(*parmac_event)(const char *src,const char **name,void *data);
+
 typedef void (*parmac_machine)(struct parmac *p,const char *src);
-typedef void (*parmac_state_enter)(const char *srcStart,const char *srcEnd,bool dif,void *data);
-typedef void (*parmac_state_leave)(bool dif,void *data);
+
+
+typedef void (*parmac_state_enter)(const struct parmac_state *fromState,
+                                   const struct parmac_state *toState,
+                                   const char *srcStart,const char *srcEnd,
+                                   void *data);
+
+typedef void (*parmac_state_leave)(const struct parmac_state *fromState,
+                                   const struct parmac_state *toState,
+                                   void *data);
 
 struct parmac_state {
   const char *name;
@@ -48,7 +58,7 @@ extern "C" {
                             const struct parmac_transition *startTrsn,
                             const struct parmac_transition *endTrsn);
 
-  struct parmac *parmac_run(struct parmac *p,void *data,bool excurs);
+  bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs);
 #ifdef __cplusplus
 }
 #endif

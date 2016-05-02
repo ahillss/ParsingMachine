@@ -19,82 +19,109 @@ struct ParserData {
   const char *markStart,*markEnd;
 };
 
-void test_enter(const char *srcStart,const char *srcEnd,bool dif,void *data) {
-  struct ParserData *pd=(struct ParserData*)data;
+// void test_enter(const char *srcStart,const char *srcEnd,bool dif,void *data) {
+//   struct ParserData *pd=(struct ParserData*)data;
 
-  if(dif) {
-    pd->markStart=srcStart;
-  }
+//   if(dif) {
+//     pd->markStart=srcStart;
+//   }
+
+//   pd->markEnd=srcEnd;
+
+//   //printf(" : enter '%.*s'\n",srcEnd-srcStart,srcStart);
+//   // printf("- %s_%s_enter(%i) '%.*s'\n","p->name", state->name,dif, srcEnd-srcStart,srcStart);
+// }
+
+// void test_leave(bool dif,void *data) {
+//   struct ParserData *pd=(struct ParserData*)data;
+
+//   if(dif) {
+//   }
+//   //printf(" : leave '%.*s'\n",pd->markEnd-pd->markStart,pd->markStart);
+
+//   // printf("- %s_%s_leave(%i) '%.*s'\n","p->name", state->name,dif, pd->markEnd-pd->markStart,pd->markStart);
+// }
+
+
+void test_enter(const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                const char *srcStart,const char *srcEnd,
+                void *data) {
+
+  struct ParserData *pd=(struct ParserData*)data;
+  bool dif=fromState!=toState;
+
+  //if(dif) {
+  pd->markStart=srcStart;
+  //}
 
   pd->markEnd=srcEnd;
 
-  //printf(" : enter '%.*s'\n",srcEnd-srcStart,srcStart);
-  // printf("- %s_%s_enter(%i) '%.*s'\n","p->name", state->name,dif, srcEnd-srcStart,srcStart);
+  // printf("enter (%s -> %s) '%.*s'\n",
+  //        fromState?fromState->name:"",toState?toState->name:"",
+  //        srcEnd-srcStart,srcStart);
 }
 
-void test_leave(bool dif,void *data) {
+void test_leave(const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                void *data) {
+
   struct ParserData *pd=(struct ParserData*)data;
+  bool dif=fromState!=toState;
 
-  if(dif) {
-  }
-  //printf(" : leave '%.*s'\n",pd->markEnd-pd->markStart,pd->markStart);
-
-  // printf("- %s_%s_leave(%i) '%.*s'\n","p->name", state->name,dif, pd->markEnd-pd->markStart,pd->markStart);
+  // printf("leave (%s -> %s) '%.*s'\n",
+  //        fromState?fromState->name:"",toState?toState->name:"",
+  //        pd->markEnd-pd->markStart,pd->markStart);
 }
 
-const char *parse_a(const char *src,bool *err,const char **name,void *data) {
+const char *parse_a(const char *src,const char **name,void *data) {
   *name="a";
 
   if(src[0]=='a') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_b(const char *src,bool *err,const char **name,void *data) {
+const char *parse_b(const char *src,const char **name,void *data) {
   *name="b";
 
   if(src[0]=='b') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_c(const char *src,bool *err,const char **name,void *data) {
+const char *parse_c(const char *src,const char **name,void *data) {
   *name="c";
 
   if(src[0]=='c') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_d(const char *src,bool *err,const char **name,void *data) {
+const char *parse_d(const char *src,const char **name,void *data) {
   *name="d";
 
   if(src[0]=='d') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_x(const char *src,bool *err,const char **name,void *data) {
+const char *parse_x(const char *src,const char **name,void *data) {
   *name="x";
 
   if(src[0]=='x') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
 void foo_machine(struct parmac *p,const char *src) {
@@ -160,42 +187,36 @@ void test_B040(struct parmac *p,struct TestData *t) {
 
 
 int main() {
-
+  bool err;
   struct parmac stk[2048];
   struct parmac *p=stk;
   const char *src="abbbc";
   main_machine(p,src);
 
   struct ParserData d;
-d.errMsg=NULL;
-d.pos=d.row=d.col=0;
-d.markStart=src;
-d.markEnd=src;
+  d.errMsg=NULL;
+  d.pos=d.row=d.col=0;
+  d.markStart=src;
+  d.markEnd=src;
 
-  while(p=parmac_run(p,&d,false)) {
+  while(parmac_run(&p,&d,&err,false)) {
 
   }
 
-/*
-  if(error.it!=NULL) {
+  if(err) {
     printf("\n-----------\nErr\n");
 
-    const char **msg=errorMsgs;
-
-    printf("Expecting");
-
-    while(msg!=error.it+1) {
-      printf(" '%s'%s",*msg,(msg+1==error.it+1)?".":((msg+2==error.it+1)?" or":","));
-
-      msg++;
+    if(d.errMsg) {
+      printf("Expecting %s\n",d.errMsg);
     }
 
-    printf("\n");
-  }*/
+    printf("at %i\n",(int)(p->src-src));
+  }
+
+
 
   printf("done\n");
-  // printf("done %i\n",(p-1)->src==endof(str));
-  // printf("'%s'\n",p->src);
+
   return 0;
 
 }

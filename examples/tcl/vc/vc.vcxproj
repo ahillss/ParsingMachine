@@ -28,8 +28,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\parmac.c" />
+    <ClCompile Include="..\main.c" />
     <ClCompile Include="..\tcl_parser.c" />
-    <ClCompile Include="..\tests.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\parmac.h" />

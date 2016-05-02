@@ -51,6 +51,12 @@ struct tcl_parser_syntax_builder {
 
 // struct tcl_parser_syntax_builder *builder
 
+struct tcl_parser {
+  const char *errMsg;
+  const char *markStart,*markEnd;
+  int pos,row,col;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif

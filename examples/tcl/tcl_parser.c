@@ -31,35 +31,54 @@
 
 
 
-void char_enter(const char *srcStart,const char *srcEnd,bool dif,
-                const char **markStart,const char **markEnd,void *data) {
+void char_enter(const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                const char *srcStart,const char *srcEnd,
+                void *data) {
 
-  if(dif) {
-    *markStart=srcStart;
-    //   printf("str '");
-  }
+  // bool dif=fromState!=toState;
+  // struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  *markEnd=srcEnd;
+  // if(dif) {
+  //   tp->markStart=srcStart;
+  //   //   printf("str '");
+  // }
 
-  // printf("%.*s",srcEnd-srcStart,srcStart);
+  // tp->markEnd=srcEnd;
+
+  // // printf("%.*s",srcEnd-srcStart,srcStart);
 }
 
-void sub_str_leave(const char *markStart,const char *markEnd, bool dif,void *data) {
-  if(dif) {
-    printf("sub_str '%.*s'\n",markEnd-markStart,markStart);
-  }
+void sub_str_leave(const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                void *data) {
+  // struct tcl_parser *tp=(struct tcl_parser*)data;
+  // bool dif=fromState!=toState;
+
+  // if(dif) {
+  //   printf("sub_str '%.*s'\n",tp->markEnd-tp->markStart,tp->markStart);
+  // }
 }
 
-void var_leave(const char *markStart,const char *markEnd, bool dif,void *data) {
-  printf("var '%.*s'\n",markEnd-markStart,markStart);
+void var_leave(const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                void *data) {
+  // struct tcl_parser *tp=(struct tcl_parser*)data;
+  // printf("var '%.*s'\n",tp->markEnd-tp->markStart,tp->markStart);
 }
 
-void word_leave(const char *markStart,const char *markEnd, bool dif,void *data) {
-  printf("--\n");
+void word_leave(const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                void *data) {
+  // struct tcl_parser *tp=(struct tcl_parser*)data;
+  // printf("--\n");
 }
 
-void stmt_leave(const char *markStart,const char *markEnd, bool dif,void *data) {
-  printf("----\n");
+void stmt_leave(const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                void *data) {
+  // struct tcl_parser *tp=(struct tcl_parser*)data;
+  // printf("----\n");
 }
 
 // void test_enter(const char *srcStart,const char *srcEnd,bool dif,
@@ -92,18 +111,19 @@ void stmt_leave(const char *markStart,const char *markEnd, bool dif,void *data) 
 //   // }
 // }
 
-const char *parse_sep(const char *src,bool *err,const char **name,void *data) {
+const char *parse_sep(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="sep";
 
   if(src[0]==';') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_eol(const char *src,bool *err,const char **name,void *data) {
+const char *parse_eol(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="eol";
 
   if(src[0]=='\r' && src[1]=='\n') {
@@ -114,44 +134,44 @@ const char *parse_eol(const char *src,bool *err,const char **name,void *data) {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_spc(const char *src,bool *err,const char **name,void *data) {
+const char *parse_spc(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="spc";
 
   if(src[0]==' ' || src[0]=='\t') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_any(const char *src,bool *err,const char **name,void *data) {
+const char *parse_any(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="any";
 
   if(src[0]!='\0') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_hash(const char *src,bool *err,const char **name,void *data) {
+const char *parse_hash(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="hash";
 
   if(src[0]=='#') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_cmnt(const char *src,bool *err,const char **name,void *data) {
+const char *parse_cmnt(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="cmnt";
 
   while(src[0]==' ' || src[0]=='\t') {
@@ -159,8 +179,7 @@ const char *parse_cmnt(const char *src,bool *err,const char **name,void *data) {
   }
 
   if(src[0] != '#') {
-    *err=true;
-    return 0;
+    return NULL;
   }
 
   src++;
@@ -174,97 +193,102 @@ const char *parse_cmnt(const char *src,bool *err,const char **name,void *data) {
   return src;
 }
 
-const char *parse_lquote(const char *src,bool *err,const char **name,void *data) {
+const char *parse_lquote(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="lquote";
 
   if(src[0]=='"') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
 
-const char *parse_rquote(const char *src,bool *err,const char **name,void *data) {
+const char *parse_rquote(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="rquote";
 
   if(src[0]=='"') {
     return src+1;
   }
 
-  *err=true;
-  return "Expecting '\"'.";
+  tp->errMsg="Expecting closing double quote.\n";
+  return NULL;
 }
 
-const char *parse_lsqr(const char *src,bool *err,const char **name,void *data) {
+const char *parse_lsqr(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="lsqr";
 
   if(src[0]=='[') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_rsqr(const char *src,bool *err,const char **name,void *data) {
+const char *parse_rsqr(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="rsqr";
 
   if(src[0]==']') {
     return src+1;
   }
 
-  *err=true;
-  return "Expecting ']'.";
+  tp->errMsg="Expecting closing square bracket.\n";
+  return NULL;
 }
 
-const char *parse_lbrace(const char *src,bool *err,const char **name,void *data) {
+const char *parse_lbrace(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="lbrace";
 
   if(src[0]=='{') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_rbrace(const char *src,bool *err,const char **name,void *data) {
+const char *parse_rbrace(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="rbrace";
 
   if(src[0]=='}') {
     return src+1;
   }
 
-  *err=true;
-  return "Expecting '}'.";
+  tp->errMsg="Expecting closing curly brace.\n";
+  return NULL;
 }
 
-const char *parse_schar(const char *src,bool *err,const char **name,void *data) {
+const char *parse_schar(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="schar";
 
   if(src[0]==' ' || src[0]=='\t' || src[0]==';' || src[0]=='\0' ||
      src[0]=='\n' || (src[0]=='\r' && src[1]=='\n')) { //   src[0]==']' ||
-    *err=true;
-    return 0;
+
+    return NULL;
   }
 
   return src+1;
 }
 
-const char *parse_dollar(const char *src,bool *err,const char **name,void *data) {
+const char *parse_dollar(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="dollar";
 
   if(src[0]=='$') {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
-const char *parse_idn(const char *src,bool *err,const char **name,void *data) {
+const char *parse_idn(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="idn";
 
   if(src[0]=='_' ||
@@ -274,8 +298,7 @@ const char *parse_idn(const char *src,bool *err,const char **name,void *data) {
     return src+1;
   }
 
-  *err=true;
-  return 0;
+  return NULL;
 }
 
 void main_machine(struct parmac *p,const char *src);
@@ -285,7 +308,6 @@ void qstr_machine(struct parmac *p,const char *src);
 void sstr_machine(struct parmac *p,const char *src);
 void vstr_machine(struct parmac *p,const char *src);
 void cmd_machine(struct parmac *p,const char *src);
-
 
 void foo_machine(struct parmac *p,const char *src) {
   static const struct parmac_state

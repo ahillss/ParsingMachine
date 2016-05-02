@@ -28,20 +28,32 @@ char *string_from_file(const char *fn) {
 int main() {
   char *txt=string_from_file("test.tcl");
 
-  struct tcl_syntax_stmt *stmts=NULL;
+  bool err;
+  struct parmac stk[2048],*p;
+  struct tcl_parser tp;
 
-  struct parmac stk[2048];
-  struct parmac *p=stk;
+  p=stk;
+  tp.errMsg=NULL;
+  tp.markStart=txt;
+  tp.markEnd=txt;
+  tp.pos=0;
+  tp.row=0;
+  tp.col=0;
+
   tcl_parser_main_machine(p,txt);
 
-  bool err;
-  char errMsg[2048];
-
-  while(p=parmac_run(p,NULL,&err,errMsg,sizeof(errMsg),true)) {
-
+  while(parmac_run(&p,&tp,&err,true)) {
   }
 
-  // printf("done '%s\n",);
+  // if(err) {
+  //   printf("Error.\n");
+
+    if(tp.errMsg!=NULL) {
+      printf(tp.errMsg);
+    }
+  // }
+
+  printf("done.\n");
   return 0;
 
 }
