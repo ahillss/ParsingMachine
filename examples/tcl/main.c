@@ -45,15 +45,17 @@ int main() {
   while(parmac_run(&p,&tp,&err,true)) {
   }
 
-  // if(err) {
-  //   printf("Error.\n");
+  printf("\n");
+
+  if(err) {
+    printf("Error.\n");
 
     if(tp.errMsg!=NULL) {
       printf(tp.errMsg);
     }
-  // }
+  }
 
-  printf("done.\n");
+    printf("done %p.\n",p);
   return 0;
 
 }

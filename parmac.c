@@ -73,12 +73,28 @@ void parmac_print_parse_pos(struct parmac *p,bool end) {
     PARMAC_DEBUG_STEPS_PRINTF("\n");
   }
 
-  PARMAC_DEBUG_STEPS_PRINTF("/ %s : %s (%s -> %s) (%i %i)",p->name,
+  int excurDownCount=0,excurUpCount=0;
+  struct parmac *tmp;
+
+  tmp=p;
+
+  while(tmp&&tmp->excurUp) {
+    excurUpCount++;
+    tmp=tmp->excurUp;
+  }
+
+  tmp=p;
+
+  while(tmp&&tmp->excurDown) {
+    excurDownCount++;
+    tmp=tmp->excurDown;
+  }
+
+  PARMAC_DEBUG_STEPS_PRINTF("/ %s : %s (%s -> %s) (u:%i d:%i)",p->name,
                             p->state->name,
                             (p->trsnIt==p->trsnEnd)?"X":p->trsnIt->state->name,
                             (p->trsnIt==p->trsnEnd)?"X":p->trsnIt->toState->name,
-                            p->excurUp?1:0,
-                            p->excurDown?1:0);
+                            excurUpCount,excurDownCount);
 
   if(end) { PARMAC_DEBUG_STEPS_PRINTF("\n"); }
 }
@@ -138,6 +154,18 @@ struct parmac *parmac_push_excur(struct parmac *p) {
   return p;
 }
 
+struct parmac *parmac_pop_excur(struct parmac *p) {
+
+  if(p->prev) {
+    p->prev->next=p->excurUp->prev;
+  }
+
+  p=p->excurUp;
+  p->excurDown=NULL;
+  p->trsnIt++;
+
+  return p;
+}
 #ifdef PARMAC_DEBUG_CALLBACKS
 const char *parmac_debug_markStart;
 const char *parmac_debug_markEnd;
@@ -366,14 +394,9 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
     if(p->excurUp && !p->excurDown && p->trsnIt==p->trsnEnd) {
       PARMAC_DEBUG_STEPS_PRINTF("=no trsns, pop excur\n");
 
-      if(p->prev) {
-        p->prev->next=p->excurUp->prev;
-      }
-
-      p=p->excurUp;
-      p->trsnIt++;
-
+      p=parmac_pop_excur(p);
       *pp=p; return true;//p;
+
     }
 
     //===>excur down, toEnd, root, go up
@@ -449,7 +472,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
         p=p->excurDown;
       }
 
-      *pp=p; return false;//NULL;
+      *pp=p; return true;//false;//NULL;
     }
 
     //===> successfully transitioned to end state, without excur (is this for excurs code only?)
@@ -587,8 +610,13 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
   }
 
   //======> is a machine
-  if(p->trsnIt->state==p->state && p->trsnIt->machine) {
-
+  if(p->trsnIt->state==p->state &&
+     p->trsnIt->machine) {
+// printf("aaa\n");
+// #ifdef PARMAC_DEBUG_STEPS
+//   parmac_print_parse_pos(p,true);
+// #endif
+// printf("bbb\n");
     struct parmac *p2=p;
 
     //goto next free bit of memory

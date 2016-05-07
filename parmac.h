@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #endif
 
-// #define PARMAC_DEBUG_STEPS
+#define PARMAC_DEBUG_STEPS
 #define PARMAC_DEBUG_CALLBACKS
 // #define PARMAC_DEBUG_INSTANCES
 

@@ -116,6 +116,7 @@ const char *parse_sep(const char *src,const char **name,void *data) {
   *name="sep";
 
   if(src[0]==';') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -127,10 +128,12 @@ const char *parse_eol(const char *src,const char **name,void *data) {
   *name="eol";
 
   if(src[0]=='\r' && src[1]=='\n') {
+    tp->errMsg=NULL;
     return src+2;
   }
 
   if(src[0]=='\n') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -142,6 +145,7 @@ const char *parse_spc(const char *src,const char **name,void *data) {
   *name="spc";
 
   if(src[0]==' ' || src[0]=='\t') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -153,6 +157,7 @@ const char *parse_any(const char *src,const char **name,void *data) {
   *name="any";
 
   if(src[0]!='\0') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -164,6 +169,7 @@ const char *parse_hash(const char *src,const char **name,void *data) {
   *name="hash";
 
   if(src[0]=='#') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -190,6 +196,7 @@ const char *parse_cmnt(const char *src,const char **name,void *data) {
     src++;
   }
 
+  tp->errMsg=NULL;
   return src;
 }
 
@@ -198,6 +205,7 @@ const char *parse_lquote(const char *src,const char **name,void *data) {
   *name="lquote";
 
   if(src[0]=='"') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -210,6 +218,7 @@ const char *parse_rquote(const char *src,const char **name,void *data) {
   *name="rquote";
 
   if(src[0]=='"') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -222,6 +231,7 @@ const char *parse_lsqr(const char *src,const char **name,void *data) {
   *name="lsqr";
 
   if(src[0]=='[') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -233,6 +243,7 @@ const char *parse_rsqr(const char *src,const char **name,void *data) {
   *name="rsqr";
 
   if(src[0]==']') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -245,6 +256,7 @@ const char *parse_lbrace(const char *src,const char **name,void *data) {
   *name="lbrace";
 
   if(src[0]=='{') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -256,6 +268,7 @@ const char *parse_rbrace(const char *src,const char **name,void *data) {
   *name="rbrace";
 
   if(src[0]=='}') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -273,6 +286,7 @@ const char *parse_schar(const char *src,const char **name,void *data) {
     return NULL;
   }
 
+  tp->errMsg=NULL;
   return src+1;
 }
 
@@ -281,6 +295,7 @@ const char *parse_dollar(const char *src,const char **name,void *data) {
   *name="dollar";
 
   if(src[0]=='$') {
+    tp->errMsg=NULL;
     return src+1;
   }
 
@@ -295,6 +310,7 @@ const char *parse_idn(const char *src,const char **name,void *data) {
      (src[0]>='a' && src[0]<='z') ||
      (src[0]>='A' && src[0]<='Z') ||
      (src[0]>='0' && src[0]<='9')) {
+    tp->errMsg=NULL;
     return src+1;
   }
 
