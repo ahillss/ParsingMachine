@@ -33,7 +33,7 @@ struct parmac_state {
 };
 
 struct parmac_transition {
-  const struct parmac_state *state,*toState;
+  const struct parmac_state *fromState,*toState;
   parmac_event event;
   parmac_machine machine;
 };
