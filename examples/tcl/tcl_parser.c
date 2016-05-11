@@ -325,26 +325,26 @@ void sstr_machine(struct parmac *p,const char *src);
 void vstr_machine(struct parmac *p,const char *src);
 void cmd_machine(struct parmac *p,const char *src);
 
-void foo_machine(struct parmac *p,const char *src) {
-  static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_sstr={"sstr",NULL,NULL},
-    state_end={"end",NULL,NULL};
+// void foo_machine(struct parmac *p,const char *src) {
+//   static const struct parmac_state
+//     state_start={"start",NULL,NULL},
+//     state_sstr={"sstr",NULL,NULL},
+//     state_end={"end",NULL,NULL};
 
-  static const struct parmac_transition trsns[]={
-    {&state_start, &state_sstr, NULL, sstr_machine},
-    {&state_sstr, &state_end, NULL, NULL}
-  };
+//   static const struct parmac_transition trsns[]={
+//     {&state_start, &state_sstr, NULL, sstr_machine},
+//     {&state_sstr, &state_end, NULL, NULL}
+//   };
 
-  parmac_set(p,"foo",src,&state_start,&state_end,trsns,endof(trsns));
-}
+//   parmac_set(p,"foo",src,&state_start,&state_end,trsns,endof(trsns));
+// }
 
 
 void main_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
-  //   state_cmnt_head={"cmnt_head",NULL,NULL},
-  //   state_cmnt_tail={"cmnt_tail",NULL,NULL},
+    state_cmnt_head={"cmnt_head",NULL,NULL},
+    state_cmnt_tail={"cmnt_tail",NULL,NULL},
     state_word1={"word1",NULL,word_leave},
     state_wordn={"wordn",NULL,word_leave},
     state_spc1={"spc1",NULL,NULL},
@@ -353,25 +353,25 @@ void main_machine(struct parmac *p,const char *src) {
     state_eol={"eol",NULL,stmt_leave},
 
               // state_sstr={"sstr",NULL,NULL},
-              state_foo={"foo",NULL,NULL},
+              // state_foo={"foo",NULL,NULL},
 
     state_end={"end",NULL,stmt_leave};
 
   static const struct parmac_transition trsns[]={
-    // {&state_start, &state_cmnt_head, parse_hash, NULL},
+    {&state_start, &state_cmnt_head, parse_hash, NULL},
     {&state_start, &state_sep,   parse_sep,  NULL},
     {&state_start, &state_eol,   parse_eol,  NULL},
     {&state_start, &state_spc1,  parse_spc,  NULL},
     {&state_start, &state_end,   NULL,       NULL},
     {&state_start, &state_word1, NULL,       word_machine},
 
-    // {&state_cmnt_head, &state_eol,   parse_eol, NULL},
-    // {&state_cmnt_head, &state_cmnt_tail, parse_any, NULL},
-    // {&state_cmnt_head, &state_end,   NULL,      NULL},
+    {&state_cmnt_head, &state_eol,   parse_eol, NULL},
+    {&state_cmnt_head, &state_cmnt_tail, parse_any, NULL},
+    {&state_cmnt_head, &state_end,   NULL,      NULL},
 
-    // {&state_cmnt_tail, &state_eol,   parse_eol, NULL},
-    // {&state_cmnt_tail, &state_cmnt_tail, parse_any, NULL},
-    // {&state_cmnt_tail, &state_end,   NULL,      NULL},
+    {&state_cmnt_tail, &state_eol,   parse_eol, NULL},
+    {&state_cmnt_tail, &state_cmnt_tail, parse_any, NULL},
+    {&state_cmnt_tail, &state_end,   NULL,      NULL},
 
     // {&state_word1, &state_sstr, NULL,       sstr_machine},
     // {&state_word1, &state_foo, NULL,       foo_machine},
@@ -386,7 +386,7 @@ void main_machine(struct parmac *p,const char *src) {
     {&state_wordn, &state_eol,  parse_eol, NULL},
     {&state_wordn, &state_end,  NULL,      NULL},
 
-    // {&state_spc1, &state_cmnt_head, parse_hash, NULL},
+    {&state_spc1, &state_cmnt_head, parse_hash, NULL},
     {&state_spc1, &state_spc1,  parse_spc,  NULL},
     {&state_spc1, &state_sep,   parse_sep,  NULL},
     {&state_spc1, &state_eol,   parse_eol,  NULL},
@@ -399,14 +399,14 @@ void main_machine(struct parmac *p,const char *src) {
     {&state_spcn, &state_end,   NULL,      NULL},
     {&state_spcn, &state_wordn, NULL,      word_machine},
 
-    // {&state_sep, &state_cmnt_head, parse_hash, NULL},
+    {&state_sep, &state_cmnt_head, parse_hash, NULL},
     {&state_sep, &state_spc1,  parse_spc,  NULL},
     {&state_sep, &state_sep,   parse_sep,  NULL},
     {&state_sep, &state_eol,   parse_eol,  NULL},
     {&state_sep, &state_end,   NULL,       NULL},
     {&state_sep, &state_word1, NULL,       word_machine},
 
-    // {&state_eol, &state_cmnt_head, parse_hash, NULL},
+    {&state_eol, &state_cmnt_head, parse_hash, NULL},
     {&state_eol, &state_spc1,  parse_spc,  NULL},
     {&state_eol, &state_sep,   parse_sep,  NULL},
     {&state_eol, &state_eol,   parse_eol,  NULL},
@@ -421,17 +421,17 @@ void word_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
     state_bstr={"bstr",NULL,sub_str_leave},
-  //   state_qstr={"qstr",NULL,NULL},
+    state_qstr={"qstr",NULL,NULL},
     state_sstr={"sstr",NULL,NULL},
     state_end={"end",NULL,NULL};
 
   static const struct parmac_transition trsns[]={
-    // {&state_start, &state_qstr, NULL, qstr_machine},
-    // {&state_start, &state_bstr, NULL, bstr_machine},
+    {&state_start, &state_qstr, NULL, qstr_machine},
+    {&state_start, &state_bstr, NULL, bstr_machine},
     {&state_start, &state_sstr, NULL, sstr_machine},
 
-    // {&state_qstr, &state_end, NULL, NULL},
-    // {&state_bstr, &state_end, NULL, NULL},
+    {&state_qstr, &state_end, NULL, NULL},
+    {&state_bstr, &state_end, NULL, NULL},
     {&state_sstr, &state_end, NULL, NULL}
   };
 
@@ -523,36 +523,36 @@ void sstr_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
     state_char={"char",char_enter,sub_str_leave},
-  //   state_dollar={"dollar",char_enter,NULL},
-  //   state_dchar={"dchar",NULL,sub_str_leave},
-  //   state_vstr={"vstr",NULL,NULL},
+    state_dollar={"dollar",char_enter,NULL},
+    state_dchar={"dchar",NULL,sub_str_leave},
+    state_vstr={"vstr",NULL,NULL},
     state_cmd={"cmd",NULL,NULL},
     state_end={"end",NULL,NULL};
 
   static const struct parmac_transition trsns[]={
-    // {&state_start, &state_dollar, parse_dollar, NULL},
+    {&state_start, &state_dollar, parse_dollar, NULL},
     {&state_start, &state_cmd,    NULL,         cmd_machine},
     {&state_start, &state_char,   parse_schar,  NULL},
 
-    // {&state_dollar, &state_vstr,  NULL, vstr_machine},
-    // {&state_dollar, &state_dchar, NULL, NULL},
+    {&state_dollar, &state_vstr,  NULL, vstr_machine},
+    {&state_dollar, &state_dchar, NULL, NULL},
 
-    // {&state_dchar, &state_dollar, parse_dollar, NULL},
-    // {&state_dchar, &state_cmd,    NULL, cmd_machine},
-    // {&state_dchar, &state_end,    NULL, NULL},
-    // {&state_dchar, &state_char,   parse_schar, NULL},
+    {&state_dchar, &state_dollar, parse_dollar, NULL},
+    {&state_dchar, &state_cmd,    NULL, cmd_machine},
+    {&state_dchar, &state_end,    NULL, NULL},
+    {&state_dchar, &state_char,   parse_schar, NULL},
 
-    // {&state_vstr, &state_dollar, parse_dollar, NULL},
-    // {&state_vstr, &state_cmd,    NULL,         cmd_machine},
-    // {&state_vstr, &state_end,    NULL,         NULL},
-    // {&state_vstr, &state_char,   parse_schar,  NULL},
+    {&state_vstr, &state_dollar, parse_dollar, NULL},
+    {&state_vstr, &state_cmd,    NULL,         cmd_machine},
+    {&state_vstr, &state_end,    NULL,         NULL},
+    {&state_vstr, &state_char,   parse_schar,  NULL},
 
-    // {&state_cmd, &state_dollar, parse_dollar,NULL},
+    {&state_cmd, &state_dollar, parse_dollar,NULL},
     {&state_cmd, &state_cmd,    NULL,        cmd_machine},
     {&state_cmd, &state_end,    NULL,        NULL},
     {&state_cmd, &state_char,   parse_schar, NULL},
 
-    // {&state_char, &state_dollar, parse_dollar, NULL},
+    {&state_char, &state_dollar, parse_dollar, NULL},
     {&state_char, &state_cmd,    NULL,         cmd_machine},
     {&state_char, &state_end,    NULL,         NULL},
     {&state_char, &state_char,   parse_schar,  NULL}
