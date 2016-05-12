@@ -383,6 +383,21 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
   // printf("'%s'\n",p->src);
 #endif
 
+  //doesn't handle transitions of start to end, atleast for excursions
+  // assert(p->trsnIt==p->trsnEnd ||
+  //        p->trsnIt->fromState != p->startState ||
+  //        p->trsnIt->toState != p->endState);
+
+  //===> transition fromState doesn't match state
+  if(p->trsnIt!=p->trsnEnd &&
+     p->state!=p->trsnIt->fromState &&
+     p->state!=p->endState) {
+    PARMAC_DEBUG_STEPS_PRINTF("=incr trsn7\n");
+
+    p->trsnIt++;
+
+    *pp=p; return true;//p;
+  }
 
   //===>excur down, toEnd, not root, push excur
   if(excurs &&
@@ -649,14 +664,13 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
     //
     PARMAC_DEBUG_STEPS_PRINTF("=trying event '%s'\n",eventName);
 
-    //=========> event failed
+    //
     if(eventRet==NULL) {
       //event failed, try next transition
       p->trsnIt++;
-    }
+    } else {
+      //event success
 
-    //=========> event successful
-    if(eventRet!=NULL) {
       //
       PARMAC_DEBUG_STEPS_PRINTF("=event success\n");
 
@@ -681,15 +695,6 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
     parmac_on_event_success(p,p->src,p->src,excurs,data);
 
     //
-
-    *pp=p; return true;//p;
-  }
-
-  //===> transition fromState doesn't match state
-  if(p->trsnIt!=p->trsnEnd) {
-    PARMAC_DEBUG_STEPS_PRINTF("=incr trsn\n");
-    //increment transition iterator
-    p->trsnIt++;
 
     *pp=p; return true;//p;
   }
