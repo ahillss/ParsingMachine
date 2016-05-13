@@ -374,6 +374,24 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
     return false;//NULL;
   }
 
+  //doesn't handle transitions of start to end, atleast for excursions
+  // assert(p->trsnIt==p->trsnEnd ||
+  //        p->trsnIt->fromState != p->startState ||
+  //        p->trsnIt->toState != p->endState);
+
+
+  //===> transition fromState doesn't match state
+  if(p->trsnIt!=p->trsnEnd &&
+     p->state!=p->trsnIt->fromState &&
+     p->state!=p->endState
+     ) {
+    // PARMAC_DEBUG_STEPS_PRINTF("=incr trsn7\n");
+
+    p->trsnIt++;
+
+    *pp=p; return true;//p;
+  }
+
   //
 #ifdef PARMAC_DEBUG_STEPS
   parmac_print_parse_pos(p,true);
@@ -382,22 +400,6 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
 #if defined(PARMAC_DEBUG_CALLBACKS) || defined(PARMAC_DEBUG_STEPS)
   // printf("'%s'\n",p->src);
 #endif
-
-  //doesn't handle transitions of start to end, atleast for excursions
-  // assert(p->trsnIt==p->trsnEnd ||
-  //        p->trsnIt->fromState != p->startState ||
-  //        p->trsnIt->toState != p->endState);
-
-  //===> transition fromState doesn't match state
-  if(p->trsnIt!=p->trsnEnd &&
-     p->state!=p->trsnIt->fromState &&
-     p->state!=p->endState) {
-    PARMAC_DEBUG_STEPS_PRINTF("=incr trsn7\n");
-
-    p->trsnIt++;
-
-    *pp=p; return true;//p;
-  }
 
   //===>excur down, toEnd, not root, push excur
   if(excurs &&
@@ -500,6 +502,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
       p=p->excurDown;
     }
 
+    //p->trsnIt++; //todo is this needed? or is an oneventsuccess needed?
     *pp=p; return true;//false;//NULL;
   }
 
@@ -568,18 +571,19 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
       t--;
     }
 
-    if(t->toState==p->endState) {
-      PARMAC_DEBUG_STEPS_PRINTF("=root toEnd\n");
-      p->trsnIt=t;
-      parmac_on_event_success(p,p->src,p->src,excurs,data);
+    // if(t->toState==p->endState) {
+    PARMAC_DEBUG_STEPS_PRINTF("=root toEnd\n");
+    p->trsnIt=t;
+    parmac_on_event_success(p,p->src,p->src,excurs,data);
 
-      *pp=p; return true;//NULL;
-    }
+    *pp=p; return true;//NULL;
+    // }
   }
 
   //===>trsnEnd, not startState
   if(p->trsnIt==p->trsnEnd &&
      p->state!=p->startState) {
+    //todo does excur need this? is this handled else where for excur?
 
     PARMAC_DEBUG_STEPS_PRINTF("=err no trsns\n");
 
@@ -633,6 +637,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
   if(p->trsnIt!=p->trsnEnd &&
      p->state==p->trsnIt->fromState &&
      p->trsnIt->machine) {
+    //todo is the trsn iterated somewhere else?
 
     //get next free mem
     struct parmac *p2=p;
