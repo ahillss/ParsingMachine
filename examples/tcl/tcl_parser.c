@@ -376,7 +376,7 @@ void main_machine(struct parmac *p,const char *src) {
     // {&state_word1, &state_sstr, NULL,       sstr_machine},
     // {&state_word1, &state_foo, NULL,       foo_machine},
 
-    {&state_word1, &state_spcn, parse_spc, NULL},
+    {&state_word1, &state_spcn, parse_spc, NULL},//disable to test excurs 'go to root exit'
     {&state_word1, &state_sep,  parse_sep, NULL},
     {&state_word1, &state_eol,  parse_eol, NULL},
     {&state_word1, &state_end,  NULL,      NULL},
@@ -532,7 +532,7 @@ void sstr_machine(struct parmac *p,const char *src) {
   static const struct parmac_transition trsns[]={
     {&state_start, &state_dollar, parse_dollar, NULL},
     {&state_start, &state_cmd,    NULL,         cmd_machine},
-    {&state_start, &state_char,   parse_schar,  NULL},
+    {&state_start, &state_char,   parse_any,  NULL},
 
     {&state_dollar, &state_vstr,  NULL, vstr_machine},
     {&state_dollar, &state_dchar, NULL, NULL},
@@ -540,22 +540,22 @@ void sstr_machine(struct parmac *p,const char *src) {
     {&state_dchar, &state_dollar, parse_dollar, NULL},
     {&state_dchar, &state_cmd,    NULL, cmd_machine},
     {&state_dchar, &state_end,    NULL, NULL},
-    {&state_dchar, &state_char,   parse_schar, NULL},
+    {&state_dchar, &state_char,   parse_any, NULL},
 
     {&state_vstr, &state_dollar, parse_dollar, NULL},
     {&state_vstr, &state_cmd,    NULL,         cmd_machine},
     {&state_vstr, &state_end,    NULL,         NULL},
-    {&state_vstr, &state_char,   parse_schar,  NULL},
+    {&state_vstr, &state_char,   parse_any,  NULL},
 
     {&state_cmd, &state_dollar, parse_dollar,NULL},
     {&state_cmd, &state_cmd,    NULL,        cmd_machine},
     {&state_cmd, &state_end,    NULL,        NULL},
-    {&state_cmd, &state_char,   parse_schar, NULL},
+    {&state_cmd, &state_char,   parse_any, NULL},
 
     {&state_char, &state_dollar, parse_dollar, NULL},
     {&state_char, &state_cmd,    NULL,         cmd_machine},
     {&state_char, &state_end,    NULL,         NULL},
-    {&state_char, &state_char,   parse_schar,  NULL}
+    {&state_char, &state_char,   parse_any,  NULL}
 
 
     // //

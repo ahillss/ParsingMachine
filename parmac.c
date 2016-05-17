@@ -119,18 +119,20 @@ struct parmac *parmac_excur_up(struct parmac *p) {
   }
 
   p=p->excurUp;
+  p->trsnIt++; //iterate excur up trsns
   return p;
 }
 
-struct parmac *parmac_excur_down(struct parmac *p) {
-  p=p->excurDown;
+//not used ...
+//struct parmac *parmac_excur_down(struct parmac *p) {
+//  p=p->excurDown;
+//
+ // if(p->prev) {
+ //   p->prev->next=p;
+ // }
 
-  if(p->prev) {
-    p->prev->next=p;
-  }
-
-  return p;
-}
+ // return p;
+//}
 
 struct parmac *parmac_push_excur(struct parmac *p) {
 #ifdef PARMAC_DEBUG_INSTANCES
@@ -425,6 +427,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
     PARMAC_DEBUG_STEPS_PRINTF("=no trsns, pop excur\n");
 
     p=parmac_pop_excur(p);
+
     *pp=p; return true;//p;
   }
 
@@ -450,6 +453,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
     if(t->toState==p->endState) {
       p=parmac_excur_up(p);
 
+
       PARMAC_DEBUG_STEPS_PRINTF("=bottom at end, go up excur_\n");
     } else {
       PARMAC_DEBUG_STEPS_PRINTF("=no trsns, pop excur2\n");
@@ -460,18 +464,19 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
     *pp=p; return true;//p;
   }
 
-  //===>excur up, toEnd, iterate trsn
-  if(excurs &&
-     p->excurDown &&
-     p->trsnIt!=p->trsnEnd &&
-     p->state==p->trsnIt->fromState &&
-     p->trsnIt->toState==p->endState) {
-    p->trsnIt++;
+  //===>excur up, toEnd, iterate trsn (already handled in excur up and  pop excur)
+  //if(excurs &&
+  //   p->excurDown && //
+	// p->prev && //added
+  //   p->trsnIt!=p->trsnEnd &&
+  //   p->state==p->trsnIt->fromState &&
+  //   p->trsnIt->toState==p->endState) {
+  //  p->trsnIt++;
+////what happens when a prev excur was popped... this wont be run
+ //   PARMAC_DEBUG_STEPS_PRINTF("=to end, iterate trsn\n");
 
-    PARMAC_DEBUG_STEPS_PRINTF("=to end, iterate trsn\n");
-
-    *pp=p; return true;//p;
-  }
+  //  *pp=p; return true;//p;
+ // }
 
   //===>excur up, trsnEnd, go up, not root
   if(excurs &&
@@ -494,33 +499,23 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
 
     PARMAC_DEBUG_STEPS_PRINTF("=bla to end\n");
 
-
 #ifndef PARMAC_DEBUG_STEPS
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 #endif
 
-    //.., on leave (is lastIt->toState==p->endState?)
-    parmac_on_state_leave(p,(p->trsnIt-1)->fromState,(p->trsnIt-1)->toState,data,"w");
+    //
+    parmac_on_state_leave(p,p->state,p->endState,data,"w");
 
     while(p) {
-      //p->endState  (hmm)
-      parmac_on_state_enter(p,NULL,p->endState,p->src,p->src,data,"m"); //wrong fromState
-
-      //p, p->endState,true,data;
+      parmac_on_state_enter(p,p->state,p->endState,p->src,p->src,data,"m");
       parmac_on_state_leave(p,p->endState,NULL,data,"n");
 
-      //
       if(p->prev) {
         struct parmac *p2=p->prev;
-
-        //p2,p2->trsnIt->toState,p2->src,p->src,p2->trsnIt->state!=p2->trsnIt->toState
         parmac_on_state_enter(p2,p2->trsnIt->fromState,p2->trsnIt->toState,p2->src,p->src,data,"o");
-
-        //p2, p2->trsnIt->toState,true
-        parmac_on_state_leave(p2,p2->trsnIt->toState,NULL,data,"p"); //wrong toState?
+        parmac_on_state_leave(p2,p2->trsnIt->toState,p2->endState,data,"p");
       }
 
-      //
       p=p->excurDown;
     }
 
@@ -529,7 +524,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
   }
 
   //===> successfully transitioned to end state at root, without excur
-  if(p->trsnIt!=p->trsnEnd &&
+  if(//p->trsnIt!=p->trsnEnd &&
      p->state==p->endState &&
      !p->prev) {
     PARMAC_DEBUG_STEPS_PRINTF("=at end a\n");
@@ -549,7 +544,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
   }
 
    //===> successfully transitioned to end state (only non excur reaches here?)
-  if(//!excurs &&
+  if(!excurs &&
      p->trsnIt!=p->trsnEnd &&
      p->state==p->endState &&
      p->prev) {
