@@ -7,8 +7,6 @@
 #define parse_sep tcl_parser_parse_sep
 #define parse_eol tcl_parser_parse_eol
 #define parse_spc tcl_parser_parse_spc
-#define parse_any tcl_parser_parse_any
-#define parse_hash tcl_parser_parse_hash
 #define parse_cmnt tcl_parser_parse_cmnt
 #define parse_lquote tcl_parser_parse_lquote
 #define parse_rquote tcl_parser_parse_rquote
@@ -27,8 +25,6 @@
 #define sstr_machine tcl_parser_sstr_machine
 #define cmd_machine tcl_parser_cmd_machine
 #define vstr_machine tcl_parser_vstr_machine
-
-
 
 void char_enter(const struct parmac_state *fromState,
                 const struct parmac_state *toState,
@@ -49,8 +45,8 @@ void char_enter(const struct parmac_state *fromState,
 }
 
 void sub_str_leave(const struct parmac_state *fromState,
-                const struct parmac_state *toState,
-                void *data) {
+                   const struct parmac_state *toState,
+                   void *data) {
   // struct tcl_parser *tp=(struct tcl_parser*)data;
   // bool dif=fromState!=toState;
 
@@ -60,8 +56,8 @@ void sub_str_leave(const struct parmac_state *fromState,
 }
 
 void var_leave(const struct parmac_state *fromState,
-                const struct parmac_state *toState,
-                void *data) {
+               const struct parmac_state *toState,
+               void *data) {
   // struct tcl_parser *tp=(struct tcl_parser*)data;
   // printf("var '%.*s'\n",tp->markEnd-tp->markStart,tp->markStart);
 }
@@ -79,36 +75,6 @@ void stmt_leave(const struct parmac_state *fromState,
   // struct tcl_parser *tp=(struct tcl_parser*)data;
   // printf("----\n");
 }
-
-// void test_enter(const char *srcStart,const char *srcEnd,bool dif,
-//                 const char **markStart,const char **markEnd) {
-
-//   if(dif) {
-//     // *markStart=srcStart;
-//   }
-
-//   // *markEnd=srcEnd;
-
-//   printf("test enter '%.*s' %i\n",srcEnd-srcStart,srcStart,dif);
-// }
-
-// void test_leave(const char *markStart,const char *markEnd, bool dif) {
-//   printf("test leave '%.*s'\n",markEnd-markStart,markStart);
-// }
-// void print_mark_chars(const char *markStart,const char *markEnd,bool dif) {
-//   if(dif) {
-//     printf("'%.*s'\n",markEnd-markStart,markStart);
-//   }
-// }
-
-// void print_mark(const char *start,const char *end,bool dif) {
-//   printf("%i '%.*s'\n",end-start,end-start,start);
-//   // if(start[0]=='\0') {
-//   //   printf("end\n");
-//   // } else {
-//   //   printf("%i '%s'\n",end-start,start);
-//   // }
-// }
 
 const char *parse_sep(const char *src,const char **name,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
@@ -151,30 +117,6 @@ const char *parse_spc(const char *src,const char **name,void *data) {
   return NULL;
 }
 
-const char *parse_any(const char *src,const char **name,void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="any";
-
-  if(src[0]!='\0') {
-    tp->errMsg=NULL;
-    return src+1;
-  }
-
-  return NULL;
-}
-
-const char *parse_hash(const char *src,const char **name,void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="hash";
-
-  if(src[0]=='#') {
-    tp->errMsg=NULL;
-    return src+1;
-  }
-
-  return NULL;
-}
-
 const char *parse_cmnt(const char *src,const char **name,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="cmnt";
@@ -189,8 +131,8 @@ const char *parse_cmnt(const char *src,const char **name,void *data) {
 
   src++;
 
-  while(src[0] != '\n' &&
-        (src[0] != '\r' && src[1] != '\n') &&
+  while((src[0] != '\r' && src[1] != '\n') &&
+        src[0] != '\n' &&
         src[0] != '\0') {
     src++;
   }
@@ -306,10 +248,6 @@ const char *parse_qchar(const char *src,const char **name,void *data) {
     return NULL;
   }
 
-  // if(tp->closingIt && tp->closingIt[0]==src[0]) {//==']'
-  //   return NULL;
-  // }
-
   tp->errMsg=NULL;
   return src+1;
 }
@@ -364,8 +302,7 @@ void cmd_machine(struct parmac *p,const char *src);
 void main_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
-    state_cmnt_head={"cmnt_head",NULL,NULL},
-    state_cmnt_tail={"cmnt_tail",NULL,NULL},
+    state_cmnt={"cmnt",NULL,NULL},
     state_word1={"word1",NULL,word_leave},
     state_wordn={"wordn",NULL,word_leave},
     state_spc1={"spc1",NULL,NULL},
@@ -375,20 +312,15 @@ void main_machine(struct parmac *p,const char *src) {
     state_end={"end",NULL,stmt_leave};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_cmnt_head, parse_hash, NULL},
-    {&state_start, &state_sep,   parse_sep,      NULL},
-    {&state_start, &state_eol,   parse_eol,      NULL},
-    {&state_start, &state_spc1,  parse_spc,      NULL},
-    {&state_start, &state_word1, NULL,           word_machine},
-    {&state_start, &state_end,   NULL,           NULL},
+    {&state_start, &state_cmnt,  parse_cmnt, NULL},
+    {&state_start, &state_sep,   parse_sep,  NULL},
+    {&state_start, &state_eol,   parse_eol,  NULL},
+    {&state_start, &state_spc1,  parse_spc,  NULL},
+    {&state_start, &state_word1, NULL,       word_machine},
+    {&state_start, &state_end,   NULL,       NULL},
 
-    {&state_cmnt_head, &state_eol,       parse_eol, NULL},
-    {&state_cmnt_head, &state_cmnt_tail, parse_any, NULL},
-    {&state_cmnt_head, &state_end,       NULL,      NULL},
-
-    {&state_cmnt_tail, &state_eol,       parse_eol, NULL},
-    {&state_cmnt_tail, &state_cmnt_tail, parse_any, NULL},
-    {&state_cmnt_tail, &state_end,       NULL,      NULL},
+    {&state_cmnt, &state_eol, parse_eol, NULL},
+    {&state_cmnt, &state_end, NULL,      NULL},
 
     {&state_word1, &state_spcn, parse_spc, NULL},
     {&state_word1, &state_sep,  parse_sep, NULL},
@@ -400,12 +332,11 @@ void main_machine(struct parmac *p,const char *src) {
     {&state_wordn, &state_eol,  parse_eol, NULL},
     {&state_wordn, &state_end,  NULL,      NULL},
 
-    {&state_spc1, &state_cmnt_head, parse_hash, NULL},
-    {&state_spc1, &state_spc1,      parse_spc,  NULL},
-    {&state_spc1, &state_sep,       parse_sep,  NULL},
-    {&state_spc1, &state_eol,       parse_eol,  NULL},
-    {&state_spc1, &state_word1,     NULL,       word_machine},
-    {&state_spc1, &state_end,       NULL,       NULL},
+    {&state_spc1, &state_spc1,  parse_spc,  NULL},
+    {&state_spc1, &state_sep,   parse_sep,  NULL},
+    {&state_spc1, &state_eol,   parse_eol,  NULL},
+    {&state_spc1, &state_word1, NULL,       word_machine},
+    {&state_spc1, &state_end,   NULL,       NULL},
 
     {&state_spcn, &state_spcn,  parse_spc, NULL},
     {&state_spcn, &state_sep,   parse_sep, NULL},
@@ -413,19 +344,19 @@ void main_machine(struct parmac *p,const char *src) {
     {&state_spcn, &state_wordn, NULL,      word_machine},
     {&state_spcn, &state_end,   NULL,      NULL},
 
-    {&state_sep, &state_cmnt_head, parse_hash, NULL},
-    {&state_sep, &state_spc1,      parse_spc,  NULL},
-    {&state_sep, &state_sep,       parse_sep,  NULL},
-    {&state_sep, &state_eol,       parse_eol,  NULL},
-    {&state_sep, &state_word1,     NULL,       word_machine},
-    {&state_sep, &state_end,       NULL,       NULL},
+    {&state_sep, &state_cmnt,  parse_cmnt, NULL},
+    {&state_sep, &state_spc1,  parse_spc,  NULL},
+    {&state_sep, &state_sep,   parse_sep,  NULL},
+    {&state_sep, &state_eol,   parse_eol,  NULL},
+    {&state_sep, &state_word1, NULL,       word_machine},
+    {&state_sep, &state_end,   NULL,       NULL},
 
-    {&state_eol, &state_cmnt_head, parse_hash, NULL},
-    {&state_eol, &state_spc1,      parse_spc,  NULL},
-    {&state_eol, &state_sep,       parse_sep,  NULL},
-    {&state_eol, &state_eol,       parse_eol,  NULL},
-    {&state_eol, &state_word1,     NULL,       word_machine},
-    {&state_eol, &state_end,       NULL,       NULL}
+    {&state_eol, &state_cmnt,  parse_cmnt, NULL},
+    {&state_eol, &state_spc1,  parse_spc,  NULL},
+    {&state_eol, &state_sep,   parse_sep,  NULL},
+    {&state_eol, &state_eol,   parse_eol,  NULL},
+    {&state_eol, &state_word1, NULL,       word_machine},
+    {&state_eol, &state_end,   NULL,       NULL}
   };
 
   parmac_set(p,"main",src,&state_start,&state_end,trsns, endof(trsns));
@@ -462,7 +393,7 @@ void bstr_machine(struct parmac *p,const char *src) {
     state_end={"end",NULL,NULL};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_lbrace, parse_lbrace,  NULL},
+    {&state_start, &state_lbrace, parse_lbrace, NULL},
 
     {&state_lbrace, &state_rbrace, parse_rbrace, NULL},
     {&state_lbrace, &state_bstr,   NULL,         bstr_machine},
@@ -585,9 +516,9 @@ void vstr_machine(struct parmac *p,const char *src) {
   static const struct parmac_transition trsns[]={
     {&state_start, &state_bstr, NULL,      bstr_machine},
     {&state_start, &state_idn,  parse_idn, NULL},
-    {&state_bstr, &state_end,   NULL,      NULL},
-    {&state_idn, &state_idn,    parse_idn, NULL},
-    {&state_idn, &state_end,    NULL,      NULL}
+    {&state_bstr,  &state_end,  NULL,      NULL},
+    {&state_idn,   &state_idn,  parse_idn, NULL},
+    {&state_idn,   &state_end,  NULL,      NULL}
   };
 
   parmac_set(p,"vstr",src,&state_start,&state_end,trsns,endof(trsns));
