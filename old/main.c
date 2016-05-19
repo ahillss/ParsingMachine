@@ -31,7 +31,6 @@ int main() {
   bool err;
   struct parmac stk[2048],*p;
   struct tcl_parser tp;
-  char closings[256];
 
   p=stk;
   tp.errMsg=NULL;
@@ -41,13 +40,9 @@ int main() {
   tp.row=0;
   tp.col=0;
 
-  tp.closingStart=closings;
-  tp.closingEnd=endof(closings);
-  tp.closingIt=NULL;
-
   tcl_parser_main_machine(p,txt);
 
-  while(parmac_run(&p,&tp,&err)) {
+  while(parmac_run(&p,&tp,&err,true)) {
   }
 
   printf("\n");

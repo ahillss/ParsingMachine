@@ -15,6 +15,7 @@
 
 #include "../../parmac.h"
 
+#define endof(x) (x+sizeof(x)/sizeof(*x))
 
 struct tcl_syntax_stmt;
 
@@ -55,6 +56,10 @@ struct tcl_parser {
   const char *errMsg;
   const char *markStart,*markEnd;
   int pos,row,col;
+  int sqrbCount;
+  char *closingStart,*closingEnd,*closingIt;
+  // char closings[256];
+  // int closingInd;
 };
 
 #ifdef __cplusplus

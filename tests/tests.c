@@ -199,7 +199,7 @@ int main() {
   d.markStart=src;
   d.markEnd=src;
 
-  while(parmac_run(&p,&d,&err,false)) {
+  while(parmac_run(&p,&d,&err)) {
 
   }
 
