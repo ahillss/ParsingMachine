@@ -35,3 +35,7 @@ Excursions are used when you are in a sub machine which is at a transition to th
 The algorithm design has been completed, but has not been fully implemented or tested yet.
 
 Also planning on making excursions optional since they are about 50% of the algorithm and aren't necessary for simple parsers.
+
+####TODO:
+* maybe instead of the prev/next pointers, store integers which when added to the root machine's pointer will return the right pointer, so that if the memory is reallocated, the prevs/nexts/etc will never be incorrect
+* when an excursion is successful a cavity is formed in the preallocated memory block, make sure to move the current machine to the start of that cavity
