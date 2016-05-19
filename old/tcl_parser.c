@@ -10,7 +10,7 @@
 #define parse_spc tcl_parser_parse_spc
 #define parse_any tcl_parser_parse_any
 #define parse_hash tcl_parser_parse_hash
-#define parse_cmnt tcl_parser_parse_cmnt
+
 #define parse_lquote tcl_parser_parse_lquote
 #define parse_rquote tcl_parser_parse_rquote
 #define parse_lsqr tcl_parser_parse_lsqr
@@ -122,30 +122,6 @@ const char *parse_hash(const char *src,const char **name,void *data) {
   }
 
   return NULL;
-}
-
-const char *parse_cmnt(const char *src,const char **name,void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="cmnt";
-
-  while(src[0]==' ' || src[0]=='\t') {
-    src++;
-  }
-
-  if(src[0] != '#') {
-    return NULL;
-  }
-
-  src++;
-
-  while(src[0] != '\n' &&
-        (src[0] != '\r' && src[1] != '\n') &&
-        src[0] != '\0') {
-    src++;
-  }
-
-  tp->errMsg=NULL;
-  return src;
 }
 
 const char *parse_lquote(const char *src,const char **name,void *data) {
