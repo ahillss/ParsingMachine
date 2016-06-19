@@ -42,7 +42,7 @@ int main() {
 
   tcl_parser_main_machine(p,txt);
 
-  while(parmac_run(&p,&tp,&err,true)) {
+  while(parmac_run(&p,&tp,&err)) {
   }
 
   printf("\n");

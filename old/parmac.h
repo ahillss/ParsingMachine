@@ -62,7 +62,7 @@ extern "C" {
                             const struct parmac_transition *startTrsn,
                             const struct parmac_transition *endTrsn);
 
-  bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs);
+  bool parmac_run(struct parmac **pp,void *data,bool *err);
 #ifdef __cplusplus
 }
 #endif

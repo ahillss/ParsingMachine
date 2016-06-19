@@ -10,7 +10,7 @@
 #define PARMAC_DEBUG_STEPS3
 
 // #define PARMAC_DEBUG_STEPS
-#define PARMAC_DEBUG_CALLBACKS
+// #define PARMAC_DEBUG_CALLBACKS
 // #define PARMAC_DEBUG_INSTANCES
 
 struct parmac;

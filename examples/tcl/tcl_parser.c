@@ -26,55 +26,223 @@
 #define cmd_machine tcl_parser_cmd_machine
 #define vstr_machine tcl_parser_vstr_machine
 
+void printDepth(int d) {
+  if(d>0) {
+    printf("-");
+    printDepth(d-1);
+  }
+}
+
+
+void push_str(struct tcl_parser *tp) {
+  size_t strLen=tp->markEnd-tp->markStart;
+  struct tcl_syntax_sub *sub;
+
+  sub=(struct tcl_syntax_sub*)malloc(sizeof(struct tcl_syntax_sub));
+
+  sub->type=tcl_syntax_sub_str;
+  sub->valStmt=NULL;
+  sub->next=NULL;
+  sub->valStr=(char*)malloc(strLen+1);
+
+  memcpy(sub->valStr,tp->markStart,strLen);
+  sub->valStr[strLen]='\0';
+
+  //
+  struct tcl_syntax_build *build;
+  build=tp->buildStk;
+
+  if(build->firstSub) {
+    build->lastSub->next=sub;
+  } else {
+    build->firstSub=sub;
+  }
+
+  build->lastSub=sub;
+}
+
+void push_var(struct tcl_parser *tp) {
+  size_t strLen=tp->markEnd-tp->markStart;
+  struct tcl_syntax_sub *sub;
+
+  sub=(struct tcl_syntax_sub*)malloc(sizeof(struct tcl_syntax_sub));
+
+  sub->type=tcl_syntax_sub_var;
+  sub->valStmt=NULL;
+  sub->next=NULL;
+  sub->valStr=(char*)malloc(strLen+1);
+
+  memcpy(sub->valStr,tp->markStart,strLen);
+  sub->valStr[strLen]='\0';
+
+  // if(tp->firstSub) {
+  //   tp->lastSub->next=sub;
+  // } else {
+  //   tp->firstSub=sub;
+  // }
+
+  // tp->lastSub=sub;
+}
+
+void push_word(struct tcl_parser *tp) {
+  struct tcl_syntax_word *word;
+
+  word=(struct tcl_syntax_word*)malloc(sizeof(struct tcl_syntax_word));
+
+  // word->subs=tp->firstSub;
+  word->next=NULL;
+
+  // tp->firstSub=NULL;
+  // tp->lastSub=NULL;
+
+  // if(tp->firstWord) {
+  //   tp->lastWord->next=word;
+  // } else {
+  //   tp->firstWord=word;
+  // }
+
+  // tp->lastWord=word;
+}
+
+void push_stmt(struct tcl_parser *tp) {
+
+  // if(tp->firstWord) {
+    struct tcl_syntax_stmt *stmt;
+
+    stmt=(struct tcl_syntax_stmt*)malloc(sizeof(struct tcl_syntax_stmt));
+
+    // stmt->words=tp->firstWord;
+    stmt->next=NULL;
+
+  //   tp->firstWord=NULL;
+  //   tp->lastWord=NULL;
+
+  //   if(tp->firstStmt) {
+  //     tp->lastStmt->next=stmt;
+  //   } else {
+  //     tp->firstStmt=stmt;
+  //   }
+
+  //   tp->lastStmt=stmt;
+  // }
+}
+
+void push_build(struct tcl_parser *tp) {
+
+  tp->recurseDepth++;
+
+  struct tcl_syntax_build *build;
+  build=(struct tcl_syntax_build*)malloc(sizeof(struct tcl_syntax_build));
+
+  build->firstStmt=NULL;
+  build->lastStmt=NULL;
+  build->firstWord=NULL;
+  build->lastWord=NULL;
+  build->firstSub=NULL;
+  build->lastSub=NULL;
+  build->next=tp->buildStk;
+}
+
+void pop_build(struct tcl_parser *tp) {
+  tp->recurseDepth--;
+
+  // if(tp->buildStk->next) {
+  //   tp->buildStk->next->lastSub->valStmt=tp->buildStk->firstStmt;
+  // } else {
+  //   tp->rootStmt=tp->buildStk->firstStmt;
+  // }
+
+  // struct tcl_syntax_build *tmp;
+  // tmp=tp->buildStk;
+  // tp->buildStk=tmp->next;
+  // free(tmp);
+}
+
+////////////////////////////////////
+
 void char_enter(const struct parmac_state *fromState,
                 const struct parmac_state *toState,
                 const char *srcStart,const char *srcEnd,
                 void *data) {
 
-  // bool dif=fromState!=toState;
-  // struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  // if(dif) {
-  //   tp->markStart=srcStart;
-  //   //   printf("str '");
-  // }
+  struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  // tp->markEnd=srcEnd;
+  if(fromState!=toState) {
+    tp->markStart=srcStart;
+  }
 
-  // // printf("%.*s",srcEnd-srcStart,srcStart);
+  tp->markEnd=srcEnd;
 }
 
 void sub_str_leave(const struct parmac_state *fromState,
                    const struct parmac_state *toState,
                    void *data) {
-  // struct tcl_parser *tp=(struct tcl_parser*)data;
-  // bool dif=fromState!=toState;
+  struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  // if(dif) {
-  //   printf("sub_str '%.*s'\n",tp->markEnd-tp->markStart,tp->markStart);
-  // }
+  if(fromState!=toState) {
+    printDepth(tp->recurseDepth+1);
+
+    printf("sub_str '%.*s'\n",tp->markEnd-tp->markStart,tp->markStart);
+
+  }
 }
 
 void var_leave(const struct parmac_state *fromState,
                const struct parmac_state *toState,
                void *data) {
-  // struct tcl_parser *tp=(struct tcl_parser*)data;
-  // printf("var '%.*s'\n",tp->markEnd-tp->markStart,tp->markStart);
+  struct tcl_parser *tp=(struct tcl_parser*)data;
+    printDepth(tp->recurseDepth+1);
+  printf("var '%.*s'\n",tp->markEnd-tp->markStart,tp->markStart);
+
 }
 
 void word_leave(const struct parmac_state *fromState,
                 const struct parmac_state *toState,
                 void *data) {
-  // struct tcl_parser *tp=(struct tcl_parser*)data;
-  // printf("--\n");
+  struct tcl_parser *tp=(struct tcl_parser*)data;
+  printf(":");
+  printDepth(tp->recurseDepth-1);
+  printf("word\n");
+
+
 }
 
 void stmt_leave(const struct parmac_state *fromState,
                 const struct parmac_state *toState,
                 void *data) {
-  // struct tcl_parser *tp=(struct tcl_parser*)data;
-  // printf("----\n");
+  struct tcl_parser *tp=(struct tcl_parser*)data;
+  printf(":");
+  printDepth(tp->recurseDepth-1);
+  printf("stmt\n");
+
+
 }
+
+
+
+void main_enter(const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                const char *srcStart,const char *srcEnd,
+                void *data) {
+
+
+  struct tcl_parser *tp=(struct tcl_parser*)data;
+  push_build(tp);
+}
+
+void main_leave(const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                void *data) {
+
+  stmt_leave(fromState,toState,data);
+
+  struct tcl_parser *tp=(struct tcl_parser*)data;
+
+
+}
+
+///////////////////////////////////////////////
 
 const char *parse_sep(const char *src,const char **name,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
@@ -116,6 +284,19 @@ const char *parse_spc(const char *src,const char **name,void *data) {
 
   return NULL;
 }
+
+const char *parse_esc_eol(const char *src,const char **name,void *data) {
+  struct tcl_parser *tp=(struct tcl_parser*)data;
+  *name="spc";
+
+  if(src[0]=='\\' || src[1]=='\n') {
+    tp->errMsg=NULL;
+    return src+2;
+  }
+
+  return NULL;
+}
+
 
 const char *parse_cmnt(const char *src,const char **name,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
@@ -292,6 +473,7 @@ const char *parse_idn(const char *src,const char **name,void *data) {
 }
 
 void main_machine(struct parmac *p,const char *src);
+void stmt_machine(struct parmac *p,const char *src);
 void word_machine(struct parmac *p,const char *src);
 void bstr_machine(struct parmac *p,const char *src);
 void qstr_machine(struct parmac *p,const char *src);
@@ -301,62 +483,49 @@ void cmd_machine(struct parmac *p,const char *src);
 
 void main_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
+    state_start={"start",main_enter,NULL},
     state_cmnt={"cmnt",NULL,NULL},
-    state_word1={"word1",NULL,word_leave},
-    state_wordn={"wordn",NULL,word_leave},
-    state_spc1={"spc1",NULL,NULL},
-    state_spcn={"spcn",NULL,NULL},
+    state_word={"word",NULL,word_leave},
+    state_spc={"spc",NULL,NULL},
     state_sep={"sep",NULL,stmt_leave},
     state_eol={"eol",NULL,stmt_leave},
-    state_end={"end",NULL,stmt_leave};
+    state_end={"end",NULL,main_leave};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_cmnt,  parse_cmnt, NULL},
-    {&state_start, &state_sep,   parse_sep,  NULL},
-    {&state_start, &state_eol,   parse_eol,  NULL},
-    {&state_start, &state_spc1,  parse_spc,  NULL},
-    {&state_start, &state_word1, NULL,       word_machine},
-    {&state_start, &state_end,   NULL,       NULL},
+    {&state_start, &state_cmnt, parse_cmnt, NULL},
+    {&state_start, &state_sep,  parse_sep,  NULL},
+    {&state_start, &state_eol,  parse_eol,  NULL},
+    {&state_start, &state_spc,  parse_spc,  NULL},
+    {&state_start, &state_word, NULL,       word_machine},
+    {&state_start, &state_end,  NULL,       NULL},
 
     {&state_cmnt, &state_eol, parse_eol, NULL},
     {&state_cmnt, &state_end, NULL,      NULL},
 
-    {&state_word1, &state_spcn, parse_spc, NULL},
-    {&state_word1, &state_sep,  parse_sep, NULL},
-    {&state_word1, &state_eol,  parse_eol, NULL},
-    {&state_word1, &state_end,  NULL,      NULL},
+    {&state_word, &state_spc, parse_spc, NULL},
+    {&state_word, &state_sep, parse_sep, NULL},
+    {&state_word, &state_eol, parse_eol, NULL},
+    {&state_word, &state_end, NULL,      NULL},
 
-    {&state_wordn, &state_spcn, parse_spc, NULL},
-    {&state_wordn, &state_sep,  parse_sep, NULL},
-    {&state_wordn, &state_eol,  parse_eol, NULL},
-    {&state_wordn, &state_end,  NULL,      NULL},
+    {&state_spc, &state_spc,  parse_spc, NULL},
+    {&state_spc, &state_sep,  parse_sep, NULL},
+    {&state_spc, &state_eol,  parse_eol, NULL},
+    {&state_spc, &state_word, NULL,      word_machine},
+    {&state_spc, &state_end,  NULL,      NULL},
 
-    {&state_spc1, &state_spc1,  parse_spc,  NULL},
-    {&state_spc1, &state_sep,   parse_sep,  NULL},
-    {&state_spc1, &state_eol,   parse_eol,  NULL},
-    {&state_spc1, &state_word1, NULL,       word_machine},
-    {&state_spc1, &state_end,   NULL,       NULL},
+    {&state_sep, &state_cmnt, parse_cmnt, NULL},
+    {&state_sep, &state_spc,  parse_spc,  NULL},
+    {&state_sep, &state_sep,  parse_sep,  NULL},
+    {&state_sep, &state_eol,  parse_eol,  NULL},
+    {&state_sep, &state_word, NULL,       word_machine},
+    {&state_sep, &state_end,  NULL,       NULL},
 
-    {&state_spcn, &state_spcn,  parse_spc, NULL},
-    {&state_spcn, &state_sep,   parse_sep, NULL},
-    {&state_spcn, &state_eol,   parse_eol, NULL},
-    {&state_spcn, &state_wordn, NULL,      word_machine},
-    {&state_spcn, &state_end,   NULL,      NULL},
-
-    {&state_sep, &state_cmnt,  parse_cmnt, NULL},
-    {&state_sep, &state_spc1,  parse_spc,  NULL},
-    {&state_sep, &state_sep,   parse_sep,  NULL},
-    {&state_sep, &state_eol,   parse_eol,  NULL},
-    {&state_sep, &state_word1, NULL,       word_machine},
-    {&state_sep, &state_end,   NULL,       NULL},
-
-    {&state_eol, &state_cmnt,  parse_cmnt, NULL},
-    {&state_eol, &state_spc1,  parse_spc,  NULL},
-    {&state_eol, &state_sep,   parse_sep,  NULL},
-    {&state_eol, &state_eol,   parse_eol,  NULL},
-    {&state_eol, &state_word1, NULL,       word_machine},
-    {&state_eol, &state_end,   NULL,       NULL}
+    {&state_eol, &state_cmnt, parse_cmnt, NULL},
+    {&state_eol, &state_spc,  parse_spc,  NULL},
+    {&state_eol, &state_sep,  parse_sep,  NULL},
+    {&state_eol, &state_eol,  parse_eol,  NULL},
+    {&state_eol, &state_word, NULL,       word_machine},
+    {&state_eol, &state_end,  NULL,       NULL}
   };
 
   parmac_set(p,"main",src,&state_start,&state_end,trsns, endof(trsns));

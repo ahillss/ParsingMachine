@@ -127,11 +127,11 @@ struct parmac *parmac_excur_up(struct parmac *p) {
 //struct parmac *parmac_excur_down(struct parmac *p) {
 //  p=p->excurDown;
 //
- // if(p->prev) {
- //   p->prev->next=p;
- // }
+// if(p->prev) {
+//   p->prev->next=p;
+// }
 
- // return p;
+// return p;
 //}
 
 struct parmac *parmac_push_excur(struct parmac *p) {
@@ -270,40 +270,40 @@ void parmac_on_event_success_excurs(struct parmac *p,void *data) {
 void parmac_on_event_success(struct parmac *p,
                              const char *srcStart,
                              const char *srcEnd,
-                             bool excurs,void *data) {
+                             void *data) {
 
 #ifndef PARMAC_DEBUG_STEPS
   PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 #endif
 
   //
-  if(excurs) {
-    //section B000
-    if(p->excurUp) {
-      parmac_on_event_success_excurs(p,data);
+  // if(excurs) {
+  //section B000
+  if(p->excurUp) {
+    parmac_on_event_success_excurs(p,data);
+  }
+
+  //section B020
+  if(!p->excurUp) {
+    struct parmac *p2=p;
+
+    //
+    while(p2->prev && !p2->excurUp) {
+      p2=p2->prev;
     }
 
-    //section B020
-    if(!p->excurUp) {
-      struct parmac *p2=p;
+    //
+    if(p2->excurUp) {
+      parmac_on_event_success_excurs(p2,data);
 
       //
-      while(p2->prev && !p2->excurUp) {
-        p2=p2->prev;
-      }
+      struct parmac *p3=p2->excurUp->prev;
+      //p2,p2->state,p3->src,p2->src,p3->trsnIt->state!=p3->trsnIt->toState (hmm)
+      parmac_on_state_enter(p2,p3->trsnIt->fromState,p2->state,p3->src,p2->src,data,"k");
 
-      //
-      if(p2->excurUp) {
-        parmac_on_event_success_excurs(p2,data);
-
-        //
-        struct parmac *p3=p2->excurUp->prev;
-        //p2,p2->state,p3->src,p2->src,p3->trsnIt->state!=p3->trsnIt->toState (hmm)
-        parmac_on_state_enter(p2,p3->trsnIt->fromState,p2->state,p3->src,p2->src,data,"k");
-
-      }
     }
   }
+  // }
 
   //section B040 : prev machines start states
   if(p->trsnIt->fromState==p->startState) {
@@ -334,13 +334,13 @@ void parmac_on_event_success(struct parmac *p,
     parmac_on_state_enter(p,NULL,p->trsnIt->fromState,p->src,p->src,data,"c");
   }
 
-  if(excurs) {
-    //section B080 : last state, on enter (to p->state)
-    if(p->excurUp) {
-      struct parmac *p2=p->excurUp->prev;
-      parmac_on_state_enter(p,p2->trsnIt->fromState,p2->trsnIt->toState,p2->src,p->src,data,"j");
-    }
+  // if(excurs) {
+  //section B080 : last state, on enter (to p->state)
+  if(p->excurUp) {
+    struct parmac *p2=p->excurUp->prev;
+    parmac_on_state_enter(p,p2->trsnIt->fromState,p2->trsnIt->toState,p2->src,p->src,data,"j");
   }
+  // }
 
   //section B100 : last state, on leave
   parmac_on_state_leave(p,p->trsnIt->fromState,p->trsnIt->toState,data,"b");
@@ -353,10 +353,10 @@ void parmac_on_event_success(struct parmac *p,
   p->src=srcEnd;
   p->trsnIt=p->trsnStart;
 
-  if(excurs) {
-    p->excurUp=NULL;
-    p->excurDown=NULL;
-  }
+  // if(excurs) {
+  p->excurUp=NULL;
+  p->excurDown=NULL;
+  // }
 
   PARMAC_DEBUG_STEPS_PRINTF("==aaa\n");
 
@@ -366,7 +366,7 @@ void parmac_on_event_success(struct parmac *p,
 #endif
 }
 
-bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
+bool parmac_run(struct parmac **pp,void *data,bool *err) {
   *err=false;
   struct parmac *p=*pp;
 
@@ -406,7 +406,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
 #endif
 
   //===>excur down, toEnd, not root, push excur
-  if(excurs &&
+  if(//excurs &&
      !p->excurDown &&
      p->prev &&
      p->trsnIt!=p->trsnEnd &&
@@ -419,7 +419,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
   }
 
   //===>excur down, trsnEnd, pop excur, not root
-  if(excurs &&
+  if(//excurs &&
      p->prev && //added
      p->excurUp &&
      !p->excurDown &&
@@ -433,7 +433,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
 
   //===>excur down, at root, go up or pop (todofix)
   //
-  if(excurs &&
+  if(//excurs &&
      p->excurUp &&
      !p->prev && !p->excurDown &&
      p->trsnIt==p->trsnEnd //&&
@@ -467,19 +467,19 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
   //===>excur up, toEnd, iterate trsn (already handled in excur up and  pop excur)
   //if(excurs &&
   //   p->excurDown && //
-	// p->prev && //added
+  // p->prev && //added
   //   p->trsnIt!=p->trsnEnd &&
   //   p->state==p->trsnIt->fromState &&
   //   p->trsnIt->toState==p->endState) {
   //  p->trsnIt++;
-////what happens when a prev excur was popped... this wont be run
- //   PARMAC_DEBUG_STEPS_PRINTF("=to end, iterate trsn\n");
+  ////what happens when a prev excur was popped... this wont be run
+  //   PARMAC_DEBUG_STEPS_PRINTF("=to end, iterate trsn\n");
 
   //  *pp=p; return true;//p;
- // }
+  // }
 
   //===>excur up, trsnEnd, go up, not root
-  if(excurs &&
+  if(//excurs &&
      p->prev && //added
      p->excurUp &&
      p->excurDown &&
@@ -492,7 +492,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
   }
 
   //===>excur up, top, trsnEnd, go root exit
-  if(excurs &&
+  if(//excurs &&
      !p->excurUp &&
      p->excurDown &&
      p->trsnIt==p->trsnEnd) {
@@ -543,40 +543,40 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
     *pp=p; return false;
   }
 
-   //===> successfully transitioned to end state (only non excur reaches here?)
-  if(!excurs &&
-     p->trsnIt!=p->trsnEnd &&
-     p->state==p->endState &&
-     p->prev) {
-    PARMAC_DEBUG_STEPS_PRINTF("=at end b\n");
+  //===> successfully transitioned to end state (only non excur reaches here?)
+  //   if(!excurs &&
+  //      p->trsnIt!=p->trsnEnd &&
+  //      p->state==p->endState &&
+  //      p->prev) {
+  //     PARMAC_DEBUG_STEPS_PRINTF("=at end b\n");
 
-#ifndef PARMAC_DEBUG_STEPS
-    PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
-#endif
+  // #ifndef PARMAC_DEBUG_STEPS
+  //     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
+  // #endif
 
-    //end state, on leave
-    parmac_on_state_leave(p,p->endState,NULL,data,"X");
+  //     //end state, on leave
+  //     parmac_on_state_leave(p,p->endState,NULL,data,"X");
 
-    //
-    const char *src2=p->src;
+  //     //
+  //     const char *src2=p->src;
 
-    //pop machine
-    p=parmac_pop(p);
+  //     //pop machine
+  //     p=parmac_pop(p);
 
-    //last state, on enter
-    parmac_on_state_enter(p,p->trsnIt->fromState,p->trsnIt->toState,p->src,src2,data,"J");
+  //     //last state, on enter
+  //     parmac_on_state_enter(p,p->trsnIt->fromState,p->trsnIt->toState,p->src,src2,data,"J");
 
-    //change state
-    p->state=p->trsnIt->toState;
-    p->src=src2;
-    p->trsnIt=p->trsnStart;
+  //     //change state
+  //     p->state=p->trsnIt->toState;
+  //     p->src=src2;
+  //     p->trsnIt=p->trsnStart;
 
-    //
-    *pp=p; return true;//p;
-  }
+  //     //
+  //     *pp=p; return true;//p;
+  //   }
 
   //===>root, trsnEnd, not startState
-  if(excurs &&
+  if(//excurs &&
      p->trsnIt==p->trsnEnd &&
      p->state!=p->startState &&
      !p->prev) {
@@ -591,7 +591,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
     // if(t->toState==p->endState) {
     PARMAC_DEBUG_STEPS_PRINTF("=root toEndo\n");
     p->trsnIt=t;
-    parmac_on_event_success(p,p->src,p->src,excurs,data);
+    parmac_on_event_success(p,p->src,p->src,data);
 
     *pp=p; return true;//NULL;
     // }
@@ -636,7 +636,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
   }
 
   //======> root, toEndState
-  if(excurs &&
+  if(//excurs &&
      p->trsnIt!=p->trsnEnd &&
      p->state==p->trsnIt->fromState &&
      p->trsnIt->toState==p->endState &&
@@ -650,7 +650,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
     *pp=p; return true;//p;
   }
 
- //======> is a machine
+  //======> is a machine
   if(p->trsnIt!=p->trsnEnd &&
      p->state==p->trsnIt->fromState &&
      p->trsnIt->machine) {
@@ -692,15 +692,15 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
       p->trsnIt++;
     } else {
       //event success
-// #ifdef PARMAC_DEBUG_STEPS
-//   parmac_print_parse_pos(p,true);
-// #endif
+      // #ifdef PARMAC_DEBUG_STEPS
+      //   parmac_print_parse_pos(p,true);
+      // #endif
 
       //
       PARMAC_DEBUG_STEPS_PRINTF("=event success\n");
 
       //
-      parmac_on_event_success(p,p->src,eventRet,excurs,data);
+      parmac_on_event_success(p,p->src,eventRet,data);
     }
 
     //
@@ -717,7 +717,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err,bool excurs) {
     PARMAC_DEBUG_STEPS_PRINTF("=no machine or event\n");
 
     //
-    parmac_on_event_success(p,p->src,p->src,excurs,data);
+    parmac_on_event_success(p,p->src,p->src,data);
 
     //
 

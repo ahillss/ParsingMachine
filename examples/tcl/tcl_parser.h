@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #endif
 
+#include <string.h>
+#include <stdlib.h>
+
 // #define TCL_DEBUG_PARSE_FSM 1
 
 #define TCL_USE_VARS
@@ -42,24 +45,21 @@ struct tcl_syntax_stmt {
   struct tcl_syntax_stmt *next;
 };
 
-
-struct tcl_parser_syntax_builder {
-  struct tcl_syntax_stmt *rootStmt, *lastStmt;
-  struct tcl_syntax_word *rootWord, *lastWord;
-  struct tcl_syntax_sub *rootSub, *lastSub;
-  const char *markStart,*markEnd;
+struct tcl_syntax_build {
+  struct tcl_syntax_stmt *firstStmt, *lastStmt;
+  struct tcl_syntax_word *firstWord, *lastWord;
+  struct tcl_syntax_sub *firstSub, *lastSub;
+  struct tcl_syntax_build *next;
 };
-
-// struct tcl_parser_syntax_builder *builder
 
 struct tcl_parser {
   const char *errMsg;
   const char *markStart,*markEnd;
   int pos,row,col;
-  int sqrbCount;
   char *closingStart,*closingEnd,*closingIt;
-  // char closings[256];
-  // int closingInd;
+  struct tcl_syntax_build *buildStk;
+  struct tcl_syntax_stmt *rootStmt;
+  int recurseDepth;
 };
 
 #ifdef __cplusplus
