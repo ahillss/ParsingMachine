@@ -41,8 +41,8 @@ struct parmac *parmac_set(struct parmac *p,const char *name,const char *src,
   p->trsnIt=startTrsn;
   p->trsnEnd=endTrsn;
 
-  p->prev=NULL;
-  p->next=NULL;
+  p->prev=false;// p->prev=NULL;
+  p->next=false;//p->next=NULL;
 
   p->name=name;
 
@@ -57,15 +57,15 @@ struct parmac *parmac_pop(struct parmac *p) {
 #endif
 
   if(p->prev) {
-    p->prev->next=NULL;
+    (p-1)->next=false;//p->prev->next=NULL;
   }
 
-  return p->prev;
+  return p-1;//p->prev;
 }
 
 void parmac_print_parse_pos(struct parmac *p,bool end) {
   if(p->prev) {
-    parmac_print_parse_pos(p->prev,false);
+    parmac_print_parse_pos(p-1,false); //p->prev
   } else {
     printf("\n");
   }
@@ -77,14 +77,14 @@ void parmac_print_parse_pos(struct parmac *p,bool end) {
 
   while(tmp&&tmp->prev) {
     prevCount++;
-    tmp=tmp->prev;
+    tmp--;//tmp=tmp->prev;
   }
 
   tmp=p;
 
   while(tmp&&tmp->next) {
     nextCount++;
-    tmp=tmp->next;
+    tmp++;//tmp=tmp->next;
   }
 
   printf("/ %s : %s (%s -> %s) (p:%i n:%i)",p->name,
@@ -167,7 +167,7 @@ void parmac_on_event_success(struct parmac *p,
 
     //to bottom
     while(p2->prev && p2->trsnIt->fromState==p2->startState) {
-      p2=p2->prev;
+      p2--;//p2=p2->prev;
     }
 
     //to top
@@ -181,7 +181,7 @@ void parmac_on_event_success(struct parmac *p,
       parmac_on_state_leave(p2,p2->trsnIt->fromState,p2->trsnIt->toState,data,"d");
 
       //
-      p2=p2->next;
+      p2++;//p2=p2->next;
     }
   }
 
@@ -349,8 +349,8 @@ bool parmac_run(struct parmac **pp,void *data,bool *err) {
 
     //
     p->trsnIt->machine(p2,p->src);
-    p2->prev=p;
-    p->next=p2;
+    p2->prev=true;//p2->prev=p;
+    p->next=true;//p2;
 
     PARMAC_DEBUG_STEPS_PRINTF("=trying machine '%s'\n",p2->name);
 
