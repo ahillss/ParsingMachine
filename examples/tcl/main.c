@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stddef.h>
 
+
+
 char *string_from_file(const char *fn) {
   FILE *file;
   unsigned int dataSize;
@@ -56,11 +58,16 @@ void printSyntax(struct tcl_syntax_stmt *stmt,int depth) {
 int main() {
   char *txt=string_from_file("test.tcl");
 
+  if (!txt) {
+	  return 1;
+  }
+
   bool err;
-  struct parmac stk[2048],*p;
+  struct parmac *stk,*p;
   struct tcl_parser tp;
   char closings[256];
-
+  int stkNum=2;
+  stk=(struct parmac*)malloc(sizeof(struct parmac)*stkNum);
   p=stk;
 
   tp.errMsg=NULL;
@@ -80,12 +87,17 @@ int main() {
 
   tp.buildStk=NULL;
   tp.rootStmt=NULL;
-  
+
 
   //
   tcl_parser_main_machine(p,txt);
+  unsigned int depth=0;
 
-  while(parmac_run(&p,&tp,&err)) {
+  while(parmac_run(stk,&depth,&tp,&err)) {
+    if(depth+1==stkNum) {
+      stkNum*=2;
+      stk=(struct parmac*)realloc(stk,sizeof(struct parmac)*stkNum);
+    }
   }
 
   printf("\n");
@@ -104,5 +116,10 @@ int main() {
 
 
   printf("done %p.\n",p);
+
+
+#ifdef _MSC_VER
+  system("pause");
+#endif
   return 0;
 }

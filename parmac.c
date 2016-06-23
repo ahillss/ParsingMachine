@@ -50,17 +50,21 @@ struct parmac *parmac_set(struct parmac *p,const char *name,const char *src,
 
 }
 
-struct parmac *parmac_pop(struct parmac *p) {
+struct parmac *parmac_pop(struct parmac *stk,unsigned int *depth) {
 #ifdef PARMAC_DEBUG_INSTANCES
   parmac_debug_count++;
   printf("pop_inst_p=%i\n",parmac_debug_count);
 #endif
 
+  struct parmac *p=&stk[*depth];
+
   if(p->prev) {
     (p-1)->next=false;//p->prev->next=NULL;
   }
 
-  return p-1;//p->prev;
+  //return depth-1;//p-1;//p->prev;
+  (*depth)--;
+  return p-1;
 }
 
 void parmac_print_parse_pos(struct parmac *p,bool end) {
@@ -211,9 +215,9 @@ void parmac_on_event_success(struct parmac *p,
 #endif
 }
 
-bool parmac_run(struct parmac **pp,void *data,bool *err) {
+bool parmac_run(struct parmac *stk,unsigned int *depth,void *data,bool *err) {
   *err=false;
-  struct parmac *p=*pp;
+  struct parmac *p=&stk[*depth];//*pp;
 
   //===> on empty stack, stop and do nothing
   if(!p) {
@@ -230,7 +234,8 @@ bool parmac_run(struct parmac **pp,void *data,bool *err) {
 
     p->trsnIt++;
 
-    *pp=p; return true;//p;
+    //*pp=p;
+    return true;//p;
   }
 
   //
@@ -260,10 +265,11 @@ bool parmac_run(struct parmac **pp,void *data,bool *err) {
     parmac_on_state_leave(p,p->endState,NULL,data,"x");
 
     //pop machine
-    p=parmac_pop(p);
+    p=parmac_pop(stk,depth);//p=parmac_pop(p);
 
     //
-    *pp=p; return false;
+    //*pp=p;
+    return false;
   }
 
    //===> successfully transitioned to end state (only non excur reaches here?)
@@ -283,7 +289,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err) {
     const char *src2=p->src;
 
     //pop machine
-    p=parmac_pop(p);
+    p=parmac_pop(stk,depth);//p=parmac_pop(p);
 
     //last state, on enter
     parmac_on_state_enter(p,p->trsnIt->fromState,p->trsnIt->toState,p->src,src2,data,"J");
@@ -294,7 +300,8 @@ bool parmac_run(struct parmac **pp,void *data,bool *err) {
     p->trsnIt=p->trsnStart;
 
     //
-    *pp=p; return true;//p;
+    //*pp=p;
+    return true;//p;
   }
 
 
@@ -307,7 +314,7 @@ bool parmac_run(struct parmac **pp,void *data,bool *err) {
     PARMAC_DEBUG_STEPS_PRINTF("=err no trsns\n");
 
     //
-    p=parmac_pop(p);
+    p=parmac_pop(stk,depth);//p=parmac_pop(p);
 
     *err=true;
     //*pp=p;
@@ -321,13 +328,14 @@ bool parmac_run(struct parmac **pp,void *data,bool *err) {
     PARMAC_DEBUG_STEPS_PRINTF("=no trsns found\n");
 
     //pop stack
-    p=parmac_pop(p);
+    p=parmac_pop(stk,depth);//p=parmac_pop(p);
 
     //increment transition iterator
     if(p) {
       p->trsnIt++;
       PARMAC_DEBUG_STEPS_PRINTF("==it trsns\n");
-      *pp=p; return true;//p;
+      //*pp=p;
+      return true;//p;
     }
 
     //
@@ -354,7 +362,9 @@ bool parmac_run(struct parmac **pp,void *data,bool *err) {
 
     PARMAC_DEBUG_STEPS_PRINTF("=trying machine '%s'\n",p2->name);
 
-    *pp=p2; return true;//p2;
+    //*pp=p2;
+    (*depth)++;
+    return true;//p2;
   }
 
   //======> is an event
@@ -386,7 +396,8 @@ bool parmac_run(struct parmac **pp,void *data,bool *err) {
     }
 
     //
-    *pp=p; return true;//p;
+    //*pp=p;
+    return true;//p;
   }
 
   //======> no machine or event specified
@@ -403,7 +414,8 @@ bool parmac_run(struct parmac **pp,void *data,bool *err) {
 
     //
 
-    *pp=p; return true;//p;
+    //*pp=p;
+    return true;//p;
   }
 
 

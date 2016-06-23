@@ -43,12 +43,10 @@ struct parmac_transition {
 };
 
 struct parmac {
-  const char *name;
-  const char *src;
+  const char *name,*src;
+  bool prev,next;
   const struct parmac_transition *trsnStart,*trsnEnd,*trsnIt;
   const struct parmac_state *state,*startState, *endState;
-  bool prev,next;
-  //struct parmac *prev,*next; //here
 };
 
 #ifdef __cplusplus
@@ -61,7 +59,7 @@ extern "C" {
                             const struct parmac_transition *startTrsn,
                             const struct parmac_transition *endTrsn);
 
-  bool parmac_run(struct parmac **pp,/*size_t pSize,*/ void *data,bool *err);
+  bool parmac_run(struct parmac *stk,unsigned int *depth,void *data,bool *err);
 #ifdef __cplusplus
 }
 #endif

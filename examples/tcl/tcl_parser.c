@@ -183,7 +183,7 @@ void sub_str_leave(const struct parmac_state *fromState,
   if(fromState!=toState) {
     printDepth(tp->recurseDepth+1);
 
-    printf("sub_str '%.*s'\n",tp->markEnd-tp->markStart,tp->markStart);
+    printf("sub_str '%.*s'\n",(int)(tp->markEnd - tp->markStart),tp->markStart);
 
   }
 }
@@ -193,7 +193,7 @@ void var_leave(const struct parmac_state *fromState,
                void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
     printDepth(tp->recurseDepth+1);
-  printf("var '%.*s'\n",tp->markEnd-tp->markStart,tp->markStart);
+  printf("var '%.*s'\n",(int)(tp->markEnd-tp->markStart),tp->markStart);
 
 }
 
