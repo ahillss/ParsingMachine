@@ -50,10 +50,8 @@ struct parmac *parmac_set(struct parmac *p,const char *name,const char *src,
 struct parmac *parmac_push(struct parmac *stk,unsigned int *pDepth,parmac_machine machine) {
   struct parmac *p=&stk[*pDepth];
   struct parmac *p2=p+1; //get next free mem
-
   machine(p2,p->src);
   (*pDepth)++;
-
   return p2;
 }
 
@@ -71,7 +69,7 @@ struct parmac *parmac_pop(struct parmac *stk,unsigned int *pDepth) {
 
 void parmac_print_parse_pos(struct parmac *p,unsigned int depth,bool end) {
   if(depth!=0) {
-    parmac_print_parse_pos(p-1,depth-1,false); //p->prev
+    parmac_print_parse_pos(p-1,depth-1,false);
   } else {
     printf("\n");
   }
@@ -84,7 +82,6 @@ void parmac_print_parse_pos(struct parmac *p,unsigned int depth,bool end) {
 
   if(end) { printf("\n"); }
 }
-
 
 #ifdef PARMAC_DEBUG_CALLBACKS
 const char *parmac_debug_markStart;
@@ -157,7 +154,7 @@ void parmac_on_event_success(struct parmac *p,
 
     //to bottom
     while(i!=0 && p2->trsnIt->fromState==p2->startState) {
-      p2--;//p2=p2->prev;
+      p2--;
       i--;
     }
 
@@ -172,7 +169,7 @@ void parmac_on_event_success(struct parmac *p,
       parmac_on_state_leave(p2,p2->trsnIt->fromState,p2->trsnIt->toState,data,"d");
 
       //
-      p2++;//p2=p2->next;
+      p2++;
     }
   }
 
@@ -203,7 +200,7 @@ void parmac_on_event_success(struct parmac *p,
 
 bool parmac_run(struct parmac *stk,unsigned int *pDepth,void *data,bool *err) {
   *err=false;
-  struct parmac *p=&stk[*pDepth];//*pp;
+  struct parmac *p=&stk[*pDepth];
 
   //===> on empty stack, stop and do nothing
   if(!p) {
@@ -241,7 +238,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,void *data,bool *err) {
     parmac_on_state_leave(p,p->endState,NULL,data,"x");
 
     //pop machine
-    p=parmac_pop(stk,pDepth);//p=parmac_pop(p);
+    p=parmac_pop(stk,pDepth);
 
     //
     return false;
