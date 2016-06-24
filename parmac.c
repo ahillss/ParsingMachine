@@ -41,13 +41,25 @@ struct parmac *parmac_set(struct parmac *p,const char *name,const char *src,
   p->trsnIt=startTrsn;
   p->trsnEnd=endTrsn;
 
-  p->prev=false;// p->prev=NULL;
-  p->next=false;//p->next=NULL;
+  p->prev=false;
+  p->next=false;
 
   p->name=name;
 
   return p;
 
+}
+
+struct parmac *parmac_push(struct parmac *stk,unsigned int *depth,parmac_machine machine) {
+  struct parmac *p=&stk[*depth];
+  struct parmac *p2=p+1; //get next free mem
+
+  machine(p2,p->src);
+  p2->prev=true;
+  p->next=true;
+  (*depth)++;
+
+  return p2;
 }
 
 struct parmac *parmac_pop(struct parmac *stk,unsigned int *depth) {
@@ -57,14 +69,14 @@ struct parmac *parmac_pop(struct parmac *stk,unsigned int *depth) {
 #endif
 
   struct parmac *p=&stk[*depth];
+  struct parmac *p2=(p->prev)?p-1:NULL;
 
-  if(p->prev) {
-    (p-1)->next=false;//p->prev->next=NULL;
+  if(p2) {
+    p2->next=false;
   }
 
-  //return depth-1;//p-1;//p->prev;
   (*depth)--;
-  return p-1;
+  return p2;
 }
 
 void parmac_print_parse_pos(struct parmac *p,bool end) {
@@ -163,8 +175,6 @@ void parmac_on_event_success(struct parmac *p,
   PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 #endif
 
-
-
   //section B040 : prev machines start states
   if(p->trsnIt->fromState==p->startState) {
     struct parmac *p2=p;
@@ -194,7 +204,6 @@ void parmac_on_event_success(struct parmac *p,
     parmac_on_state_enter(p,NULL,p->trsnIt->fromState,p->src,p->src,data,"c");
   }
 
-
   //section B100 : last state, on leave
   parmac_on_state_leave(p,p->trsnIt->fromState,p->trsnIt->toState,data,"b");
 
@@ -222,7 +231,7 @@ bool parmac_run(struct parmac *stk,unsigned int *depth,void *data,bool *err) {
   //===> on empty stack, stop and do nothing
   if(!p) {
     PARMAC_DEBUG_STEPS_PRINTF("=stk empty\n");
-    return false;//NULL;
+    return false;
   }
 
   //===> transition fromState doesn't match state
@@ -233,23 +242,13 @@ bool parmac_run(struct parmac *stk,unsigned int *depth,void *data,bool *err) {
     // PARMAC_DEBUG_STEPS_PRINTF("=incr trsn7\n");
 
     p->trsnIt++;
-
-    //*pp=p;
-    return true;//p;
+    return true;
   }
-
-  //
 
   //
 #ifdef PARMAC_DEBUG_STEPS
   parmac_print_parse_pos(p,true);
 #endif
-
-#if defined(PARMAC_DEBUG_CALLBACKS) || defined(PARMAC_DEBUG_STEPS)
-  // printf("'%s'\n",p->src);
-#endif
-
-
 
   //===> successfully transitioned to end state at root, without excur
   if(//p->trsnIt!=p->trsnEnd &&
@@ -268,7 +267,6 @@ bool parmac_run(struct parmac *stk,unsigned int *depth,void *data,bool *err) {
     p=parmac_pop(stk,depth);//p=parmac_pop(p);
 
     //
-    //*pp=p;
     return false;
   }
 
@@ -289,7 +287,7 @@ bool parmac_run(struct parmac *stk,unsigned int *depth,void *data,bool *err) {
     const char *src2=p->src;
 
     //pop machine
-    p=parmac_pop(stk,depth);//p=parmac_pop(p);
+    p=parmac_pop(stk,depth);
 
     //last state, on enter
     parmac_on_state_enter(p,p->trsnIt->fromState,p->trsnIt->toState,p->src,src2,data,"J");
@@ -300,27 +298,18 @@ bool parmac_run(struct parmac *stk,unsigned int *depth,void *data,bool *err) {
     p->trsnIt=p->trsnStart;
 
     //
-    //*pp=p;
-    return true;//p;
+    return true;
   }
-
-
 
   //===>trsnEnd, not startState
   if(p->trsnIt==p->trsnEnd &&
      p->state!=p->startState) {
-    //todo does excur need this? is this handled else where for excur?
-
     PARMAC_DEBUG_STEPS_PRINTF("=err no trsns\n");
 
-    //
-    p=parmac_pop(stk,depth);//p=parmac_pop(p);
-
+    p=parmac_pop(stk,depth);
     *err=true;
-    //*pp=p;
-    return false;//NULL;
+    return false;
   }
-
 
   //===>trsnEnd, startState
   if(p->trsnIt==p->trsnEnd &&
@@ -328,14 +317,13 @@ bool parmac_run(struct parmac *stk,unsigned int *depth,void *data,bool *err) {
     PARMAC_DEBUG_STEPS_PRINTF("=no trsns found\n");
 
     //pop stack
-    p=parmac_pop(stk,depth);//p=parmac_pop(p);
+    p=parmac_pop(stk,depth);
 
     //increment transition iterator
     if(p) {
       p->trsnIt++;
       PARMAC_DEBUG_STEPS_PRINTF("==it trsns\n");
-      //*pp=p;
-      return true;//p;
+      return true;
     }
 
     //
@@ -345,26 +333,16 @@ bool parmac_run(struct parmac *stk,unsigned int *depth,void *data,bool *err) {
     return false;
   }
 
-
  //======> is a machine
   if(p->trsnIt!=p->trsnEnd &&
      p->state==p->trsnIt->fromState &&
      p->trsnIt->machine) {
-    //todo is the trsn iterated somewhere else?
 
-    //get next free mem
-    struct parmac *p2=p+1;
+    p=parmac_push(stk,depth,p->trsnIt->machine);
 
-    //
-    p->trsnIt->machine(p2,p->src);
-    p2->prev=true;//p2->prev=p;
-    p->next=true;//p2;
+    PARMAC_DEBUG_STEPS_PRINTF("=trying machine '%s'\n",p->name);
 
-    PARMAC_DEBUG_STEPS_PRINTF("=trying machine '%s'\n",p2->name);
-
-    //*pp=p2;
-    (*depth)++;
-    return true;//p2;
+    return true;
   }
 
   //======> is an event
@@ -375,29 +353,19 @@ bool parmac_run(struct parmac *stk,unsigned int *depth,void *data,bool *err) {
     const char *eventRet=p->trsnIt->event(p->src,&eventName,data);
     const char *startSrc=p->src;
 
-    //
     PARMAC_DEBUG_STEPS_PRINTF("=trying event '%s'\n",eventName);
 
-    //
     if(eventRet==NULL) {
       //event failed, try next transition
       p->trsnIt++;
     } else {
       //event success
-// #ifdef PARMAC_DEBUG_STEPS
-//   parmac_print_parse_pos(p,true);
-// #endif
-
-      //
       PARMAC_DEBUG_STEPS_PRINTF("=event success\n");
 
-      //
       parmac_on_event_success(p,p->src,eventRet,data);
     }
 
-    //
-    //*pp=p;
-    return true;//p;
+    return true;
   }
 
   //======> no machine or event specified
@@ -406,16 +374,11 @@ bool parmac_run(struct parmac *stk,unsigned int *depth,void *data,bool *err) {
      !p->trsnIt->event &&
      !p->trsnIt->machine) {
 
-    //
     PARMAC_DEBUG_STEPS_PRINTF("=no machine or event\n");
 
-    //
     parmac_on_event_success(p,p->src,p->src,data);
 
-    //
-
-    //*pp=p;
-    return true;//p;
+    return true;
   }
 
 
