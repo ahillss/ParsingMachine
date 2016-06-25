@@ -31,13 +31,10 @@ struct parmac *parmac_set(struct parmac *p,const char *name,const char *src,
   p->state=startState;
   p->startState=startState;
   p->endState=endState;
-
   p->trsnStart=startTrsn;
   p->trsnIt=startTrsn;
   p->trsnEnd=endTrsn;
-
   p->name=name;
-
   return p;
 }
 
