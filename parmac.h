@@ -5,13 +5,8 @@
 #include <stdbool.h>
 #endif
 
-#define PARMAC_DEBUG_STEPS1
-#define PARMAC_DEBUG_STEPS2
-#define PARMAC_DEBUG_STEPS3
-
-// #define PARMAC_DEBUG_STEPS
-// #define PARMAC_DEBUG_CALLBACKS
-// #define PARMAC_DEBUG_INSTANCES
+#define PARMAC_DEBUG_STEPS
+#define PARMAC_DEBUG_CALLBACKS
 
 struct parmac;
 struct parmac_state;
