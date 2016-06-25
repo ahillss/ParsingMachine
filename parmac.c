@@ -106,7 +106,6 @@ void parmac_on_state_leave(struct parmac *p,
   }
 }
 
-
 void parmac_on_event_success(struct parmac *p,
                              unsigned int depth,
                              const char *srcStart,
@@ -210,7 +209,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,void *data,bool *err) {
     return false;
   }
 
-   //===> successfully transitioned to end state
+  //===> successfully transitioned to end state
   if(p->trsnIt!=p->trsnEnd &&
      p->state==p->endState &&
      (*pDepth)!=0) {
@@ -270,7 +269,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,void *data,bool *err) {
     return false;
   }
 
- //======> is a machine
+  //======> is a machine
   if(p->trsnIt!=p->trsnEnd &&
      p->state==p->trsnIt->fromState &&
      p->trsnIt->machine) {

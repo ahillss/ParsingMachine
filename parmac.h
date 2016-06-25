@@ -12,7 +12,6 @@ typedef const char *(*parmac_event)(const char *src,const char **name,void *data
 
 typedef void (*parmac_machine)(struct parmac *p,const char *src);
 
-
 typedef void (*parmac_state_enter)(const struct parmac_state *fromState,
                                    const struct parmac_state *toState,
                                    const char *srcStart,
