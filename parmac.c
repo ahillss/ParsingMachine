@@ -1,3 +1,7 @@
+
+// #define PARMAC_DEBUG_STEPS
+// #define PARMAC_DEBUG_CALLBACKS
+
 #include "parmac.h"
 
 #include <stdio.h>
@@ -52,26 +56,9 @@ struct parmac *parmac_pop(struct parmac *stk,unsigned int *pDepth) {
   return p2;
 }
 
-void parmac_print_parse_pos(struct parmac *p,unsigned int depth,bool end) {
-  if(depth!=0) {
-    // parmac_print_parse_pos(p-1,depth-1,false);
-  } else {
-    // printf("\n");
-  }
-
-
-  // printf("/ %s : %s (%s -> %s) (%i)",p->name,
-  //        p->state->name,
-  //        (p->trsnIt==p->trsnEnd)?"X":p->trsnIt->fromState->name,
-  //        (p->trsnIt==p->trsnEnd)?"X":p->trsnIt->toState->name,
-  //        depth);
-
-  // if(end) { printf("\n"); }
-}
-
 #ifdef PARMAC_DEBUG_CALLBACKS
-const char *parmac_debug_markStart;
-const char *parmac_debug_markEnd;
+const char *parmac_debug_markStart=NULL;
+const char *parmac_debug_markEnd=NULL;
 #endif
 
 void parmac_on_state_enter(struct parmac *p,
@@ -128,7 +115,7 @@ void parmac_on_event_success(struct parmac *p,
 
   PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
-  //section B040 : prev machines start states
+  //prev machines start states
   if(p->trsnIt->fromState==p->startState) {
     struct parmac *p2=p;
 
@@ -152,15 +139,15 @@ void parmac_on_event_success(struct parmac *p,
     }
   }
 
-  //section B060 : last start state, on enter
+  //last start state, on enter
   if(p->trsnIt->fromState==p->startState) {
     parmac_on_state_enter(p,NULL,p->trsnIt->fromState,p->src,p->src,data,"c");
   }
 
-  //section B100 : last state, on leave
+  //last state, on leave
   parmac_on_state_leave(p,p->trsnIt->fromState,p->trsnIt->toState,data,"b");
 
-  //section B120 : cur state transition, on enter
+  //cur state transition, on enter
   parmac_on_state_enter(p,p->trsnIt->fromState,p->trsnIt->toState,srcStart,srcEnd,data,"a");
 
   //change state
@@ -204,8 +191,6 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,void *data,bool *err) {
     printf("\n");
   }
 #endif
-
-  // printf("\n");
 
   //===> successfully transitioned to end state at root
   if(p->trsnIt!=p->trsnEnd &&
@@ -332,7 +317,6 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,void *data,bool *err) {
 
     return true;
   }
-
 
   //===> shouldn't reach this point
   assert(0);
