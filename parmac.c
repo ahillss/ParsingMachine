@@ -132,12 +132,9 @@ void parmac_on_event_success(struct parmac *p,
   if(p->trsnIt->fromState==p->startState) {
     struct parmac *p2=p;
 
-    unsigned int i=depth;
-
     //to bottom
-    while(i!=0 && p2->trsnIt->fromState==p2->startState) {
+    while(p2!=p-depth && p2->trsnIt->fromState==p2->startState) {//p2->prev
       p2--;
-      i--;
     }
 
     //to top
