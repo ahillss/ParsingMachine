@@ -38,7 +38,8 @@ struct parmac *parmac_set(struct parmac *p,const char *name,const char *src,
   return p;
 }
 
-struct parmac *parmac_push(struct parmac *stk,unsigned int *pDepth,parmac_machine machine) {
+struct parmac *parmac_push(struct parmac *stk,unsigned int *pDepth,
+                           parmac_machine machine) {
   struct parmac *p=&stk[*pDepth];
   struct parmac *p2=p+1; //get next free mem
   machine(p2,p->src);
@@ -124,11 +125,13 @@ void parmac_on_event_success(struct parmac *p,
     while(p2 && p2!=p) {
       //prev machines start state, on enter
       if(p2->trsnIt->fromState==p2->startState) {
-        parmac_on_state_enter(p2,NULL,p2->trsnIt->fromState,p2->src,p2->src,data,"e");
+        parmac_on_state_enter(p2,NULL,p2->trsnIt->fromState,
+                              p2->src,p2->src,data,"e");
       }
 
       //prev machines, on leave
-      parmac_on_state_leave(p2,p2->trsnIt->fromState,p2->trsnIt->toState,data,"d");
+      parmac_on_state_leave(p2,p2->trsnIt->fromState,
+                            p2->trsnIt->toState,data,"d");
 
       //
       p2++;
@@ -144,7 +147,8 @@ void parmac_on_event_success(struct parmac *p,
   parmac_on_state_leave(p,p->trsnIt->fromState,p->trsnIt->toState,data,"b");
 
   //cur state transition, on enter
-  parmac_on_state_enter(p,p->trsnIt->fromState,p->trsnIt->toState,srcStart,srcEnd,data,"a");
+  parmac_on_state_enter(p,p->trsnIt->fromState,p->trsnIt->toState,
+                        srcStart,srcEnd,data,"a");
 
   //change state
   p->state=p->trsnIt->toState;
@@ -152,7 +156,8 @@ void parmac_on_event_success(struct parmac *p,
   p->trsnIt=p->trsnStart;
 }
 
-bool parmac_run(struct parmac *stk,unsigned int *pDepth,void *data,bool *err) {
+bool parmac_run(struct parmac *stk,unsigned int *pDepth,
+                void *data,bool *err) {
   *err=false;
   struct parmac *p=&stk[*pDepth];
 
@@ -223,7 +228,8 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,void *data,bool *err) {
     p=parmac_pop(stk,pDepth);
 
     //last state, on enter
-    parmac_on_state_enter(p,p->trsnIt->fromState,p->trsnIt->toState,p->src,src2,data,"J");
+    parmac_on_state_enter(p,p->trsnIt->fromState,p->trsnIt->toState,
+                          p->src,src2,data,"J");
 
     //change state
     p->state=p->trsnIt->toState;
