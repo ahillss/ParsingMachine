@@ -53,10 +53,14 @@ struct tcl_syntax_build {
 };
 
 struct tcl_parser {
+	unsigned int closingsInd;
+  struct parmac *stk;
+  unsigned int stkNum;
   const char *errMsg;
   const char *markStart,*markEnd;
   int pos,row,col;
-  char *closingStart,*closingEnd,*closingIt;
+  char *closings;
+
   struct tcl_syntax_build *buildStk;
   struct tcl_syntax_stmt *rootStmt;
   int recurseDepth;
@@ -66,8 +70,9 @@ struct tcl_parser {
 extern "C" {
 #endif
 
-  void tcl_parser_main_machine(struct parmac *p,const char *src);
-  void tcl_parser_init(struct parmac **p, const char *src);
+  void tcl_parser_init(struct tcl_parser *tp);
+  void tcl_parser_uninit(struct tcl_parser *tp);
+  void tcl_parser_run(struct tcl_parser *tp,const char *src);
 
 #ifdef __cplusplus
 }

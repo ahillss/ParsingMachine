@@ -35,127 +35,127 @@ void printDepth(int d) {
 
 
 void push_str(struct tcl_parser *tp) {
-  size_t strLen=tp->markEnd-tp->markStart;
-  struct tcl_syntax_sub *sub;
+//   size_t strLen=tp->markEnd-tp->markStart;
+//   struct tcl_syntax_sub *sub;
 
-  sub=(struct tcl_syntax_sub*)malloc(sizeof(struct tcl_syntax_sub));
+//   sub=(struct tcl_syntax_sub*)malloc(sizeof(struct tcl_syntax_sub));
 
-  sub->type=tcl_syntax_sub_str;
-  sub->valStmt=NULL;
-  sub->next=NULL;
-  sub->valStr=(char*)malloc(strLen+1);
+//   sub->type=tcl_syntax_sub_str;
+//   sub->valStmt=NULL;
+//   sub->next=NULL;
+//   sub->valStr=(char*)malloc(strLen+1);
 
-  memcpy(sub->valStr,tp->markStart,strLen);
-  sub->valStr[strLen]='\0';
+//   memcpy(sub->valStr,tp->markStart,strLen);
+//   sub->valStr[strLen]='\0';
 
-  //
-  struct tcl_syntax_build *build;
-  build=tp->buildStk;
+//   //
+//   struct tcl_syntax_build *build;
+//   build=tp->buildStk;
 
-  if(build->firstSub) {
-    build->lastSub->next=sub;
-  } else {
-    build->firstSub=sub;
-  }
+//   if(build->firstSub) {
+//     build->lastSub->next=sub;
+//   } else {
+//     build->firstSub=sub;
+//   }
 
-  build->lastSub=sub;
+//   build->lastSub=sub;
 }
 
 void push_var(struct tcl_parser *tp) {
-  size_t strLen=tp->markEnd-tp->markStart;
-  struct tcl_syntax_sub *sub;
+//   size_t strLen=tp->markEnd-tp->markStart;
+//   struct tcl_syntax_sub *sub;
 
-  sub=(struct tcl_syntax_sub*)malloc(sizeof(struct tcl_syntax_sub));
+//   sub=(struct tcl_syntax_sub*)malloc(sizeof(struct tcl_syntax_sub));
 
-  sub->type=tcl_syntax_sub_var;
-  sub->valStmt=NULL;
-  sub->next=NULL;
-  sub->valStr=(char*)malloc(strLen+1);
+//   sub->type=tcl_syntax_sub_var;
+//   sub->valStmt=NULL;
+//   sub->next=NULL;
+//   sub->valStr=(char*)malloc(strLen+1);
 
-  memcpy(sub->valStr,tp->markStart,strLen);
-  sub->valStr[strLen]='\0';
+//   memcpy(sub->valStr,tp->markStart,strLen);
+//   sub->valStr[strLen]='\0';
 
-  // if(tp->firstSub) {
-  //   tp->lastSub->next=sub;
-  // } else {
-  //   tp->firstSub=sub;
-  // }
+//   // if(tp->firstSub) {
+//   //   tp->lastSub->next=sub;
+//   // } else {
+//   //   tp->firstSub=sub;
+//   // }
 
-  // tp->lastSub=sub;
+//   // tp->lastSub=sub;
 }
 
 void push_word(struct tcl_parser *tp) {
-  struct tcl_syntax_word *word;
+  // struct tcl_syntax_word *word;
 
-  word=(struct tcl_syntax_word*)malloc(sizeof(struct tcl_syntax_word));
+  // word=(struct tcl_syntax_word*)malloc(sizeof(struct tcl_syntax_word));
 
-  // word->subs=tp->firstSub;
-  word->next=NULL;
+  // // word->subs=tp->firstSub;
+  // word->next=NULL;
 
-  // tp->firstSub=NULL;
-  // tp->lastSub=NULL;
+  // // tp->firstSub=NULL;
+  // // tp->lastSub=NULL;
 
-  // if(tp->firstWord) {
-  //   tp->lastWord->next=word;
-  // } else {
-  //   tp->firstWord=word;
-  // }
+  // // if(tp->firstWord) {
+  // //   tp->lastWord->next=word;
+  // // } else {
+  // //   tp->firstWord=word;
+  // // }
 
-  // tp->lastWord=word;
+  // // tp->lastWord=word;
 }
 
 void push_stmt(struct tcl_parser *tp) {
 
-  // if(tp->firstWord) {
-    struct tcl_syntax_stmt *stmt;
+  // // if(tp->firstWord) {
+  //   struct tcl_syntax_stmt *stmt;
 
-    stmt=(struct tcl_syntax_stmt*)malloc(sizeof(struct tcl_syntax_stmt));
+  //   stmt=(struct tcl_syntax_stmt*)malloc(sizeof(struct tcl_syntax_stmt));
 
-    // stmt->words=tp->firstWord;
-    stmt->next=NULL;
+  //   // stmt->words=tp->firstWord;
+  //   stmt->next=NULL;
 
-  //   tp->firstWord=NULL;
-  //   tp->lastWord=NULL;
+  // //   tp->firstWord=NULL;
+  // //   tp->lastWord=NULL;
 
-  //   if(tp->firstStmt) {
-  //     tp->lastStmt->next=stmt;
-  //   } else {
-  //     tp->firstStmt=stmt;
-  //   }
+  // //   if(tp->firstStmt) {
+  // //     tp->lastStmt->next=stmt;
+  // //   } else {
+  // //     tp->firstStmt=stmt;
+  // //   }
 
-  //   tp->lastStmt=stmt;
-  // }
+  // //   tp->lastStmt=stmt;
+  // // }
 }
 
 void push_build(struct tcl_parser *tp) {
 
   tp->recurseDepth++;
 
-  struct tcl_syntax_build *build;
-  build=(struct tcl_syntax_build*)malloc(sizeof(struct tcl_syntax_build));
+  // struct tcl_syntax_build *build;
+  // build=(struct tcl_syntax_build*)malloc(sizeof(struct tcl_syntax_build));
 
-  build->firstStmt=NULL;
-  build->lastStmt=NULL;
-  build->firstWord=NULL;
-  build->lastWord=NULL;
-  build->firstSub=NULL;
-  build->lastSub=NULL;
-  build->next=tp->buildStk;
+  // build->firstStmt=NULL;
+  // build->lastStmt=NULL;
+  // build->firstWord=NULL;
+  // build->lastWord=NULL;
+  // build->firstSub=NULL;
+  // build->lastSub=NULL;
+  // build->next=tp->buildStk;
 }
 
 void pop_build(struct tcl_parser *tp) {
   tp->recurseDepth--;
 
-  // if(tp->buildStk->next) {
-  //   tp->buildStk->next->lastSub->valStmt=tp->buildStk->firstStmt;
-  // } else {
-  //   tp->rootStmt=tp->buildStk->firstStmt;
-  // }
+  // // if(tp->buildStk->next) {
+  // //   tp->buildStk->next->lastSub->valStmt=tp->buildStk->firstStmt;
+  // // } else {
+  // //   tp->rootStmt=tp->buildStk->firstStmt;
+  // // }
 
-  // struct tcl_syntax_build *tmp;
-  // tmp=tp->buildStk;
-  // tp->buildStk=tmp->next;
-  // free(tmp);
+  // // struct tcl_syntax_build *tmp;
+  // // tmp=tp->buildStk;
+  // // tp->buildStk=tmp->next;
+  // // free(tmp);
 }
 
 ////////////////////////////////////
@@ -235,14 +235,12 @@ void main_leave(const struct parmac_state *fromState,
                 const struct parmac_state *toState,
                 void *data) {
 
-  stmt_leave(fromState,toState,data);
+  // stmt_leave(fromState,toState,data);
 
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
 
 }
-
-///////////////////////////////////////////////
 
 const char *parse_sep(const char *src,const char **name,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
@@ -328,8 +326,7 @@ const char *parse_lquote(const char *src,const char **name,void *data) {
 
   if(src[0]=='"') {
     tp->errMsg=NULL;
-    tp->closingIt=(tp->closingIt)?tp->closingIt+1:tp->closingStart;
-    *(tp->closingIt)='"';
+    tp->closings[++(tp->closingsInd)]='"';
     return src+1;
   }
 
@@ -342,11 +339,11 @@ const char *parse_rquote(const char *src,const char **name,void *data) {
   *name="rquote";
 
   if(src[0]=='"') {
-    tp->closingIt=(tp->closingIt==tp->closingStart)?NULL:tp->closingIt-1;
+    (tp->closingsInd)--;
     return src+1;
   }
 
-  tp->errMsg="Expecting closing double quote.\n";
+  tp->errMsg="Expecting closings double quote.\n";
   return NULL;
 }
 
@@ -356,8 +353,7 @@ const char *parse_lsqr(const char *src,const char **name,void *data) {
 
   if(src[0]=='[') {
     tp->errMsg=NULL;
-    tp->closingIt=(tp->closingIt)?tp->closingIt+1:tp->closingStart;
-    *(tp->closingIt)=']';
+    tp->closings[++(tp->closingsInd)]=']';
     return src+1;
   }
 
@@ -369,11 +365,11 @@ const char *parse_rsqr(const char *src,const char **name,void *data) {
   *name="rsqr";
 
   if(src[0]==']') {
-    tp->closingIt=(tp->closingIt==tp->closingStart)?NULL:tp->closingIt-1;
+    (tp->closingsInd)--;
     return src+1;
   }
 
-  tp->errMsg="Expecting closing square bracket.\n";
+  tp->errMsg="Expecting closings square bracket.\n";
   return NULL;
 }
 
@@ -383,8 +379,7 @@ const char *parse_lbrace(const char *src,const char **name,void *data) {
 
   if(src[0]=='{') {
     tp->errMsg=NULL;
-    tp->closingIt=(tp->closingIt)?tp->closingIt+1:tp->closingStart;
-    *(tp->closingIt)='}';
+    tp->closings[++(tp->closingsInd)]='}';
     return src+1;
   }
 
@@ -396,11 +391,11 @@ const char *parse_rbrace(const char *src,const char **name,void *data) {
   *name="rbrace";
 
   if(src[0]=='}') {
-    tp->closingIt=(tp->closingIt==tp->closingStart)?NULL:tp->closingIt-1;
+    (tp->closingsInd)--;
     return src+1;
   }
 
-  tp->errMsg="Expecting closing curly brace.\n";
+  tp->errMsg="Expecting closings curly brace.\n";
   return NULL;
 }
 
@@ -413,7 +408,7 @@ const char *parse_schar(const char *src,const char **name,void *data) {
     return NULL;
   }
 
-  if(tp->closingIt && tp->closingIt[0]==src[0]) {
+  if(tp->closings[tp->closingsInd]==src[0]) {
     return NULL;
   }
 
@@ -710,4 +705,68 @@ void cmd_machine(struct parmac *p,const char *src) {
   };
 
   parmac_set(p,"cmd",src,&state_start,&state_end,trsns, endof(trsns));
+}
+
+void tcl_parser_init(struct tcl_parser *tp) {
+
+ tp->stkNum=2;
+ tp->stk=(struct parmac*)malloc(sizeof(struct parmac)*tp->stkNum);
+
+
+ tp->closings=(char*)malloc(tp->stkNum);
+ tp->closings[0]='\0';
+
+}
+
+void tcl_parser_uninit(struct tcl_parser *tp) {
+  free(tp->stk);
+  free(tp->closings);
+}
+
+void tcl_parser_run(struct tcl_parser *tp,const char *src) {
+  unsigned int depth=0;
+  bool err;
+
+  tp->errMsg=NULL;
+
+  tp->buildStk=NULL;
+  tp->rootStmt=NULL;
+  tp->recurseDepth=-1;
+
+  tp->closingsInd=0;
+
+  tp->markStart=src;
+  tp->markEnd=src;
+
+  tp->pos=0;
+  tp->row=0;
+  tp->col=0;
+
+  tcl_parser_main_machine(tp->stk,src);
+
+  while(parmac_run(tp->stk,&depth,tp,&err)) {
+    if(depth+1==tp->stkNum) {
+      tp->stkNum*=2;
+      tp->stk=(struct parmac*)realloc(tp->stk,sizeof(struct parmac)*tp->stkNum);
+      tp->closings=(char*)realloc(tp->closings,tp->stkNum);
+    }
+  }
+
+  printf("\n");
+
+  if(err) {
+    printf("Error.\n");
+
+    if(tp->errMsg!=NULL) {
+      printf(tp->errMsg);
+    }
+  }
+
+  //
+  // printSyntax(tp.rootStmt,0);
+
+
+
+  printf("done %i.\n", depth);
+
 }

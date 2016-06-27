@@ -58,65 +58,15 @@ void printSyntax(struct tcl_syntax_stmt *stmt,int depth) {
 int main() {
   char *txt=string_from_file("test.tcl");
 
-  if (!txt) {
-	  return 1;
+  if(!txt) {
+    return 1;
   }
 
-  bool err;
-  struct parmac *stk,*p;
   struct tcl_parser tp;
-  char closings[256];
-  int stkNum=2;
-  stk=(struct parmac*)malloc(sizeof(struct parmac)*stkNum);
-  p=stk;
 
-  tp.errMsg=NULL;
-
-  tp.markStart=txt;
-  tp.markEnd=txt;
-
-  tp.pos=0;
-  tp.row=0;
-  tp.col=0;
-
-  tp.closingStart=closings;
-  tp.closingEnd=endof(closings);
-  tp.closingIt=NULL;
-
-  tp.recurseDepth=-1;
-
-  tp.buildStk=NULL;
-  tp.rootStmt=NULL;
-
-
-  //
-  tcl_parser_main_machine(p,txt);
-  unsigned int depth=0;
-
-  while(parmac_run(stk,&depth,&tp,&err)) {
-    if(depth+1==stkNum) {
-      stkNum*=2;
-      stk=(struct parmac*)realloc(stk,sizeof(struct parmac)*stkNum);
-    }
-  }
-
-  printf("\n");
-
-  if(err) {
-    printf("Error.\n");
-
-    if(tp.errMsg!=NULL) {
-      printf(tp.errMsg);
-    }
-  }
-
-  //
-  printSyntax(tp.rootStmt,0);
-
-
-
-  printf("done %p.\n",p);
-
+  tcl_parser_init(&tp);
+  tcl_parser_run(&tp,txt);
+  tcl_parser_uninit(&tp);
 
 #ifdef _MSC_VER
   system("pause");
