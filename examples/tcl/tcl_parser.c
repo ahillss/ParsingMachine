@@ -160,7 +160,8 @@ void pop_build(struct tcl_parser *tp) {
 
 ////////////////////////////////////
 
-void char_enter(const struct parmac_state *fromState,
+void char_enter(unsigned int depth,
+                const struct parmac_state *fromState,
                 const struct parmac_state *toState,
                 const char *srcStart,const char *srcEnd,
                 void *data) {
@@ -175,45 +176,49 @@ void char_enter(const struct parmac_state *fromState,
   tp->markEnd=srcEnd;
 }
 
-void sub_str_leave(const struct parmac_state *fromState,
+void sub_str_leave(unsigned int depth,
+                   const struct parmac_state *fromState,
                    const struct parmac_state *toState,
                    void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   if(fromState!=toState) {
-    printDepth(tp->recurseDepth+1);
+    printDepth(depth+1);
 
     printf("sub_str '%.*s'\n",(int)(tp->markEnd - tp->markStart),tp->markStart);
 
   }
 }
 
-void var_leave(const struct parmac_state *fromState,
+void var_leave(unsigned int depth,
+               const struct parmac_state *fromState,
                const struct parmac_state *toState,
                void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-    printDepth(tp->recurseDepth+1);
+    printDepth(depth+1);
   printf("var '%.*s'\n",(int)(tp->markEnd-tp->markStart),tp->markStart);
 
 }
 
-void word_leave(const struct parmac_state *fromState,
+void word_leave(unsigned int depth,
+                const struct parmac_state *fromState,
                 const struct parmac_state *toState,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
   printf(":");
-  printDepth(tp->recurseDepth-1);
+  printDepth(depth-1);
   printf("word\n");
 
 
 }
 
-void stmt_leave(const struct parmac_state *fromState,
+void stmt_leave(unsigned int depth,
+                const struct parmac_state *fromState,
                 const struct parmac_state *toState,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
   printf(":");
-  printDepth(tp->recurseDepth-1);
+  printDepth(depth-1);
   printf("stmt\n");
 
 
@@ -221,7 +226,8 @@ void stmt_leave(const struct parmac_state *fromState,
 
 
 
-void main_enter(const struct parmac_state *fromState,
+void main_enter(unsigned int depth,
+                const struct parmac_state *fromState,
                 const struct parmac_state *toState,
                 const char *srcStart,const char *srcEnd,
                 void *data) {
@@ -231,7 +237,8 @@ void main_enter(const struct parmac_state *fromState,
   push_build(tp);
 }
 
-void main_leave(const struct parmac_state *fromState,
+void main_leave(unsigned int depth,
+                const struct parmac_state *fromState,
                 const struct parmac_state *toState,
                 void *data) {
 
@@ -709,12 +716,26 @@ void cmd_machine(struct parmac *p,const char *src) {
 
 void tcl_parser_init(struct tcl_parser *tp) {
 
- tp->stkNum=2;
- tp->stk=(struct parmac*)malloc(sizeof(struct parmac)*tp->stkNum);
+  tp->stkNum=2;
+  tp->stk=(struct parmac*)malloc(sizeof(struct parmac)*tp->stkNum);
 
 
- tp->closings=(char*)malloc(tp->stkNum);
- tp->closings[0]='\0';
+  tp->closings=(char*)malloc(tp->stkNum);
+  tp->closings[0]='\0';
+
+
+
+  tp->blocksNum=2;
+  tp->stmtsNum=2;
+  tp->wordsNum=2;
+  tp->subsNum=2;
+  tp->subCharsNum=2;
+
+  tp->blocks=(struct tcl_syntax_block*)malloc(sizeof(struct tcl_syntax_block)*tp->blocksNum);
+  tp->stmts=(struct tcl_syntax_stmt*)malloc(sizeof(struct tcl_syntax_stmt)*tp->stmtsNum);
+  tp->words=(struct tcl_syntax_word*)malloc(sizeof(struct tcl_syntax_word)*tp->wordsNum);
+  tp->subs=(struct tcl_syntax_sub*)malloc(sizeof(struct tcl_syntax_sub)*tp->subsNum);
+  tp->subChars=(char*)malloc(tp->subCharsNum);
 
 }
 
@@ -729,8 +750,8 @@ void tcl_parser_run(struct tcl_parser *tp,const char *src) {
 
   tp->errMsg=NULL;
 
-  tp->buildStk=NULL;
-  tp->rootStmt=NULL;
+  // tp->buildStk=NULL;
+  // tp->rootStmt=NULL;
   tp->recurseDepth=-1;
 
   tp->closingsInd=0;
@@ -741,6 +762,14 @@ void tcl_parser_run(struct tcl_parser *tp,const char *src) {
   tp->pos=0;
   tp->row=0;
   tp->col=0;
+
+
+  tp->blocksInd=0;
+  tp->stmtsInd=0;
+  tp->wordsInd=0;
+  tp->subsInd=0;
+  tp->subCharsInd=0;
+
 
   tcl_parser_main_machine(tp->stk,src);
 
