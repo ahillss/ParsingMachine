@@ -12,29 +12,6 @@
 
 #define endof(x) (x+sizeof(x)/sizeof(*x))
 
-struct tcl_syntax_block {
-  unsigned int stmtsInd,stmtsNum;
-};
-
-struct tcl_syntax_stmt {
-  unsigned int parentInd,wordsInd,wordsNum;
-};
-
-struct tcl_syntax_word {
-  unsigned int parentInd,subsInd,subsNum;
-};
-
-enum tcl_syntax_sub_type {
-  tcl_syntax_sub_str,
-  tcl_syntax_sub_val,
-  tcl_syntax_sub_cmd
-};
-
-struct tcl_syntax_sub {
-  unsigned int parentInd,valInd;
-  enum tcl_syntax_sub_type type;
-};
-
 struct tcl_parser {
   unsigned int closingsInd;
   struct parmac *stk;
