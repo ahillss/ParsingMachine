@@ -1,4 +1,4 @@
-#include "tcl_parser.h"
+#include "old_tcl_parser.h"
 
 #include <stdio.h>
 #include <stddef.h>
@@ -17,7 +17,7 @@
 #define parse_rsqr tcl_parser_parse_rsqr
 #define parse_lbrace tcl_parser_parse_lbrace
 #define parse_rbrace tcl_parser_parse_rbrace
- 
+
 #define parse_dollar tcl_parser_parse_dollar
 #define parse_idn tcl_parser_parse_idn
 
@@ -198,7 +198,7 @@ const char *parse_rbrace(const char *src,const char **name,void *data) {
   tp->errMsg="Expecting closing curly brace.\n";
   return NULL;
 }
- 
+
 const char *parse_dollar(const char *src,const char **name,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
   *name="dollar";

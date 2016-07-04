@@ -1,5 +1,5 @@
 OUTDIR = bin
-OUTFILE = $(OUTDIR)/tcltest
+OUTFILE = $(OUTDIR)/oldtcltest
 
 CC = gcc
 EXT = c
@@ -7,9 +7,6 @@ EXT = c
 CPPFLAGS :=
 CFLAGS :=
 LDFLAGS :=
-
-#DEBUG_BUILD = -g
-#DEBUG_TEST = gdb --eval-command=run
 
 objs := $(patsubst %.$(EXT),$(OUTDIR)/%.o,$(wildcard *.$(EXT)))
 deps := $(objs:.o=.dep)
@@ -24,12 +21,12 @@ $(OUTDIR)/%.o: %.$(EXT)
 	$(CC) $(DEBUG_BUILD) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 	@$(CC) $(CPPFLAGS) $(CFLAGS) -MM $< | sed -e '1,1 s|[^:]*:|$@:|' > $(OUTDIR)/$*.dep
 	
-$(OUTFILE) : $(objs) $(OUTDIR)/parmac.o
+$(OUTFILE) : $(objs)
 	$(CC) $(DEBUG_BUILD) $^ $(LDFLAGS) -o $@
 
 test: $(OUTFILE)
 	@$(DEBUG_TEST) $(OUTFILE) tests/b.tcl
 
 clean:
-	@rm -f $(deps) $(objs) $(OUTFILE) $(OUTFILE).exe $(OUTDIR)/parmac.o
+	@rm -f $(deps) $(objs) $(OUTFILE) $(OUTFILE).exe
 	@rmdir --ignore-fail-on-non-empty $(OUTDIR)
