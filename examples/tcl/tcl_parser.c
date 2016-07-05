@@ -725,17 +725,17 @@ void tcl_parser_init(struct tcl_parser *tp) {
 
 
 
-  tp->blocksNum=2;
-  tp->stmtsNum=2;
-  tp->wordsNum=2;
-  tp->subsNum=2;
-  tp->subCharsNum=2;
+  // tp->blocksNum=2;
+  // tp->stmtsNum=2;
+  // tp->wordsNum=2;
+  // tp->subsNum=2;
+  // tp->subCharsNum=2;
 
-  tp->blocks=(struct tcl_syntax_block*)malloc(sizeof(struct tcl_syntax_block)*tp->blocksNum);
-  tp->stmts=(struct tcl_syntax_stmt*)malloc(sizeof(struct tcl_syntax_stmt)*tp->stmtsNum);
-  tp->words=(struct tcl_syntax_word*)malloc(sizeof(struct tcl_syntax_word)*tp->wordsNum);
-  tp->subs=(struct tcl_syntax_sub*)malloc(sizeof(struct tcl_syntax_sub)*tp->subsNum);
-  tp->subChars=(char*)malloc(tp->subCharsNum);
+  // tp->blocks=(struct tcl_syntax_block*)malloc(sizeof(struct tcl_syntax_block)*tp->blocksNum);
+  // tp->stmts=(struct tcl_syntax_stmt*)malloc(sizeof(struct tcl_syntax_stmt)*tp->stmtsNum);
+  // tp->words=(struct tcl_syntax_word*)malloc(sizeof(struct tcl_syntax_word)*tp->wordsNum);
+  // tp->subs=(struct tcl_syntax_sub*)malloc(sizeof(struct tcl_syntax_sub)*tp->subsNum);
+  // tp->subChars=(char*)malloc(tp->subCharsNum);
 
 }
 
@@ -764,11 +764,11 @@ void tcl_parser_run(struct tcl_parser *tp,const char *src) {
   tp->col=0;
 
 
-  tp->blocksInd=0;
-  tp->stmtsInd=0;
-  tp->wordsInd=0;
-  tp->subsInd=0;
-  tp->subCharsInd=0;
+  // tp->blocksInd=0;
+  // tp->stmtsInd=0;
+  // tp->wordsInd=0;
+  // tp->subsInd=0;
+  // tp->subCharsInd=0;
 
 
   tcl_parser_main_machine(tp->stk,src);
