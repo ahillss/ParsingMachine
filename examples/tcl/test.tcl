@@ -1,5 +1,5 @@
 puts "[set {a}]"; #hello
-func abc$$de
+func abc$$$$de
 ok ${qwe}
 
-puts [set [set b]]
+puts [set [set b]];

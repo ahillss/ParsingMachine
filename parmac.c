@@ -81,8 +81,10 @@ void parmac_on_state_enter(struct parmac *stk,
 #ifdef PARMAC_DEBUG_CALLBACKS
   parmac_debug_markStart=srcStart;
   parmac_debug_markEnd=srcEnd;
-  printf("%s : enter_%s_%s%s%s '%.*s'\n",
-         debug,p->name,
+  printf("%s : (%u) enter_%s_%s%s%s '%.*s'\n",
+         debug,
+         depth,
+         p->name,
          toState->name,
          fromState?" <=":"",
          fromState?fromState->name:"",
@@ -103,8 +105,10 @@ void parmac_on_state_leave(struct parmac *stk,
   unsigned int depth=(unsigned int)(p-stk);
 
 #ifdef PARMAC_DEBUG_CALLBACKS
-  printf("%s : leave_%s_%s%s%s '%.*s'\n",
-         debug,p->name,
+  printf("%s : (%u) leave_%s_%s%s%s '%.*s'\n",
+         debug,
+         depth,
+         p->name,
          fromState->name,
          toState?" =>":"",
          toState?toState->name:"",
