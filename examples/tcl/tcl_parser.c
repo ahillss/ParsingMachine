@@ -150,13 +150,27 @@ void sub_str_leave(unsigned int stkDepth,
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   if(fromState!=toState) {
-    // printDepth(tp->depth);
-    printf("%u sub_str '%.*s'\n",tp->depth,(int)(tp->markEnd - tp->markStart),tp->markStart);
+    printf("----- %u sub_str '%.*s'\n",tp->depth,(int)(tp->markEnd-tp->markStart),tp->markStart);
 
     tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
                         tp->depth,tp->markStart,tp->markEnd);
   }
 }
+
+void bstr_enter(unsigned int stkDepth,
+                const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                const char *srcStart,const char *srcEnd,
+                void *data) {
+
+
+  struct tcl_parser *tp=(struct tcl_parser*)data;
+
+  tp->markStart=srcStart+1;
+  tp->markEnd=srcEnd-1;
+}
+
+
 
 void var_leave(unsigned int stkDepth,
                const struct parmac_state *fromState,
@@ -164,7 +178,7 @@ void var_leave(unsigned int stkDepth,
                void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  printf("%u var '%.*s'\n",tp->depth,(int)(tp->markEnd-tp->markStart),tp->markStart);
+  printf("----- %u var '%.*s'\n",tp->depth,(int)(tp->markEnd-tp->markStart),tp->markStart);
 
   tcl_syntax_push_var(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
                       tp->depth,tp->markStart,tp->markEnd);
@@ -176,7 +190,7 @@ void word_leave(unsigned int stkDepth,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  printf("%u word\n",tp->depth);
+  printf("----- %u word\n",tp->depth);
 
   tcl_syntax_push_spc(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth);
 }
@@ -187,7 +201,7 @@ void stmt_leave(unsigned int stkDepth,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  printf("%u stmt\n",tp->depth);
+  printf("----- %u stmt\n",tp->depth);
 
   tcl_syntax_push_sep(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth);
 }
@@ -251,19 +265,6 @@ const char *parse_spc(const char *src,const char **name,void *data) {
 
   return NULL;
 }
-
-const char *parse_esc_eol(const char *src,const char **name,void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="spc";
-
-  if(src[0]=='\\' || src[1]=='\n') {
-    tp->errMsg=NULL;
-    return src+2;
-  }
-
-  return NULL;
-}
-
 
 const char *parse_cmnt(const char *src,const char **name,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
@@ -498,7 +499,7 @@ void main_machine(struct parmac *p,const char *src) {
 void word_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
-    state_bstr={"bstr",NULL,sub_str_leave},
+    state_bstr={"bstr",bstr_enter,sub_str_leave},
     state_qstr={"qstr",NULL,NULL},
     state_sstr={"sstr",NULL,NULL},
     state_end={"end",NULL,NULL};
@@ -521,7 +522,7 @@ void bstr_machine(struct parmac *p,const char *src) {
     state_start={"start",NULL,NULL},
     state_lbrace={"lbrace",NULL,NULL},
     state_rbrace={"rbrace",NULL,NULL},
-    state_char={"char",char_enter,NULL},
+    state_char={"char",NULL,NULL},
     state_bstr={"bstr",NULL,NULL},
     state_end={"end",NULL,NULL};
 
@@ -643,7 +644,7 @@ void vstr_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
     state_idn={"idn",char_enter,NULL},
-    state_bstr={"bstr",NULL,NULL},
+    state_bstr={"bstr",bstr_enter,NULL},
     state_end={"end",NULL,var_leave};
 
   static const struct parmac_transition trsns[]={
@@ -746,7 +747,7 @@ void tcl_parser_run(struct tcl_parser *tp,const char *src) {
     printf("%u : ",cur->depth);
 
     if(cur->type==tcl_syntax_str) {
-      printf("str '%s",cur->str);
+      printf("str '%s'",cur->str);
     } else if(cur->type==tcl_syntax_spc) {
       printf("spc");
     } else if(cur->type==tcl_syntax_sep) {
