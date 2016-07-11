@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stddef.h>
 
-
 #define parse_sep tcl_parser_parse_sep
 #define parse_eol tcl_parser_parse_eol
 #define parse_spc tcl_parser_parse_spc
@@ -14,9 +13,12 @@
 #define parse_rsqr tcl_parser_parse_rsqr
 #define parse_lbrace tcl_parser_parse_lbrace
 #define parse_rbrace tcl_parser_parse_rbrace
-#define parse_sstr tcl_parser_parse_schar
+#define parse_sstr tcl_parser_parse_sstr
+#define parse_qstr tcl_parser_parse_qstr
+#define parse_bstr tcl_parser_parse_bstr
+#define parse_var_str tcl_parser_parse_var_str
+#define parse_var_idn tcl_parser_parse_var_idn
 #define parse_dollar tcl_parser_parse_dollar
-#define parse_idn tcl_parser_parse_idn
 
 #define main_machine tcl_parser_main_machine
 #define word_machine tcl_parser_word_machine
@@ -24,14 +26,7 @@
 #define qstr_machine tcl_parser_qstr_machine
 #define sstr_machine tcl_parser_sstr_machine
 #define cmd_machine tcl_parser_cmd_machine
-#define var_machine tcl_parser_vstr_machine
-
-void printDepth(int d) {
-  if(d>0) {
-    printf("-");
-    printDepth(d-1);
-  }
-}
+#define var_machine tcl_parser_var_machine
 
 struct tcl_syntax *tcl_syntax_push(struct tcl_syntax **pSyntax,
                      unsigned int *pSyntaxNext,
@@ -144,8 +139,6 @@ void tcl_syntax_push_sep(struct tcl_syntax **pSyntax,
   cur->type=tcl_syntax_sep;
 }
 
-////////////////////////////////////
-
 void char_enter(unsigned int stkDepth,
                 const struct parmac_state *fromState,
                 const struct parmac_state *toState,
@@ -161,7 +154,6 @@ void char_enter(unsigned int stkDepth,
 
   tp->markEnd=srcEnd;
 }
-
 
 void sstr_leave(unsigned int stkDepth,
                    const struct parmac_state *fromState,
@@ -788,7 +780,7 @@ void bstr_machine(struct parmac *p,const char *src) {
     {&state_start, &state_lbrace, parse_lbrace, NULL},
 
     {&state_lbrace, &state_rbrace, parse_rbrace, NULL},
-    {&state_lbrace, &state_str,   parse_bstr,  NULL},
+    {&state_lbrace, &state_str,    parse_bstr,   NULL},
 
     {&state_str, &state_rbrace, parse_rbrace, NULL},
 
@@ -798,16 +790,13 @@ void bstr_machine(struct parmac *p,const char *src) {
   parmac_set(p,"bstr",src,&state_start,&state_end,trsns,endof(trsns));
 }
 
-
 void qstr_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
     state_lquote={"lquote",NULL,NULL},
     state_rquote={"rquote",NULL,NULL},
     state_qstr={"qstr",char_enter,qstr_leave},
-
     state_var={"var",char_enter,NULL},
-
     state_cmd={"cmd",NULL,NULL},
     state_end={"end",NULL,NULL};
 
@@ -816,21 +805,21 @@ void qstr_machine(struct parmac *p,const char *src) {
 
     {&state_lquote, &state_rquote, parse_rquote, NULL},
     {&state_lquote, &state_qstr,   parse_qstr,  NULL},
-    {&state_lquote, &state_var, NULL, var_machine},
-    {&state_lquote, &state_cmd,    NULL,         cmd_machine},
+    {&state_lquote, &state_var,    NULL,        var_machine},
+    {&state_lquote, &state_cmd,    NULL,        cmd_machine},
 
     {&state_var, &state_rquote, parse_rquote, NULL},
-    {&state_var, &state_qstr,   parse_qstr,  NULL},
-    {&state_var, &state_var, NULL, var_machine},
+    {&state_var, &state_qstr,   parse_qstr,   NULL},
+    {&state_var, &state_var,    NULL,         var_machine},
     {&state_var, &state_cmd,    NULL,         cmd_machine},
 
     {&state_cmd, &state_rquote, parse_rquote, NULL},
-    {&state_cmd, &state_qstr,   parse_qstr,  NULL},
-    {&state_cmd, &state_var, NULL, var_machine},
+    {&state_cmd, &state_qstr,   parse_qstr,   NULL},
+    {&state_cmd, &state_var,    NULL,         var_machine},
     {&state_cmd, &state_cmd,    NULL,         cmd_machine},
 
     {&state_qstr, &state_rquote, parse_rquote, NULL},
-    {&state_qstr, &state_var, NULL, var_machine},
+    {&state_qstr, &state_var,    NULL,         var_machine},
     {&state_qstr, &state_cmd,    NULL,         cmd_machine},
 
     {&state_rquote, &state_end, NULL, NULL}
@@ -852,19 +841,19 @@ void sstr_machine(struct parmac *p,const char *src) {
     {&state_start, &state_var, NULL, var_machine},
     {&state_start, &state_cmd,    NULL,         cmd_machine},
 
-    {&state_var, &state_sstr,   parse_sstr,  NULL},
-    {&state_var, &state_var, NULL, var_machine},
-    {&state_var, &state_cmd,    NULL,         cmd_machine},
-    {&state_var, &state_end,    NULL,         NULL},
+    {&state_var, &state_sstr, parse_sstr, NULL},
+    {&state_var, &state_var,  NULL,       var_machine},
+    {&state_var, &state_cmd,  NULL,       cmd_machine},
+    {&state_var, &state_end,  NULL,       NULL},
 
-    {&state_cmd, &state_sstr,   parse_sstr, NULL},
-    {&state_cmd, &state_var, parse_dollar,NULL},
-    {&state_cmd, &state_cmd,    NULL,        cmd_machine},
-    {&state_cmd, &state_end,    NULL,        NULL},
+    {&state_cmd, &state_sstr, parse_sstr,   NULL},
+    {&state_cmd, &state_var,  parse_dollar, NULL},
+    {&state_cmd, &state_cmd,  NULL,         cmd_machine},
+    {&state_cmd, &state_end,  NULL,         NULL},
 
     {&state_sstr, &state_var, NULL, var_machine},
-    {&state_sstr, &state_cmd,    NULL,         cmd_machine},
-    {&state_sstr, &state_end,    NULL,         NULL}
+    {&state_sstr, &state_cmd, NULL, cmd_machine},
+    {&state_sstr, &state_end, NULL, NULL}
   };
 
   parmac_set(p,"sstr",src,&state_start,&state_end,trsns,endof(trsns));
