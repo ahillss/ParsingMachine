@@ -837,9 +837,9 @@ void sstr_machine(struct parmac *p,const char *src) {
     state_end={"end",NULL,NULL};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_sstr, parse_sstr,  NULL},
-    {&state_start, &state_var,  NULL, var_machine},
-    {&state_start, &state_cmd,  NULL, cmd_machine},
+    {&state_start, &state_sstr, parse_sstr, NULL},
+    {&state_start, &state_var,  NULL,       var_machine},
+    {&state_start, &state_cmd,  NULL,       cmd_machine},
 
     {&state_var, &state_sstr, parse_sstr, NULL},
     {&state_var, &state_var,  NULL,       var_machine},
