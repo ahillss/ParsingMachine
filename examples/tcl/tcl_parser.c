@@ -46,17 +46,32 @@ struct tcl_syntax *tcl_syntax_push(struct tcl_syntax **pSyntax,
   struct tcl_syntax *cur=&((*pSyntax)[*pSyntaxNext]);
   cur->type=type;
   cur->depth=depth;
-  cur->str=NULL;
+  cur->charsNum=0;
 
   (*pSyntaxNext)++;
 
   return cur;
 }
 
+void tcl_syntax_str_resize(char **pSyntaxChars,
+                           unsigned int *pSyntaxCharsNext,
+                           unsigned int *pSyntaxCharsNum,
+                           unsigned int amount) {
+   if((*pSyntaxCharsNext)+amount >= (*pSyntaxCharsNum)) {
+    while((*pSyntaxCharsNext)+amount >= (*pSyntaxCharsNum)) {
+      (*pSyntaxCharsNum)*=2;
+    }
+
+    *pSyntaxChars=(char*)realloc(*pSyntaxChars,*pSyntaxCharsNum);
+  }
+}
 
 void tcl_syntax_push_str(struct tcl_syntax **pSyntax,
                          unsigned int *pSyntaxNext,
                          unsigned int *pSyntaxNum,
+                         char **pSyntaxChars,
+                         unsigned int *pSyntaxCharsNext,
+                         unsigned int *pSyntaxCharsNum,
                          unsigned int depth,
                          const char *strStart,
                          const char *strEnd) {
@@ -65,18 +80,26 @@ void tcl_syntax_push_str(struct tcl_syntax **pSyntax,
   top=((*pSyntaxNext)!=0)?(&((*pSyntax)[(*pSyntaxNext)-1])):NULL;
 
   if(top && top->depth==depth && top->type==tcl_syntax_str) {
-    unsigned int len1=(unsigned int)strlen(top->str);
-    unsigned int len2=(unsigned int)(strEnd-strStart);
+    unsigned int len=(unsigned int)(strEnd-strStart);
 
-    top->str=realloc(top->str,len1+len2+1);
-    sprintf(top->str+len1,"%.*s",len2,strStart);
+    tcl_syntax_str_resize(pSyntaxChars,pSyntaxCharsNext,pSyntaxCharsNum,len);
+
+    top->charsNum+=len;
+    sprintf(&((*pSyntaxChars)[(*pSyntaxCharsNext)-1]),"%.*s",len,strStart);
+    (*pSyntaxCharsNext)+=len;
+
   } else {
     struct tcl_syntax *cur;
     cur=tcl_syntax_push(pSyntax,pSyntaxNext,pSyntaxNum,tcl_syntax_str,depth);
 
     unsigned int len=(unsigned int)(strEnd-strStart);
-    cur->str=(char*)malloc(len+1);
-    sprintf(cur->str,"%.*s",len,strStart);
+
+
+    tcl_syntax_str_resize(pSyntaxChars,pSyntaxCharsNext,pSyntaxCharsNum,len+1);
+
+    cur->charsNum=len;
+    sprintf(&((*pSyntaxChars)[*pSyntaxCharsNext]),"%.*s",len,strStart);
+    (*pSyntaxCharsNext)+=len+1;
   }
 }
 
@@ -121,19 +144,6 @@ void tcl_syntax_push_sep(struct tcl_syntax **pSyntax,
   cur->type=tcl_syntax_sep;
 }
 
-void tcl_syntax_push_var(struct tcl_syntax **pSyntax,
-                         unsigned int *pSyntaxNext,
-                         unsigned int *pSyntaxNum,
-                         unsigned int depth,
-                         const char *strStart,
-                         const char *strEnd) {
-  const char *a="set";
-  tcl_syntax_push_str(pSyntax,pSyntaxNext,pSyntaxNum,depth+1,a,a+3);
-  tcl_syntax_push_spc(pSyntax,pSyntaxNext,pSyntaxNum,depth+1);
-  tcl_syntax_push_str(pSyntax,pSyntaxNext,pSyntaxNum,depth+1,strStart,strEnd);
-  tcl_syntax_push_sep(pSyntax,pSyntaxNext,pSyntaxNum,depth+1);
-}
-
 ////////////////////////////////////
 
 void char_enter(unsigned int stkDepth,
@@ -152,6 +162,7 @@ void char_enter(unsigned int stkDepth,
   tp->markEnd=srcEnd;
 }
 
+
 void sstr_leave(unsigned int stkDepth,
                    const struct parmac_state *fromState,
                    const struct parmac_state *toState,
@@ -167,10 +178,11 @@ void sstr_leave(unsigned int stkDepth,
     c=tp->markStart;
 
     while(c!=tp->markEnd) {
-      //todo abfv
       if(c[0]=='\\' && c[1]=='t') {
         const char *a="\t";
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,a,a+1);
+        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
+                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
+                            tp->depth,a,a+1);
         c+=2;
       } else if(c[0]=='\\' && c[1]!='\0') {
         const char *a=c+1;
@@ -191,10 +203,14 @@ void sstr_leave(unsigned int stkDepth,
           a="\v";
         }
 
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,a,a+1);
+        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
+                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
+                            tp->depth,a,a+1);
         c+=2;
       } else {
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,c,c+1);
+        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
+                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
+                            tp->depth,c,c+1);
         c++;
       }
     }
@@ -218,7 +234,9 @@ void qstr_leave(unsigned int stkDepth,
     while(c!=tp->markEnd) {
       if(c[0]=='\\' && (c[1]=='\n' || (c[1]=='\r' && c[2]=='\n'))) {
         const char *a=" ";
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,a,a+1);
+        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
+                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
+                            tp->depth,a,a+1);
         c+=(c[1]=='\n')?2:3;
       } else if(c[0]=='\\' && c[1]!='\0') {
         const char *a=c+1;
@@ -239,10 +257,14 @@ void qstr_leave(unsigned int stkDepth,
           a="\v";
         }
 
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,a,a+1);
+        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
+                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
+                            tp->depth,a,a+1);
         c+=2;
       } else {
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,c,c+1);
+        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
+                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
+                            tp->depth,c,c+1);
         c++;
       }
     }
@@ -266,10 +288,14 @@ void bstr_leave(unsigned int stkDepth,
     while(c!=tp->markEnd) {
       if(c[0]=='\\' && (c[1]=='\n' || (c[1]=='\r' && c[2]=='\n'))) {
         const char *a=" ";
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,a,a+1);
+        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
+                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
+                            tp->depth,a,a+1);
         c+=(c[1]=='\n')?2:3;
       } else {
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,c,c+1);
+        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
+                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
+                            tp->depth,c,c+1);
         c++;
       }
     }
@@ -298,9 +324,17 @@ void var_leave(unsigned int stkDepth,
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   printf("----- %u var '%.*s'\n",tp->depth,(int)(tp->markEnd-tp->markStart),tp->markStart);
+  const char *a="set";
+  tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
+                      &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
+                      tp->depth+1,a,a+3);
+  tcl_syntax_push_spc(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1);
+  tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
+                      &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
+                      tp->depth+1,tp->markStart,tp->markEnd);
+  tcl_syntax_push_sep(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1);
 
-  tcl_syntax_push_var(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
-                      tp->depth,tp->markStart,tp->markEnd);
+
 }
 
 void word_leave(unsigned int stkDepth,
@@ -567,6 +601,20 @@ const char *parse_bchar(const char *src,const char **name,void *data) {
 
   return src+1;
 }
+
+// const char *parse_bvarstr(const char *src,const char **name,void *data) {
+//   struct tcl_parser *tp=(struct tcl_parser*)data;
+//   *name="bchar";
+
+//   if(src[0]=='}' || src[0]=='\0') {
+//     return NULL;
+//   }
+
+//   //
+//   tp->errMsg=NULL;
+
+//   return src+1;
+// }
 
 const char *parse_dollar(const char *src,const char **name,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
@@ -873,10 +921,14 @@ void tcl_parser_run(struct tcl_parser *tp,const char *src) {
   tp->col=0;
 
   tp->depth=0;
+
   tp->syntaxNum=2;
   tp->syntaxNext=0;
   tp->syntax=(struct tcl_syntax*)malloc(sizeof(struct tcl_syntax)*tp->syntaxNum);
 
+  tp->syntaxCharsNum=16;
+  tp->syntaxCharsNext=0;
+  tp->syntaxChars=(char*)malloc(tp->syntaxCharsNum);
 
   tcl_parser_main_machine(tp->stk,src);
 
@@ -890,14 +942,17 @@ void tcl_parser_run(struct tcl_parser *tp,const char *src) {
 
   printf("\n");
 
-  unsigned int i;
+  unsigned int i,c=0;
 
   for(i=0;i<tp->syntaxNext;i++) {
     struct tcl_syntax *cur=&tp->syntax[i];
     printf("%u : ",cur->depth);
 
     if(cur->type==tcl_syntax_str) {
-      printf("str '%s'",cur->str);
+      // printf("str '%s'",cur->str);
+
+      printf("str '%s'",&tp->syntaxChars[c]);
+      c+=cur->charsNum+1;
     } else if(cur->type==tcl_syntax_spc) {
       printf("spc");
     } else if(cur->type==tcl_syntax_sep) {

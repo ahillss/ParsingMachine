@@ -21,7 +21,7 @@ enum tcl_syntax_type {
 struct tcl_syntax {
   unsigned int depth;
   enum tcl_syntax_type type;
-  char *str;
+  unsigned int charsNum;
 };
 
 struct tcl_parser {
@@ -36,6 +36,8 @@ struct tcl_parser {
   unsigned int depth;
   unsigned int syntaxNum,syntaxNext;
   struct tcl_syntax *syntax;
+  unsigned int syntaxCharsNum,syntaxCharsNext;
+  char *syntaxChars;
 };
 
 #ifdef __cplusplus
