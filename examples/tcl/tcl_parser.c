@@ -521,7 +521,8 @@ const char *parse_sstr(const char *src,const char **name,void *data) {
   *name="sstr";
   const char *start=src;
 
-  while(src[0]!=' ' && src[0]!='\t' && src[0]!=';' && src[0]!='\0' &&
+  while(src[0]!=' ' && src[0]!='\t' && src[0]!=';' && src[0]!='$' &&
+        src[0]!='\0' &&
         src[0]!='\n' && (src[0]!='\r' || src[1]!='\n') &&
         tp->closings[tp->closingsInd]!=src[0] &&
         (src[0]!='\\' || src[1]!='\r' || src[2]!='\n') &&
@@ -548,7 +549,7 @@ const char *parse_qstr(const char *src,const char **name,void *data) {
   *name="qstr";
   const char *start=src;
 
-  while(src[0]!='"' && src[0]!='\0') {
+  while(src[0]!='"' && src[0]!='\0' && src[0]!='$') {
     if(src[0]=='\\' && src[1]=='"') {
       src+=2;
     } else {
