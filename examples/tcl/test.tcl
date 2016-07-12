@@ -1,1 +1,1 @@
-puts hello $$$$th$-ere" $$$what
+puts {hello$you there}

@@ -29,115 +29,58 @@
 #define var_machine tcl_parser_var_machine
 
 struct tcl_syntax *tcl_syntax_push(struct tcl_syntax **pSyntax,
-                     unsigned int *pSyntaxNext,
-                     unsigned int *pSyntaxNum,
-                     enum tcl_syntax_type type,
-                     unsigned int depth) {
+                                   unsigned int *pSyntaxNext,
+                                   unsigned int *pSyntaxNum,
+                                   unsigned int depth,
+                                   enum tcl_syntax_type type) {
+
+  //
+  struct tcl_syntax *top;
+  top=&((*pSyntax)[(*pSyntaxNext)-1]);
+
+  if(type==tcl_syntax_sep && top->depth==depth && top->type==tcl_syntax_sep) {
+    return top;
+  }
+
+  if(type==tcl_syntax_sep && top->depth==depth && top->type==tcl_syntax_spc) {
+    top->type=tcl_syntax_sep;
+    return top;
+  }
+
+  //
   if(*pSyntaxNext >= *pSyntaxNum) {
     (*pSyntaxNum)*=2;
     *pSyntax=(struct tcl_syntax*)realloc(*pSyntax,sizeof(struct tcl_syntax)*(*pSyntaxNum));
   }
 
+  //
   struct tcl_syntax *cur=&((*pSyntax)[*pSyntaxNext]);
   cur->type=type;
   cur->depth=depth;
   cur->charsNum=0;
-
   (*pSyntaxNext)++;
 
   return cur;
 }
 
-void tcl_syntax_str_resize(char **pSyntaxChars,
+
+char *tcl_syntax_str_push(char **pSyntaxChars,
                            unsigned int *pSyntaxCharsNext,
                            unsigned int *pSyntaxCharsNum,
-                           unsigned int amount) {
-   if((*pSyntaxCharsNext)+amount >= (*pSyntaxCharsNum)) {
-    while((*pSyntaxCharsNext)+amount >= (*pSyntaxCharsNum)) {
+                           unsigned int len) {
+  if((*pSyntaxCharsNext)+len >= (*pSyntaxCharsNum)) {
+    while((*pSyntaxCharsNext)+len >= (*pSyntaxCharsNum)) {
       (*pSyntaxCharsNum)*=2;
     }
 
     *pSyntaxChars=(char*)realloc(*pSyntaxChars,*pSyntaxCharsNum);
   }
+
+  char *r=&((*pSyntaxChars)[*pSyntaxCharsNext]);
+  (*pSyntaxCharsNext)+=len;
+  return r;
 }
 
-void tcl_syntax_push_str(struct tcl_syntax **pSyntax,
-                         unsigned int *pSyntaxNext,
-                         unsigned int *pSyntaxNum,
-                         char **pSyntaxChars,
-                         unsigned int *pSyntaxCharsNext,
-                         unsigned int *pSyntaxCharsNum,
-                         unsigned int depth,
-                         const char *strStart,
-                         const char *strEnd) {
-
-  struct tcl_syntax *top;
-  top=((*pSyntaxNext)!=0)?(&((*pSyntax)[(*pSyntaxNext)-1])):NULL;
-
-  if(top && top->depth==depth && top->type==tcl_syntax_str) {
-    unsigned int len=(unsigned int)(strEnd-strStart);
-
-    tcl_syntax_str_resize(pSyntaxChars,pSyntaxCharsNext,pSyntaxCharsNum,len);
-
-    top->charsNum+=len;
-    sprintf(&((*pSyntaxChars)[(*pSyntaxCharsNext)-1]),"%.*s",len,strStart);
-    (*pSyntaxCharsNext)+=len;
-
-  } else {
-    struct tcl_syntax *cur;
-    cur=tcl_syntax_push(pSyntax,pSyntaxNext,pSyntaxNum,tcl_syntax_str,depth);
-
-    unsigned int len=(unsigned int)(strEnd-strStart);
-
-
-    tcl_syntax_str_resize(pSyntaxChars,pSyntaxCharsNext,pSyntaxCharsNum,len+1);
-
-    cur->charsNum=len;
-    sprintf(&((*pSyntaxChars)[*pSyntaxCharsNext]),"%.*s",len,strStart);
-    (*pSyntaxCharsNext)+=len+1;
-  }
-}
-
-void tcl_syntax_push_spc(struct tcl_syntax **pSyntax,
-                         unsigned int *pSyntaxNext,
-                         unsigned int *pSyntaxNum,
-                         unsigned int depth) {
-
-  if(*pSyntaxNext==0) {
-    return;
-  }
-
-  struct tcl_syntax *cur;
-
-  cur=tcl_syntax_push(pSyntax,pSyntaxNext,pSyntaxNum,tcl_syntax_str,depth);
-  cur->type=tcl_syntax_spc;
-}
-
-
-void tcl_syntax_push_sep(struct tcl_syntax **pSyntax,
-                         unsigned int *pSyntaxNext,
-                         unsigned int *pSyntaxNum,
-                         unsigned int depth) {
-
-  if(*pSyntaxNext==0) {
-    return;
-  }
-
-  struct tcl_syntax *top,*cur;
-  top=&((*pSyntax)[(*pSyntaxNext)-1]);
-
-  if(top->depth==depth && top->type==tcl_syntax_sep) {
-    return;
-  }
-
-  if(top->depth==depth && top->type==tcl_syntax_spc) {
-    cur=top;
-  } else {
-    cur=tcl_syntax_push(pSyntax,pSyntaxNext,pSyntaxNum,tcl_syntax_str,depth);
-  }
-
-  cur->type=tcl_syntax_sep;
-}
 
 void char_enter(unsigned int stkDepth,
                 const struct parmac_state *fromState,
@@ -155,143 +98,169 @@ void char_enter(unsigned int stkDepth,
   tp->markEnd=srcEnd;
 }
 
+
 void sstr_leave(unsigned int stkDepth,
-                   const struct parmac_state *fromState,
-                   const struct parmac_state *toState,
-                   void *data) {
+                const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  if(fromState!=toState) {
-    printf("----- %u sstr '%.*s'\n",tp->depth,
-           (unsigned int)(tp->markEnd-tp->markStart),
-           tp->markStart);
+  printf("----- %u sstr '%.*s'\n",tp->depth,
+         (unsigned int)(tp->markEnd-tp->markStart),
+         tp->markStart);
 
-    const char *c;
-    c=tp->markStart;
 
-    while(c!=tp->markEnd) {
-      if(c[0]=='\\' && c[1]=='t') {
-        const char *a="\t";
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
-                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
-                            tp->depth,a,a+1);
-        c+=2;
-      } else if(c[0]=='\\' && c[1]!='\0') {
-        const char *a=c+1;
+  struct tcl_syntax *n;
+  n=tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,tcl_syntax_str);
 
-        if(c[1]=='a') {
-          a="\a";
-        } else if(c[1]=='b') {
-          a="\b";
-        } else if(c[1]=='f') {
-          a="\f";
-        } else if(c[1]=='n') {
-          a="\n";
-        } else if(c[1]=='r') {
-          a="\r";
-        } else if(c[1]=='t') {
-          a="\t";
-        } else if(c[1]=='v') {
-          a="\v";
-        }
+  const char *c;
+  char *s;
+  c=tp->markStart;
 
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
-                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
-                            tp->depth,a,a+1);
-        c+=2;
+  while(c!=tp->markEnd) {
+    s=tcl_syntax_str_push(&tp->syntaxChars,
+                          &tp->syntaxCharsNext,
+                          &tp->syntaxCharsNum,1);
+    n->charsNum+=1;
+
+    if(c[0]=='\\' && c[1]=='t') {
+      s[0]='\t';
+      c+=2;
+    } else if(c[0]=='\\' && c[1]!='\0') {
+      if(c[1]=='a') {
+        s[0]='\a';
+      } else if(c[1]=='b') {
+        s[0]='\b';
+      } else if(c[1]=='f') {
+        s[0]='\f';
+      } else if(c[1]=='n') {
+        s[0]='\n';
+      } else if(c[1]=='r') {
+        s[0]='\r';
+      } else if(c[1]=='t') {
+        s[0]='\t';
+      } else if(c[1]=='v') {
+        s[0]='\v';
       } else {
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
-                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
-                            tp->depth,c,c+1);
-        c++;
+        s[0]=c[1];
       }
+
+      c+=2;
+    } else {
+      s[0]=c[0];
+      c++;
     }
   }
+
+
+  s=tcl_syntax_str_push(&tp->syntaxChars,
+                      &tp->syntaxCharsNext,
+                        &tp->syntaxCharsNum,1);
+  s[0]='\0';
+
 }
 
 void qstr_leave(unsigned int stkDepth,
-                   const struct parmac_state *fromState,
-                   const struct parmac_state *toState,
-                   void *data) {
+                const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  if(fromState!=toState) {
-    printf("----- %u qstr '%.*s'\n",tp->depth,
-           (unsigned int)(tp->markEnd-tp->markStart),
-           tp->markStart);
+  printf("----- %u qstr '%.*s'\n",tp->depth,
+         (unsigned int)(tp->markEnd-tp->markStart),
+         tp->markStart);
 
-    const char *c;
-    c=tp->markStart;
 
-    while(c!=tp->markEnd) {
-      if(c[0]=='\\' && (c[1]=='\n' || (c[1]=='\r' && c[2]=='\n'))) {
-        const char *a=" ";
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
-                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
-                            tp->depth,a,a+1);
-        c+=(c[1]=='\n')?2:3;
-      } else if(c[0]=='\\' && c[1]!='\0') {
-        const char *a=c+1;
+  struct tcl_syntax *n;
+  n=tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,tcl_syntax_str);
 
-        if(c[1]=='a') {
-          a="\a";
-        } else if(c[1]=='b') {
-          a="\b";
-        } else if(c[1]=='f') {
-          a="\f";
-        } else if(c[1]=='n') {
-          a="\n";
-        } else if(c[1]=='r') {
-          a="\r";
-        } else if(c[1]=='t') {
-          a="\t";
-        } else if(c[1]=='v') {
-          a="\v";
-        }
+  const char *c;
+  char *s;
+  c=tp->markStart;
 
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
-                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
-                            tp->depth,a,a+1);
-        c+=2;
+  while(c!=tp->markEnd) {
+    s=tcl_syntax_str_push(&tp->syntaxChars,
+                          &tp->syntaxCharsNext,
+                          &tp->syntaxCharsNum,1);
+    n->charsNum+=1;
+
+    if(c[0]=='\\' && (c[1]=='\n' || (c[1]=='\r' && c[2]=='\n'))) {
+      s[0]=' ';
+      c+=(c[1]=='\n')?2:3;
+    } else if(c[0]=='\\' && c[1]!='\0') {
+      if(c[1]=='a') {
+        s[0]='\a';
+      } else if(c[1]=='b') {
+        s[0]='\b';
+      } else if(c[1]=='f') {
+        s[0]='\f';
+      } else if(c[1]=='n') {
+        s[0]='\n';
+      } else if(c[1]=='r') {
+        s[0]='\r';
+      } else if(c[1]=='t') {
+        s[0]='\t';
+      } else if(c[1]=='v') {
+        s[0]='\v';
       } else {
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
-                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
-                            tp->depth,c,c+1);
-        c++;
+        s[0]=c[1];
       }
+
+      c+=2;
+    } else {
+      s[0]=c[0];
+      c++;
     }
   }
+
+
+  s=tcl_syntax_str_push(&tp->syntaxChars,
+                        &tp->syntaxCharsNext,
+                        &tp->syntaxCharsNum,1);
+  s[0]='\0';
+
 }
 
 void bstr_leave(unsigned int stkDepth,
-                   const struct parmac_state *fromState,
-                   const struct parmac_state *toState,
-                   void *data) {
+                const struct parmac_state *fromState,
+                const struct parmac_state *toState,
+                void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  if(fromState!=toState) {
-    printf("----- %u bstr '%.*s'\n",tp->depth,
-           (unsigned int)(tp->markEnd-tp->markStart),
-           tp->markStart);
 
-    const char *c;
-    c=tp->markStart;
+  printf("----- %u bstr '%.*s'\n",tp->depth,
+         (unsigned int)(tp->markEnd-tp->markStart),
+         tp->markStart);
 
-    while(c!=tp->markEnd) {
-      if(c[0]=='\\' && (c[1]=='\n' || (c[1]=='\r' && c[2]=='\n'))) {
-        const char *a=" ";
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
-                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
-                            tp->depth,a,a+1);
-        c+=(c[1]=='\n')?2:3;
-      } else {
-        tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
-                            &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
-                            tp->depth,c,c+1);
-        c++;
-      }
+
+  struct tcl_syntax *n;
+  n=tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,tcl_syntax_str);
+
+  char *s;
+  const char *c;
+  c=tp->markStart;
+
+  while(c!=tp->markEnd) {
+    s=tcl_syntax_str_push(&tp->syntaxChars,
+                          &tp->syntaxCharsNext,
+                          &tp->syntaxCharsNum,1);
+    n->charsNum+=1;
+
+    if(c[0]=='\\' && (c[1]=='\n' || (c[1]=='\r' && c[2]=='\n'))) {
+      s[0]=' ';
+      c+=(c[1]=='\n')?2:3;
+    } else {
+      s[0]=c[0];
+      c++;
     }
   }
+
+
+  s=tcl_syntax_str_push(&tp->syntaxChars,
+                        &tp->syntaxCharsNext,
+                        &tp->syntaxCharsNum,1);
+  s[0]='\0';
+
 }
 
 void var_leave(unsigned int stkDepth,
@@ -301,16 +270,33 @@ void var_leave(unsigned int stkDepth,
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   printf("----- %u var '%.*s'\n",tp->depth,(int)(tp->markEnd-tp->markStart),tp->markStart);
-  const char *a="set";
-  tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
-                      &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
-                      tp->depth+1,a,a+3);
-  tcl_syntax_push_spc(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1);
-  tcl_syntax_push_str(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,
-                      &tp->syntaxChars,&tp->syntaxCharsNext,&tp->syntaxCharsNum,
-                      tp->depth+1,tp->markStart,tp->markEnd);
-  tcl_syntax_push_sep(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1);
 
+
+  struct tcl_syntax *n;
+  char *s;
+
+  //set
+  n=tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1,tcl_syntax_str);
+  n->charsNum=3;
+  s=tcl_syntax_str_push(&tp->syntaxChars,
+                        &tp->syntaxCharsNext,
+                        &tp->syntaxCharsNum,4);
+  sprintf(s,"set");
+
+  //
+  tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1,tcl_syntax_spc);
+
+  //var_name
+  n=tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1,tcl_syntax_str);
+  n->charsNum=(unsigned int)(tp->markEnd-tp->markStart);
+  s=tcl_syntax_str_push(&tp->syntaxChars,
+                        &tp->syntaxCharsNext,
+                        &tp->syntaxCharsNum,
+                        n->charsNum+1);
+  sprintf(s,"%.*s",n->charsNum,tp->markStart);
+
+  //
+  tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1,tcl_syntax_sep);
 
 }
 
@@ -322,7 +308,8 @@ void word_leave(unsigned int stkDepth,
 
   printf("----- %u word\n",tp->depth);
 
-  tcl_syntax_push_spc(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth);
+  tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,tcl_syntax_spc);
+
 }
 
 void stmt_leave(unsigned int stkDepth,
@@ -333,23 +320,23 @@ void stmt_leave(unsigned int stkDepth,
 
   printf("----- %u stmt\n",tp->depth);
 
-  tcl_syntax_push_sep(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth);
+  tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,tcl_syntax_sep);
 }
 
 void cmd_enter(unsigned int stkDepth,
-                const struct parmac_state *fromState,
-                const struct parmac_state *toState,
-                const char *srcStart,const char *srcEnd,
-                void *data) {
+               const struct parmac_state *fromState,
+               const struct parmac_state *toState,
+               const char *srcStart,const char *srcEnd,
+               void *data) {
 
   struct tcl_parser *tp=(struct tcl_parser*)data;
   tp->depth++;
 }
 
 void cmd_leave(unsigned int stkDepth,
-                const struct parmac_state *fromState,
-                const struct parmac_state *toState,
-                void *data) {
+               const struct parmac_state *fromState,
+               const struct parmac_state *toState,
+               void *data) {
 
   struct tcl_parser *tp=(struct tcl_parser*)data;
   tp->depth--;
@@ -530,9 +517,14 @@ const char *parse_sstr(const char *src,const char **name,void *data) {
   *name="sstr";
   const char *start=src;
 
-  while(src[0]!=' ' && src[0]!='\t' && src[0]!=';' &&
-        src[0]!='\0' &&
-        src[0]!='\n' && (src[0]!='\r' || src[1]!='\n')) {
+  while(true) {
+    if(src[0]==' ' || src[0]=='\t' || src[0]==';' || src[0]=='\0') {
+      break;
+    }
+
+    if(src[0]=='\n' || (src[0]=='\r' && src[1]=='\n')) {
+      break;
+    }
 
     if(src[0]=='\\' && src[1]=='\r' && src[2]=='\n') {
       break;
@@ -547,10 +539,10 @@ const char *parse_sstr(const char *src,const char **name,void *data) {
     }
 
     if(src[0]=='$' &&
-       (src[1]=='_' ||
-       (src[1]>='a' && src[1]<='z') ||
-       (src[1]>='A' && src[1]<='Z') ||
-       (src[1]>='0' && src[1]<='9'))) {
+       (src[1]=='{' || src[1]=='_' ||
+        (src[1]>='a' && src[1]<='z') ||
+        (src[1]>='A' && src[1]<='Z') ||
+        (src[1]>='0' && src[1]<='9'))) {
 
       break;
     }
@@ -575,12 +567,16 @@ const char *parse_qstr(const char *src,const char **name,void *data) {
   *name="qstr";
   const char *start=src;
 
-  while(src[0]!='"' && src[0]!='\0') {
+  while(true) {
+    if(src[0]=='"' || src[0]=='\0') {
+      break;
+    }
+
     if(src[0]=='$' &&
-       (src[1]=='_' ||
-       (src[1]>='a' && src[1]<='z') ||
-       (src[1]>='A' && src[1]<='Z') ||
-       (src[1]>='0' && src[1]<='9'))) {
+       (src[1]=='{' || src[1]=='_' ||
+        (src[1]>='a' && src[1]<='z') ||
+        (src[1]>='A' && src[1]<='Z') ||
+        (src[1]>='0' && src[1]<='9'))) {
 
       break;
     }
@@ -607,10 +603,16 @@ const char *parse_bstr(const char *src,const char **name,void *data) {
 
   unsigned int c=0;
 
-  while(c>0 || src[0]!='}') {
+  while(true) {
+    if(c==0 && src[0]=='}') {
+      break;
+    }
+
     if(src[0]=='\0') {
-      return NULL;
-    } else if(src[0]=='{') {
+      break;
+    }
+
+    if(src[0]=='{') {
       c++;
     } else if(src[0]=='}') {
       c--;
@@ -638,10 +640,17 @@ const char *parse_var_str(const char *src,const char **name,void *data) {
 
   unsigned int c=0;
 
-  while(c>0 || src[0]!='}') {
+
+  while(true) {
+    if(c==0 && src[0]=='}') {
+      break;
+    }
+
     if(src[0]=='\0') {
-      return NULL;
-    } else if(src[0]=='{') {
+      break;
+    }
+
+    if(src[0]=='{') {
       c++;
     } else if(src[0]=='}') {
       c--;
@@ -773,16 +782,16 @@ void bstr_machine(struct parmac *p,const char *src) {
     state_start={"start",NULL,NULL},
     state_lbrace={"lbrace",NULL,NULL},
     state_rbrace={"rbrace",NULL,NULL},
-    state_str={"str",char_enter,bstr_leave},
+    state_bstr={"bstr",char_enter,bstr_leave},
     state_end={"end",NULL,NULL};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_lbrace, parse_lbrace, NULL},
 
     {&state_lbrace, &state_rbrace, parse_rbrace, NULL},
-    {&state_lbrace, &state_str,    parse_bstr,   NULL},
+    {&state_lbrace, &state_bstr,    parse_bstr,   NULL},
 
-    {&state_str, &state_rbrace, parse_rbrace, NULL},
+    {&state_bstr, &state_rbrace, parse_rbrace, NULL},
 
     {&state_rbrace, &state_end, NULL, NULL},
   };
@@ -832,7 +841,7 @@ void sstr_machine(struct parmac *p,const char *src) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
     state_sstr={"sstr",char_enter,sstr_leave},
-    state_var={"dollar",char_enter,NULL},
+    state_var={"var",char_enter,NULL},
     state_cmd={"cmd",NULL,NULL},
     state_end={"end",NULL,NULL};
 
@@ -846,10 +855,10 @@ void sstr_machine(struct parmac *p,const char *src) {
     {&state_var, &state_cmd,  NULL,       cmd_machine},
     {&state_var, &state_end,  NULL,       NULL},
 
-    {&state_cmd, &state_sstr, parse_sstr,   NULL},
-    {&state_cmd, &state_var,  parse_dollar, NULL},
-    {&state_cmd, &state_cmd,  NULL,         cmd_machine},
-    {&state_cmd, &state_end,  NULL,         NULL},
+    {&state_cmd, &state_sstr, parse_sstr, NULL},
+    {&state_cmd, &state_var,  NULL,       var_machine},
+    {&state_cmd, &state_cmd,  NULL,       cmd_machine},
+    {&state_cmd, &state_end,  NULL,       NULL},
 
     {&state_sstr, &state_var, NULL, var_machine},
     {&state_sstr, &state_cmd, NULL, cmd_machine},
@@ -875,7 +884,7 @@ void var_machine(struct parmac *p,const char *src) {
     {&state_dollar, &state_lbrace, parse_lbrace,  NULL},
     {&state_dollar, &state_idn,    parse_var_idn, NULL},
 
-    {&state_lbrace, &state_rbrace, parse_rbrace, NULL},
+    {&state_lbrace, &state_rbrace, parse_rbrace,  NULL},
     {&state_lbrace, &state_str,    parse_var_str, NULL},
 
     {&state_str, &state_rbrace, parse_rbrace, NULL},
