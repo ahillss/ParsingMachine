@@ -37,7 +37,7 @@ struct parmac_transition {
 };
 
 struct parmac {
-  const char *name,*src;
+  const char *name,*src,*prevSrc;
   const struct parmac_transition *trsnStart,*trsnEnd,*trsnIt;
   const struct parmac_state *state,*startState,*endState;
 };
