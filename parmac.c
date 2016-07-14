@@ -73,6 +73,7 @@ void parmac_on_state_enter(struct parmac *stk,
                            const char *debug) {
 
   unsigned int depth=(unsigned int)(p-stk);
+  bool dif=fromState!=toState;
 
 #ifdef PARMAC_DEBUG_CALLBACKS
   printf("%s : (%u) enter_%s_%s (<-%s) '%.*s'\n",
@@ -82,7 +83,7 @@ void parmac_on_state_enter(struct parmac *stk,
 #endif
 
   if(toState->enter) {
-    toState->enter(depth,fromState,toState,srcStart,srcEnd,userdata);
+    toState->enter(depth,dif,srcStart,srcEnd,userdata);
   }
 }
 
@@ -95,6 +96,7 @@ void parmac_on_state_leave(struct parmac *stk,
                            void *userdata,
                            const char *debug) {
   unsigned int depth=(unsigned int)(p-stk);
+  bool dif=fromState!=toState;
 
 #ifdef PARMAC_DEBUG_CALLBACKS
   printf("%s : (%u) leave_%s_%s (->%s) '%.*s'\n",
@@ -104,7 +106,7 @@ void parmac_on_state_leave(struct parmac *stk,
 #endif
 
   if(fromState->leave) {
-    fromState->leave(depth,fromState,toState,srcStart,srcEnd,userdata);
+    fromState->leave(depth,dif,srcStart,srcEnd,userdata);
   }
 }
 

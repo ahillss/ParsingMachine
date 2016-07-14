@@ -81,11 +81,8 @@ char *tcl_syntax_str_push(char **pSyntaxChars,
   return r;
 }
 
-void sstr_leave(unsigned int stkDepth,
-                const struct parmac_state *fromState,
-                const struct parmac_state *toState,
-                const char *srcStart,
-                const char *srcEnd,
+void sstr_leave(unsigned int stkDepth,bool dif,
+                const char *srcStart,const char *srcEnd,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -144,11 +141,8 @@ void sstr_leave(unsigned int stkDepth,
 
 }
 
-void qstr_leave(unsigned int stkDepth,
-                const struct parmac_state *fromState,
-                const struct parmac_state *toState,
-                const char *srcStart,
-                const char *srcEnd,
+void qstr_leave(unsigned int stkDepth,bool dif,
+                const char *srcStart,const char *srcEnd,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -207,11 +201,8 @@ void qstr_leave(unsigned int stkDepth,
 
 }
 
-void bstr_leave(unsigned int stkDepth,
-                const struct parmac_state *fromState,
-                const struct parmac_state *toState,
-                const char *srcStart,
-                const char *srcEnd,
+void bstr_leave(unsigned int stkDepth,bool dif,
+                const char *srcStart,const char *srcEnd,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -251,11 +242,8 @@ void bstr_leave(unsigned int stkDepth,
 
 }
 
-void var_leave(unsigned int stkDepth,
-               const struct parmac_state *fromState,
-               const struct parmac_state *toState,
-               const char *srcStart,
-               const char *srcEnd,
+void var_leave(unsigned int stkDepth,bool dif,
+                const char *srcStart,const char *srcEnd,
                void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -290,11 +278,8 @@ void var_leave(unsigned int stkDepth,
 
 }
 
-void word_leave(unsigned int stkDepth,
-                const struct parmac_state *fromState,
-                const struct parmac_state *toState,
-                const char *srcStart,
-                const char *srcEnd,
+void word_leave(unsigned int stkDepth,bool dif,
+                const char *srcStart,const char *srcEnd,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -304,11 +289,8 @@ void word_leave(unsigned int stkDepth,
 
 }
 
-void stmt_leave(unsigned int stkDepth,
-                const struct parmac_state *fromState,
-                const struct parmac_state *toState,
-                const char *srcStart,
-                const char *srcEnd,
+void stmt_leave(unsigned int stkDepth,bool dif,
+                const char *srcStart,const char *srcEnd,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -317,21 +299,16 @@ void stmt_leave(unsigned int stkDepth,
   tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,tcl_syntax_sep);
 }
 
-void cmd_enter(unsigned int stkDepth,
-               const struct parmac_state *fromState,
-               const struct parmac_state *toState,
-               const char *srcStart,const char *srcEnd,
+void cmd_enter(unsigned int stkDepth,bool dif,
+                const char *srcStart,const char *srcEnd,
                void *data) {
 
   struct tcl_parser *tp=(struct tcl_parser*)data;
   tp->depth++;
 }
 
-void cmd_leave(unsigned int stkDepth,
-               const struct parmac_state *fromState,
-               const struct parmac_state *toState,
-               const char *srcStart,
-               const char *srcEnd,
+void cmd_leave(unsigned int stkDepth,bool dif,
+                const char *srcStart,const char *srcEnd,
                void *data) {
 
   struct tcl_parser *tp=(struct tcl_parser*)data;

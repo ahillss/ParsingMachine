@@ -12,11 +12,8 @@ typedef const char *(*parmac_event)(const char *src,const char **name,void *user
 
 typedef void (*parmac_machine)(struct parmac *p,const char *src);
 
-typedef void (*parmac_state_callback)(unsigned int depth,
-                                      const struct parmac_state *fromState,
-                                      const struct parmac_state *toState,
-                                      const char *srcStart,
-                                      const char *srcEnd,
+typedef void (*parmac_state_callback)(unsigned int depth,bool dif,
+                                      const char *srcStart,const char *srcEnd,
                                       void *userdata);
 
 struct parmac_state {
