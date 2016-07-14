@@ -867,7 +867,7 @@ void var_machine(struct parmac *p,const char *src) {
     {&state_idn, &state_end, NULL, NULL}
   };
 
-  parmac_set(p,"vstr",src,&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,"var",src,&state_start,&state_end,trsns,endof(trsns));
 }
 
 void cmd_machine(struct parmac *p,const char *src) {

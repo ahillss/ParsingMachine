@@ -125,17 +125,13 @@ void parmac_prev_callbacks(struct parmac *stk,
   while(p2!=p+1) {
     //start state, on enter
     if(p2->trsn->fromState==p2->startState) {
-      parmac_on_state_enter(stk,p2,
-                            NULL,p2->trsn->fromState,
-                            p2->src,p2->src,
-                            userdata,"a");
+      parmac_on_state_enter(stk,p2,NULL,p2->trsn->fromState,
+                            p2->src,p2->src,userdata,"a");
     }
 
     //on leave
-    parmac_on_state_leave(stk,p2,
-                          p2->trsn->fromState,p2->trsn->toState,
-                          p2->prevSrc,p2->src,
-                          userdata,"b");
+    parmac_on_state_leave(stk,p2,p2->trsn->fromState,p2->trsn->toState,
+                          p2->prevSrc,p2->src,userdata,"b");
 
     //
     p2=parmac_stack_next(p2);
@@ -149,10 +145,8 @@ void parmac_state_transition(struct parmac *stk,
                              void *userdata) {
 
   //cur state, on enter
-  parmac_on_state_enter(stk,p,
-                        p->trsn->fromState,p->trsn->toState,
-                        srcStart,srcEnd,
-                        userdata,"c");
+  parmac_on_state_enter(stk,p,p->trsn->fromState,p->trsn->toState,
+                        srcStart,srcEnd,userdata,"c");
 
   //change state
   p->state=p->trsn->toState;
@@ -205,10 +199,8 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
     //end state, on leave
-    parmac_on_state_leave(stk,p,
-                          p->endState,NULL,
-                          p->src,p->src,
-                          userdata,"d");
+    parmac_on_state_leave(stk,p,p->endState,NULL,
+                          p->src,p->src,userdata,"d");
 
     //
     const char *src2=p->src;
@@ -229,10 +221,8 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
     //end state, on leave
-    parmac_on_state_leave(stk,p,
-                          p->endState,NULL,
-                          p->src,p->src,
-                          userdata,"e");
+    parmac_on_state_leave(stk,p,p->endState,NULL,
+                          p->src,p->src,userdata,"e");
 
     //
     return false;
