@@ -124,63 +124,50 @@ void parmac_on_state_leave(struct parmac *stk,
   }
 }
 
-void parmac_on_event_success(struct parmac *stk,
+void parmac_prev_callbacks(struct parmac *stk,
+                           struct parmac *p,
+                           unsigned int depth,
+                           void *data) {
+  //prev states
+  struct parmac *p2=p;
+
+  //down chain of 'from start states'
+  while(p2!=stk && p2->trsnIt->fromState==p2->startState) {//p2->prev p->depth
+    p2=parmac_stack_decr(p2);
+  }
+
+  //from bottom to top
+  while(p2!=p+1) {
+    //start state, on enter
+    if(p2->trsnIt->fromState==p2->startState) {
+      parmac_on_state_enter(stk,p2,
+                            NULL,p2->trsnIt->fromState,
+                            p2->src,p2->src,
+                            data,"a");
+    }
+
+    //on leave
+    parmac_on_state_leave(stk,p2,
+                          p2->trsnIt->fromState,p2->trsnIt->toState,
+                          NULL,NULL, //todo
+                          data,"b");
+
+    //
+    p2=parmac_stack_incr(p2);
+  }
+}
+
+void parmac_state_transition(struct parmac *stk,
                              struct parmac *p,
-                             unsigned int depth,
                              const char *srcStart,
                              const char *srcEnd,
                              void *data) {
 
-  PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
-
-  //prev machines states
-  if(p->trsnIt->fromState==p->startState) {
-    struct parmac *p2=p;
-
-    //down chain of 'from start states'
-    while(p2!=stk && p2->trsnIt->fromState==p2->startState) {//p2->prev p->depth
-      p2=parmac_stack_decr(p2);
-    }
-
-    //from bottom to top-1
-    while(p2!=p) {
-      //start state, on enter
-      if(p2->trsnIt->fromState==p2->startState) {
-        parmac_on_state_enter(stk,p2,
-                              NULL,p2->trsnIt->fromState,
-                              p2->src,p2->src,
-                              data,"e");
-      }
-
-      //on leave
-      parmac_on_state_leave(stk,p2,
-                            p2->trsnIt->fromState,p2->trsnIt->toState,
-                            NULL,NULL,
-                            data,"d");
-
-      //
-      p2=parmac_stack_incr(p2);
-    }
-  }
-
-  //last state (start), on enter
-  if(p->trsnIt->fromState==p->startState) {
-    parmac_on_state_enter(stk,p,
-                          NULL,p->trsnIt->fromState,
-                          p->src,p->src,
-                          data,"c");
-  }
-
-  //last state, on leave
-  parmac_on_state_leave(stk,p,
-                        p->trsnIt->fromState,p->trsnIt->toState,
-                        NULL,NULL,
-                        data,"b");
-
-  //cur state transition, on enter
+  //cur state, on enter
   parmac_on_state_enter(stk,p,
                         p->trsnIt->fromState,p->trsnIt->toState,
-                        srcStart,srcEnd,data,"a");
+                        srcStart,srcEnd,
+                        data,"c");
 
   //change state
   p->state=p->trsnIt->toState;
@@ -225,6 +212,29 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
   }
 #endif
 
+  //===> at end state, not root
+  if(p->state==p->endState &&
+     (*pDepth)!=0) {
+    PARMAC_DEBUG_STEPS_PRINTF("=at end, not root\n");
+    PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
+
+    //end state, on leave
+    parmac_on_state_leave(stk,p,
+                          p->endState,NULL,
+                          p->src,p->src,
+                          data,"d");
+
+    //
+    const char *src2=p->src;
+
+    p=parmac_stack_pop(stk,pDepth);
+
+    parmac_state_transition(stk,p,p->src,src2,data);
+
+    //
+    return true;
+  }
+
   //===> at end state, root
   if(p->state==p->endState &&
      (*pDepth)==0) {
@@ -236,43 +246,10 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     parmac_on_state_leave(stk,p,
                           p->endState,NULL,
                           p->src,p->src,
-                          data,"x");
+                          data,"e");
 
     //
     return false;
-  }
-
-  //===> at end state, not root
-  if(p->state==p->endState &&
-     (*pDepth)!=0) {
-    PARMAC_DEBUG_STEPS_PRINTF("=at end, not root\n");
-    PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
-
-    //end state, on leave
-    parmac_on_state_leave(stk,p,
-                          p->endState,NULL,
-                          p->src,p->src,
-                          data,"X");
-
-    //
-    const char *src2=p->src;
-
-    //pop machine
-    p=parmac_stack_pop(stk,pDepth);
-
-    //last state, on enter
-    parmac_on_state_enter(stk,p,
-                          p->trsnIt->fromState,p->trsnIt->toState,
-                          p->src,src2,
-                          data,"J");
-
-    //change state
-    p->state=p->trsnIt->toState;
-    p->src=src2;
-    p->trsnIt=p->trsnStart;
-
-    //
-    return true;
   }
 
   //===>trsnEnd, either not startState or at root
@@ -292,11 +269,9 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
      *pDepth != 0) {
     PARMAC_DEBUG_STEPS_PRINTF("=no trsns found\n");
 
-    //pop stack
     p=parmac_stack_pop(stk,pDepth);
-
-    //
     p->trsnIt++;
+
     return true;
   }
 
@@ -329,7 +304,10 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
       p->trsnIt++;
     } else {
       PARMAC_DEBUG_STEPS_PRINTF("=event '%s' success\n",eventName);
-      parmac_on_event_success(stk,p,*pDepth,p->src,eventRet,data);
+      PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
+
+      parmac_prev_callbacks(stk,p,*pDepth,data);
+      parmac_state_transition(stk,p,p->src,eventRet,data);
     }
 
     return true;
@@ -343,13 +321,16 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
      !p->trsnIt->machine) {
 
     PARMAC_DEBUG_STEPS_PRINTF("=no machine or event\n");
+    PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
-    parmac_on_event_success(stk,p,*pDepth,p->src,p->src,data);
+    parmac_prev_callbacks(stk,p,*pDepth,data);
+    parmac_state_transition(stk,p,p->src,p->src,data);
 
     return true;
   }
 
   //===> shouldn't reach this point
   assert(0);
+  *err=true;
   return false;
 }
