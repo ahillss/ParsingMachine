@@ -63,11 +63,6 @@ struct parmac *parmac_stack_decr(struct parmac *p) {
   return p-1;
 }
 
-#ifdef PARMAC_DEBUG_CALLBACKS
-const char *parmac_debug_markStart=NULL;
-const char *parmac_debug_markEnd=NULL;
-#endif
-
 void parmac_on_state_enter(struct parmac *stk,
                            struct parmac *p,
                            const struct parmac_state *fromState,
@@ -80,15 +75,9 @@ void parmac_on_state_enter(struct parmac *stk,
   unsigned int depth=(unsigned int)(p-stk);
 
 #ifdef PARMAC_DEBUG_CALLBACKS
-  parmac_debug_markStart=srcStart;
-  parmac_debug_markEnd=srcEnd;
-  printf("%s : (%u) enter_%s_%s%s%s '%.*s'\n",
-         debug,
-         depth,
-         p->name,
-         toState->name,
-         fromState?" <=":"",
-         fromState?fromState->name:"",
+  printf("%s : (%u) enter_%s_%s (<-%s) '%.*s'\n",
+         debug,depth,p->name,
+         toState->name,fromState?fromState->name:"_",
          srcEnd-srcStart,srcStart);
 #endif
 
@@ -108,19 +97,14 @@ void parmac_on_state_leave(struct parmac *stk,
   unsigned int depth=(unsigned int)(p-stk);
 
 #ifdef PARMAC_DEBUG_CALLBACKS
-  printf("%s : (%u) leave_%s_%s%s%s '%.*s'\n",
-         debug,
-         depth,
-         p->name,
-         fromState->name,
-         toState?" =>":"",
-         toState?toState->name:"",
-         parmac_debug_markEnd-parmac_debug_markStart,
-         parmac_debug_markStart);
+  printf("%s : (%u) leave_%s_%s (->%s) '%.*s'\n",
+         debug,depth,p->name,
+         fromState->name,toState?toState->name:"_",
+         srcEnd-srcStart,srcStart);
 #endif
 
   if(fromState->leave) {
-    fromState->leave(depth,fromState,toState,data);
+    fromState->leave(depth,fromState,toState,srcStart,srcEnd,data);
   }
 }
 
@@ -132,7 +116,7 @@ void parmac_prev_callbacks(struct parmac *stk,
   struct parmac *p2=p;
 
   //down chain of 'from start states'
-  while(p2!=stk && p2->trsnIt->fromState==p2->startState) {//p2->prev p->depth
+  while(p2!=stk && p2->trsnIt->fromState==p2->startState) {//p2->prev/p->depth
     p2=parmac_stack_decr(p2);
   }
 
@@ -149,7 +133,7 @@ void parmac_prev_callbacks(struct parmac *stk,
     //on leave
     parmac_on_state_leave(stk,p2,
                           p2->trsnIt->fromState,p2->trsnIt->toState,
-                          NULL,NULL, //todo
+                          p2->prevSrc,p2->src,
                           data,"b");
 
     //
@@ -171,6 +155,7 @@ void parmac_state_transition(struct parmac *stk,
 
   //change state
   p->state=p->trsnIt->toState;
+  p->prevSrc=p->src;
   p->src=srcEnd;
   p->trsnIt=p->trsnStart;
 }

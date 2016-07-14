@@ -102,6 +102,8 @@ void char_enter(unsigned int stkDepth,
 void sstr_leave(unsigned int stkDepth,
                 const struct parmac_state *fromState,
                 const struct parmac_state *toState,
+                const char *srcStart,
+                const char *srcEnd,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -163,6 +165,8 @@ void sstr_leave(unsigned int stkDepth,
 void qstr_leave(unsigned int stkDepth,
                 const struct parmac_state *fromState,
                 const struct parmac_state *toState,
+                const char *srcStart,
+                const char *srcEnd,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -224,6 +228,8 @@ void qstr_leave(unsigned int stkDepth,
 void bstr_leave(unsigned int stkDepth,
                 const struct parmac_state *fromState,
                 const struct parmac_state *toState,
+                const char *srcStart,
+                const char *srcEnd,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -266,6 +272,8 @@ void bstr_leave(unsigned int stkDepth,
 void var_leave(unsigned int stkDepth,
                const struct parmac_state *fromState,
                const struct parmac_state *toState,
+               const char *srcStart,
+               const char *srcEnd,
                void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -303,6 +311,8 @@ void var_leave(unsigned int stkDepth,
 void word_leave(unsigned int stkDepth,
                 const struct parmac_state *fromState,
                 const struct parmac_state *toState,
+                const char *srcStart,
+                const char *srcEnd,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -315,6 +325,8 @@ void word_leave(unsigned int stkDepth,
 void stmt_leave(unsigned int stkDepth,
                 const struct parmac_state *fromState,
                 const struct parmac_state *toState,
+                const char *srcStart,
+                const char *srcEnd,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -336,6 +348,8 @@ void cmd_enter(unsigned int stkDepth,
 void cmd_leave(unsigned int stkDepth,
                const struct parmac_state *fromState,
                const struct parmac_state *toState,
+               const char *srcStart,
+               const char *srcEnd,
                void *data) {
 
   struct tcl_parser *tp=(struct tcl_parser*)data;

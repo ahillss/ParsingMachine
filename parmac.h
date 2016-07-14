@@ -12,22 +12,16 @@ typedef const char *(*parmac_event)(const char *src,const char **name,void *data
 
 typedef void (*parmac_machine)(struct parmac *p,const char *src);
 
-typedef void (*parmac_state_enter)(unsigned int depth,
-                                   const struct parmac_state *fromState,
-                                   const struct parmac_state *toState,
-                                   const char *srcStart,
-                                   const char *srcEnd,
-                                   void *data);
-
-typedef void (*parmac_state_leave)(unsigned int depth,
-                                   const struct parmac_state *fromState,
-                                   const struct parmac_state *toState,
-                                   void *data);
+typedef void (*parmac_state_callback)(unsigned int depth,
+                                      const struct parmac_state *fromState,
+                                      const struct parmac_state *toState,
+                                      const char *srcStart,
+                                      const char *srcEnd,
+                                      void *data);
 
 struct parmac_state {
   const char *name;
-  parmac_state_enter enter;
-  parmac_state_leave leave;
+  parmac_state_callback enter,leave;
 };
 
 struct parmac_transition {
