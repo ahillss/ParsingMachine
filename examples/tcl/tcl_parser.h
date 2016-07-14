@@ -29,7 +29,6 @@ struct tcl_parser {
   struct parmac *stk;
   unsigned int stkNum;
   const char *errMsg;
-  const char *markStart,*markEnd;
   int pos,row,col;
   char *closings;
 
