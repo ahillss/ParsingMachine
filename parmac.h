@@ -8,7 +8,7 @@
 struct parmac;
 struct parmac_state;
 
-typedef const char *(*parmac_event)(const char *src,const char **name,void *data);
+typedef const char *(*parmac_event)(const char *src,const char **name,void *userdata);
 
 typedef void (*parmac_machine)(struct parmac *p,const char *src);
 
@@ -17,7 +17,7 @@ typedef void (*parmac_state_callback)(unsigned int depth,
                                       const struct parmac_state *toState,
                                       const char *srcStart,
                                       const char *srcEnd,
-                                      void *data);
+                                      void *userdata);
 
 struct parmac_state {
   const char *name;
@@ -48,7 +48,7 @@ extern "C" {
                             const struct parmac_transition *startTrsn,
                             const struct parmac_transition *endTrsn);
 
-  bool parmac_run(struct parmac *stk,unsigned int *pDepth,void *data,bool *err);
+  bool parmac_run(struct parmac *stk,unsigned int *pDepth,void *userdata,bool *err);
 
 #ifdef __cplusplus
 }
