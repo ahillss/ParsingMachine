@@ -19,12 +19,13 @@ enum tcl_syntax_type {
 };
 
 struct tcl_syntax {
-  unsigned int depth;
+  unsigned int depth,pos,row,col;
   enum tcl_syntax_type type;
   unsigned int charsNum;
 };
 
 struct tcl_parser {
+  const char *src;
   unsigned int closingsInd;
   struct parmac *stk;
   unsigned int stkNum;

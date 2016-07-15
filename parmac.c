@@ -1,6 +1,6 @@
 
 // #define PARMAC_DEBUG_STEPS
-// #define PARMAC_DEBUG_CALLBACKS
+#define PARMAC_DEBUG_CALLBACKS
 
 #include "parmac.h"
 
@@ -140,18 +140,17 @@ void parmac_prev_callbacks(struct parmac *stk,
 
 void parmac_state_transition(struct parmac *stk,
                              struct parmac *p,
-                             const char *srcStart,
-                             const char *srcEnd,
+                             const char *src,
                              void *userdata) {
 
   //cur state, on enter
   parmac_on_state_enter(stk,p,p->trsn->fromState,p->trsn->toState,
-                        srcStart,srcEnd,userdata,"c");
+                        p->src,src,userdata,"c");
 
   //change state
   p->state=p->trsn->toState;
   p->prevSrc=p->src;
-  p->src=srcEnd;
+  p->src=src;
   p->trsn=p->trsnStart;
 }
 
@@ -160,11 +159,11 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
   *err=false;
   struct parmac *p=&stk[*pDepth];
 
-  //===> on empty stack, stop and do nothing
-  if(!p) {
-    PARMAC_DEBUG_STEPS_PRINTF("=stk empty\n");
-    return false;
-  }
+  //===>
+  assert(p->trsn==p->trsnEnd || p->trsn->fromState!=p->endState);
+  assert(p->trsn==p->trsnEnd || p->trsn->toState!=p->startState);
+  assert(p->trsn==p->trsnEnd || !p->trsn->event || !p->trsn->machine);
+  assert(p->startState!=p->endState);
 
   //===> transition fromState doesn't match state
   if(p->trsn!=p->trsnEnd &&
@@ -207,7 +206,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
 
     p=parmac_stack_pop(stk,pDepth);
 
-    parmac_state_transition(stk,p,p->src,src2,userdata);
+    parmac_state_transition(stk,p,src2,userdata);
 
     //
     return true;
@@ -251,7 +250,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     return true;
   }
 
-  //======> on machine
+  //===> on machine
   if(p->trsn!=p->trsnEnd &&
      p->state==p->trsn->fromState &&
      p->state!=p->endState &&
@@ -265,7 +264,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     return true;
   }
 
-  //======> on event
+  //===> on event
   if(p->trsn!=p->trsnEnd &&
      p->state==p->trsn->fromState &&
      p->state!=p->endState &&
@@ -283,13 +282,13 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
       PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
       parmac_prev_callbacks(stk,p,userdata);
-      parmac_state_transition(stk,p,p->src,eventRet,userdata);
+      parmac_state_transition(stk,p,eventRet,userdata);
     }
 
     return true;
   }
 
-  //======> on no machine or event
+  //===> on no machine or event
   if(p->trsn!=p->trsnEnd &&
      p->state==p->trsn->fromState &&
      p->state!=p->endState &&
@@ -300,7 +299,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
     parmac_prev_callbacks(stk,p,userdata);
-    parmac_state_transition(stk,p,p->src,p->src,userdata);
+    parmac_state_transition(stk,p,p->src,userdata);
 
     return true;
   }
