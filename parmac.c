@@ -159,7 +159,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
   *err=false;
   struct parmac *p=&stk[*pDepth];
 
-  //===>
+  //===
   assert(p->trsn==p->trsnEnd || p->trsn->fromState!=p->endState);
   assert(p->trsn==p->trsnEnd || p->trsn->toState!=p->startState);
   assert(p->trsn==p->trsnEnd || !p->trsn->event || !p->trsn->machine);
@@ -272,7 +272,6 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
      !p->trsn->machine) {
     const char *eventName;
     const char *eventRet=p->trsn->event(p->src,&eventName,userdata);
-    const char *startSrc=p->src;
 
     if(eventRet==NULL) {
       PARMAC_DEBUG_STEPS_PRINTF("=event '%s' failed\n",eventName);
