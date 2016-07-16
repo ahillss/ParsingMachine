@@ -1,5 +1,5 @@
 
-// #define PARMAC_DEBUG_STEPS
+#define PARMAC_DEBUG_STEPS
 // #define PARMAC_DEBUG_CALLBACKS
 
 #include "parmac.h"
@@ -169,17 +169,19 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     return true;
   }
 
-  //debug print pos
+  //===> debug print pos
 #ifdef PARMAC_DEBUG_STEPS
   {
     struct parmac *p2=stk;
     printf("\n");
 
     while(p2!=p+1) {
-      const char *f=(p2->trsn==p2->trsnEnd)?"_":p2->trsn->fromState->name;
-      const char *t=(p2->trsn==p2->trsnEnd)?"_":p2->trsn->toState->name;
+      const char *f=(p2->trsn==p2->trsnEnd)?"X":p2->trsn->fromState->name;
+      const char *t=(p2->trsn==p2->trsnEnd)?"X":p2->trsn->toState->name;
       unsigned int d=(*pDepth)-(unsigned int)(p-p2);
-      printf("/(%i) %s : %s (%s -> %s)",d,p2->name,p2->state->name,f,t);
+      printf("/ %s : %s (%s -> %s) (%u) (%u)",
+             p2->name,p2->state->name,f,t,d,
+             (unsigned int)(p2->trsn-p2->trsnStart));
       p2=parmac_stack_next(p2);
     }
 
@@ -217,10 +219,11 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     return false;
   }
 
-  //===>trsnEnd, either not startState or at root
+  //===> trsnEnd, either not startState or at root
   if(p->trsn==p->trsnEnd &&
      p->state!=p->endState &&
-     (p->state!=p->startState || *pDepth==0)) {
+     (p->state!=p->startState ||
+      *pDepth==0)) {
 
     PARMAC_DEBUG_STEPS_PRINTF("=no trsns left, fail\n");
 
@@ -228,7 +231,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     return false;
   }
 
-  //===>trsnEnd, startState, not root
+  //===> trsnEnd, startState, not root
   if(p->trsn==p->trsnEnd &&
      p->state==p->startState &&
      p->state!=p->endState &&
