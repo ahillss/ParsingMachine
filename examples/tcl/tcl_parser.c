@@ -247,9 +247,8 @@ void cmd_leave(unsigned int stkDepth,bool dif,
   tp->depth--;
 }
 
-const char *tcl_parser_parse_sep(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_sep(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="sep";
   const char *start=src;
 
   while(src[0]==';') {
@@ -264,9 +263,8 @@ const char *tcl_parser_parse_sep(const char *src,const char **name,void *data) {
   return src;
 }
 
-const char *tcl_parser_parse_eol(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_eol(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="eol";
   const char *start=src;
 
   while(true) {
@@ -287,9 +285,8 @@ const char *tcl_parser_parse_eol(const char *src,const char **name,void *data) {
   return src;
 }
 
-const char *tcl_parser_parse_spc(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_spc(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="spc";
   const char *start=src;
 
   while(true) {
@@ -312,9 +309,8 @@ const char *tcl_parser_parse_spc(const char *src,const char **name,void *data) {
   return src;
 }
 
-const char *tcl_parser_parse_cmnt(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_cmnt(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="cmnt";
 
   while(src[0]==' ' || src[0]=='\t') {
     src++;
@@ -336,9 +332,8 @@ const char *tcl_parser_parse_cmnt(const char *src,const char **name,void *data) 
   return src;
 }
 
-const char *tcl_parser_parse_lquote(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_lquote(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="lquote";
 
   if(src[0]!='"') {
     return NULL;
@@ -349,9 +344,8 @@ const char *tcl_parser_parse_lquote(const char *src,const char **name,void *data
   return src+1;
 }
 
-const char *tcl_parser_parse_rquote(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_rquote(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="rquote";
 
   if(src[0]!='"') {
     tp->errMsg="Expecting closing double quote.\n";
@@ -363,9 +357,8 @@ const char *tcl_parser_parse_rquote(const char *src,const char **name,void *data
   return src+1;
 }
 
-const char *tcl_parser_parse_lsqr(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_lsqr(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="lsqr";
 
   if(src[0]!='[') {
     return NULL;
@@ -376,9 +369,8 @@ const char *tcl_parser_parse_lsqr(const char *src,const char **name,void *data) 
   return src+1;
 }
 
-const char *tcl_parser_parse_rsqr(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_rsqr(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="rsqr";
 
   if(src[0]!=']') {
     tp->errMsg="Expecting closing square bracket.\n";
@@ -390,9 +382,8 @@ const char *tcl_parser_parse_rsqr(const char *src,const char **name,void *data) 
   return src+1;
 }
 
-const char *tcl_parser_parse_lbrace(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_lbrace(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="lbrace";
 
   if(src[0]!='{') {
     return NULL;
@@ -403,9 +394,8 @@ const char *tcl_parser_parse_lbrace(const char *src,const char **name,void *data
   return src+1;
 }
 
-const char *tcl_parser_parse_rbrace(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_rbrace(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="rbrace";
 
   if(src[0]!='}') {
     tp->errMsg="Expecting closing curly brace.\n";
@@ -417,13 +407,13 @@ const char *tcl_parser_parse_rbrace(const char *src,const char **name,void *data
   return src+1;
 }
 
-const char *tcl_parser_parse_sstr(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_sstr(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="sstr";
   const char *start=src;
 
   while(true) {
-    if(src[0]==' ' || src[0]=='\t' || src[0]==';' || src[0]=='\0') {
+    if(src[0]==' ' || src[0]=='\t' || src[0]==';' ||
+       src[0]=='[' || src[0]=='\0') {
       break;
     }
 
@@ -467,13 +457,12 @@ const char *tcl_parser_parse_sstr(const char *src,const char **name,void *data) 
   return src;
 }
 
-const char *tcl_parser_parse_qstr(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_qstr(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="qstr";
   const char *start=src;
 
   while(true) {
-    if(src[0]=='"' || src[0]=='\0') {
+    if(src[0]=='"' || src[0]=='[' || src[0]=='\0') {
       break;
     }
 
@@ -501,9 +490,8 @@ const char *tcl_parser_parse_qstr(const char *src,const char **name,void *data) 
   return src;
 }
 
-const char *tcl_parser_parse_bstr(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_bstr(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="bstr";
   const char *start=src;
 
   unsigned int c=0;
@@ -538,9 +526,8 @@ const char *tcl_parser_parse_bstr(const char *src,const char **name,void *data) 
   return src;
 }
 
-const char *tcl_parser_parse_var_str(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_var_str(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="var_str";
   const char *start=src;
 
   unsigned int c=0;
@@ -573,9 +560,8 @@ const char *tcl_parser_parse_var_str(const char *src,const char **name,void *dat
   return src;
 }
 
-const char *tcl_parser_parse_var_idn(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_var_idn(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="var_idn";
   const char *start=src;
 
   while(src[0]=='_' ||
@@ -593,9 +579,8 @@ const char *tcl_parser_parse_var_idn(const char *src,const char **name,void *dat
   return NULL;
 }
 
-const char *tcl_parser_parse_dollar(const char *src,const char **name,void *data) {
+const char *tcl_parser_parse_dollar(const char *src,void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
-  *name="dollar";
 
   if(src[0]=='$') {
     tp->errMsg=NULL;

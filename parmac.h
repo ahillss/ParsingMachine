@@ -8,7 +8,7 @@
 struct parmac;
 struct parmac_state;
 
-typedef const char *(*parmac_event)(const char *src,const char **name,void *userdata);
+typedef const char *(*parmac_event)(const char *src,void *userdata);
 
 typedef void (*parmac_machine)(struct parmac *p,const char *src);
 
