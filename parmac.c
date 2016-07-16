@@ -191,7 +191,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
   if(p->state==p->endState &&
      (*pDepth)!=0) {
 
-    PARMAC_DEBUG_STEPS_PRINTF("=at end, not root, pop machine\n");
+    PARMAC_DEBUG_STEPS_PRINTF("=end, not root, pop machine\n");
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
     parmac_on_state_leave("d",stk,p,p->src,p->src,userdata,
@@ -208,7 +208,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
   if(p->state==p->endState &&
      (*pDepth)==0) {
 
-    PARMAC_DEBUG_STEPS_PRINTF("=at end, root\n");
+    PARMAC_DEBUG_STEPS_PRINTF("=end, root, finished\n");
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
     parmac_on_state_leave("e",stk,p,p->src,p->src,userdata,
@@ -249,7 +249,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
      p->trsn->machine &&
      !p->trsn->event) {
 
-    PARMAC_DEBUG_STEPS_PRINTF("=pushing machine\n");
+    PARMAC_DEBUG_STEPS_PRINTF("=pushed machine\n");
 
     p=parmac_stack_push(stk,pDepth,p->trsn->machine);
 
