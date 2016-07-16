@@ -1,5 +1,5 @@
 
-#define PARMAC_DEBUG_STEPS
+// #define PARMAC_DEBUG_STEPS
 // #define PARMAC_DEBUG_CALLBACKS
 
 #include "parmac.h"
