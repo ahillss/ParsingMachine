@@ -179,7 +179,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
       const char *f=(p2->trsn==p2->trsnEnd)?"X":p2->trsn->fromState->name;
       const char *t=(p2->trsn==p2->trsnEnd)?"X":p2->trsn->toState->name;
       unsigned int d=(*pDepth)-(unsigned int)(p-p2);
-      printf("/ %s : %s (%s -> %s) (%u) (%u)",
+      printf("/ %s : %s (%s -> %s) (d%u) (t%u)",
              p2->name,p2->state->name,f,t,d,
              (unsigned int)(p2->trsn-p2->trsnStart));
       p2=parmac_stack_next(p2);
