@@ -161,14 +161,6 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
   assert(p->trsn==p->trsnEnd || !p->trsn->event || !p->trsn->machine);
   assert(p->startState!=p->endState);
 
-  //===> transition fromState doesn't match state
-  if(p->trsn!=p->trsnEnd &&
-     p->state!=p->trsn->fromState &&
-     p->state!=p->endState) {
-    p->trsn++;
-    return true;
-  }
-
   //===> debug print pos
 #ifdef PARMAC_DEBUG_STEPS
   {
@@ -179,7 +171,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
       const char *f=(p2->trsn==p2->trsnEnd)?"X":p2->trsn->fromState->name;
       const char *t=(p2->trsn==p2->trsnEnd)?"X":p2->trsn->toState->name;
       unsigned int d=(*pDepth)-(unsigned int)(p-p2);
-      printf("/ %s : %s (%s -> %s) (d%u) (t%u)",
+      printf("/ %s : %s (%s -> %s) (d%u t%u)",
              p2->name,p2->state->name,f,t,d,
              (unsigned int)(p2->trsn-p2->trsnStart));
       p2=parmac_stack_next(p2);
@@ -188,6 +180,19 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     printf("\n");
   }
 #endif
+
+  //===> transition fromState doesn't match state
+  if(p->trsn!=p->trsnEnd &&
+     p->state!=p->trsn->fromState &&
+     p->state!=p->endState) {
+    PARMAC_DEBUG_STEPS_PRINTF("=iterating trsns\n");
+
+    while(p->trsn!=p->trsnEnd && p->state!=p->trsn->fromState) {
+      p->trsn++;
+    }
+
+    return true;
+  }
 
   //===> at end state, not root
   if(p->state==p->endState &&
