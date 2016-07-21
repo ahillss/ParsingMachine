@@ -150,9 +150,10 @@ void parmac_state_transition(struct parmac *stk,
   p->trsn=p->trsnStart;
 }
 
-bool parmac_run(struct parmac *stk,unsigned int *pDepth,
-                void *userdata,bool *err) {
-  *err=false;
+enum parmac_status parmac_run(struct parmac *stk,
+                              unsigned int *pDepth,
+                              void *userdata) {
+
   struct parmac *p=&stk[*pDepth];
 
   //===
@@ -191,7 +192,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
       p->trsn++;
     }
 
-    return true;
+    return parmac_ok;
   }
 
   //===> at end state, not root
@@ -208,7 +209,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     p=parmac_stack_pop(stk,pDepth);
     parmac_state_transition(stk,p,src2,userdata);
 
-    return true;
+    return parmac_ok;
   }
 
   //===> at end state, root
@@ -221,7 +222,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     parmac_on_state_leave("e",stk,p,p->src,p->src,userdata,
                           p->endState,NULL);
 
-    return false;
+    return parmac_done;
   }
 
   //===> trsnEnd, either not startState or at root
@@ -231,9 +232,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
       *pDepth==0)) {
 
     PARMAC_DEBUG_STEPS_PRINTF("=no trsns left, fail\n");
-
-    *err=true;
-    return false;
+    return parmac_error;
   }
 
   //===> trsnEnd, startState, not root
@@ -247,7 +246,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     p=parmac_stack_pop(stk,pDepth);
     p->trsn++;
 
-    return true;
+    return parmac_ok;
   }
 
   //===> on machine
@@ -261,7 +260,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
 
     p=parmac_stack_push(stk,pDepth,p->trsn->machine);
 
-    return true;
+    return parmac_ok;
   }
 
   //===> on event
@@ -285,7 +284,7 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
       parmac_state_transition(stk,p,eventRet,userdata);
     }
 
-    return true;
+    return parmac_ok;
   }
 
   //===> on no machine or event
@@ -301,11 +300,10 @@ bool parmac_run(struct parmac *stk,unsigned int *pDepth,
     parmac_prev_callbacks(stk,p,userdata);
     parmac_state_transition(stk,p,p->src,userdata);
 
-    return true;
+    return parmac_ok;
   }
 
   //===> shouldn't reach this point
   assert(0);
-  *err=true;
-  return false;
+  return parmac_error;
 }
