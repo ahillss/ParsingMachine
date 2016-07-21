@@ -3,72 +3,25 @@
 #include <stdio.h>
 #include <stddef.h>
 
-struct tcl_syntax *tcl_syntax_push(struct tcl_syntax **pSyntax,
-                                   unsigned int *pSyntaxNext,
-                                   unsigned int *pSyntaxNum,
-                                   unsigned int depth,
-                                   unsigned int pos,
-                                   enum tcl_syntax_type type) {
+// #define TCL_PARSER_DEBUG
 
-  //
-  struct tcl_syntax *top;
-  top=&((*pSyntax)[(*pSyntaxNext)-1]);
+#ifdef TCL_PARSER_DEBUG
+#define TCL_PARSER_DEBUG_PRINTF(...) printf(__VA_ARGS__)
+#else
+#define TCL_PARSER_DEBUG_PRINTF(...)
+#endif
 
-  if(type==tcl_syntax_sep && top->depth==depth && top->type==tcl_syntax_sep) {
-    return top;
-  }
-
-  if(type==tcl_syntax_sep && top->depth==depth && top->type==tcl_syntax_spc) {
-    top->type=tcl_syntax_sep;
-    return top;
-  }
-
-  //
-  if(*pSyntaxNext >= *pSyntaxNum) {
-    (*pSyntaxNum)*=2;
-    *pSyntax=(struct tcl_syntax*)realloc(*pSyntax,sizeof(struct tcl_syntax)*(*pSyntaxNum));
-  }
-
-  //
-  struct tcl_syntax *cur=&((*pSyntax)[*pSyntaxNext]);
-  cur->type=type;
-  cur->depth=depth;
-  cur->charsNum=0;
-  (*pSyntaxNext)++;
-
-  return cur;
-}
-
-
-char *tcl_syntax_str_push(char **pSyntaxChars,
-                           unsigned int *pSyntaxCharsNext,
-                           unsigned int *pSyntaxCharsNum,
-                           unsigned int len) {
-  if((*pSyntaxCharsNext)+len >= (*pSyntaxCharsNum)) {
-    while((*pSyntaxCharsNext)+len >= (*pSyntaxCharsNum)) {
-      (*pSyntaxCharsNum)*=2;
-    }
-
-    *pSyntaxChars=(char*)realloc(*pSyntaxChars,*pSyntaxCharsNum);
-  }
-
-  char *r=&((*pSyntaxChars)[*pSyntaxCharsNext]);
-  (*pSyntaxCharsNext)+=len;
-  return r;
-}
+#define endof(x) (x+sizeof(x)/sizeof(*x))
 
 void tcl_parser_str_leave(unsigned int stkDepth,bool dif,
                const char *srcStart,const char *srcEnd,
                void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  printf("----- %u str '%.*s'\n",tp->depth,
-         (unsigned int)(srcEnd-srcStart),
-         srcStart);
+  TCL_PARSER_DEBUG_PRINTF("%u str '%.*s'\n",tp->depth,(unsigned int)(srcEnd-srcStart),srcStart);
 
-
-  struct tcl_syntax *n;
-  n=tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,
+  struct tcl_syntax_node *n;
+  n=tcl_syntax_push(tp->syntax,tp->depth,
                     (unsigned int)(srcStart-tp->src),
                     tcl_syntax_str);
 
@@ -77,9 +30,7 @@ void tcl_parser_str_leave(unsigned int stkDepth,bool dif,
   c=srcStart;
 
   while(c!=srcEnd) {
-    s=tcl_syntax_str_push(&tp->syntaxChars,
-                          &tp->syntaxCharsNext,
-                          &tp->syntaxCharsNum,1);
+    s=tcl_syntax_str_push(tp->syntax,1);
     n->charsNum+=1;
 
     if(c[0]=='\\' && (c[1]=='\n' || (c[1]=='\r' && c[2]=='\n'))) {
@@ -112,9 +63,7 @@ void tcl_parser_str_leave(unsigned int stkDepth,bool dif,
     }
   }
 
-  s=tcl_syntax_str_push(&tp->syntaxChars,
-                        &tp->syntaxCharsNext,
-                        &tp->syntaxCharsNum,1);
+  s=tcl_syntax_str_push(tp->syntax,1);
   s[0]='\0';
 
 }
@@ -125,13 +74,11 @@ void tcl_parser_bstr_leave(unsigned int stkDepth,bool dif,
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
 
-  printf("----- %u bstr '%.*s'\n",tp->depth,
-         (unsigned int)(srcEnd-srcStart),
-         srcStart);
+  TCL_PARSER_DEBUG_PRINTF("%u bstr '%.*s'\n",tp->depth,(unsigned int)(srcEnd-srcStart),srcStart);
 
 
-  struct tcl_syntax *n;
-  n=tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,
+  struct tcl_syntax_node *n;
+  n=tcl_syntax_push(tp->syntax,tp->depth,
                     (unsigned int)(srcStart-tp->src),
                     tcl_syntax_str);
 
@@ -140,9 +87,7 @@ void tcl_parser_bstr_leave(unsigned int stkDepth,bool dif,
   c=srcStart;
 
   while(c!=srcEnd) {
-    s=tcl_syntax_str_push(&tp->syntaxChars,
-                          &tp->syntaxCharsNext,
-                          &tp->syntaxCharsNum,1);
+    s=tcl_syntax_str_push(tp->syntax,1);
     n->charsNum+=1;
 
     if(c[0]=='\\' && (c[1]=='\n' || (c[1]=='\r' && c[2]=='\n'))) {
@@ -155,9 +100,7 @@ void tcl_parser_bstr_leave(unsigned int stkDepth,bool dif,
   }
 
 
-  s=tcl_syntax_str_push(&tp->syntaxChars,
-                        &tp->syntaxCharsNext,
-                        &tp->syntaxCharsNum,1);
+  s=tcl_syntax_str_push(tp->syntax,1);
   s[0]='\0';
 
 }
@@ -167,40 +110,36 @@ void tcl_parser_var_leave(unsigned int stkDepth,bool dif,
                void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  printf("----- %u var '%.*s'\n",tp->depth,(int)(srcEnd-srcStart),srcStart);
+  TCL_PARSER_DEBUG_PRINTF("%u var '%.*s'\n",tp->depth,(int)(srcEnd-srcStart),srcStart);
 
 
-  struct tcl_syntax *n;
+  struct tcl_syntax_node *n;
   char *s;
 
   //set
-  n=tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1,
+  n=tcl_syntax_push(tp->syntax,tp->depth+1,
                     (unsigned int)(srcStart-tp->src),
                     tcl_syntax_str);
   n->charsNum=3;
-  s=tcl_syntax_str_push(&tp->syntaxChars,
-                        &tp->syntaxCharsNext,
-                        &tp->syntaxCharsNum,4);
+  s=tcl_syntax_str_push(tp->syntax,4);
   sprintf(s,"set");
 
   //
-  tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1,
+  tcl_syntax_push(tp->syntax,tp->depth+1,
                   (unsigned int)(srcStart-tp->src),
                   tcl_syntax_spc);
 
   //var_name
-  n=tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1,
+  n=tcl_syntax_push(tp->syntax,tp->depth+1,
                     (unsigned int)(srcStart-tp->src),
                     tcl_syntax_str);
   n->charsNum=(unsigned int)(srcEnd-srcStart);
-  s=tcl_syntax_str_push(&tp->syntaxChars,
-                        &tp->syntaxCharsNext,
-                        &tp->syntaxCharsNum,
+  s=tcl_syntax_str_push(tp->syntax,
                         n->charsNum+1);
   sprintf(s,"%.*s",n->charsNum,srcStart);
 
   //
-  tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth+1,
+  tcl_syntax_push(tp->syntax,tp->depth+1,
                   (unsigned int)(srcStart-tp->src),
                   tcl_syntax_sep);
 
@@ -211,9 +150,9 @@ void tcl_parser_word_leave(unsigned int stkDepth,bool dif,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  printf("----- %u word\n",tp->depth);
+  TCL_PARSER_DEBUG_PRINTF("%u word\n",tp->depth);
 
-  tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,
+  tcl_syntax_push(tp->syntax,tp->depth,
                   (unsigned int)(srcStart-tp->src),
                   tcl_syntax_spc);
 
@@ -224,9 +163,9 @@ void tcl_parser_stmt_leave(unsigned int stkDepth,bool dif,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
-  printf("----- %u stmt\n",tp->depth);
+  TCL_PARSER_DEBUG_PRINTF("%u stmt\n",tp->depth);
 
-  tcl_syntax_push(&tp->syntax,&tp->syntaxNext,&tp->syntaxNum,tp->depth,
+  tcl_syntax_push(tp->syntax,tp->depth,
                   (unsigned int)(srcStart-tp->src),
                   tcl_syntax_sep);
 }
@@ -823,33 +762,19 @@ void tcl_parser_uninit(struct tcl_parser *tp) {
   free(tp->closings);
 }
 
-void tcl_parser_run(struct tcl_parser *tp,const char *src) {
+void tcl_parser_run(struct tcl_parser *tp,struct tcl_syntax *syntax,const char *src) {
   unsigned int stkDepth=0;
-  bool err;
-
-  tp->errMsg=NULL;
-
-  tp->src=src;
+  enum parmac_status status;
 
   tp->closingsInd=0;
-
-  tp->pos=0;
-  tp->row=0;
-  tp->col=0;
-
   tp->depth=0;
-
-  tp->syntaxNum=2;
-  tp->syntaxNext=0;
-  tp->syntax=(struct tcl_syntax*)malloc(sizeof(struct tcl_syntax)*tp->syntaxNum);
-
-  tp->syntaxCharsNum=16;
-  tp->syntaxCharsNext=0;
-  tp->syntaxChars=(char*)malloc(tp->syntaxCharsNum);
+  tp->errMsg=NULL;
+  tp->src=src;
+  tp->syntax=syntax;
 
   tcl_parser_main_machine(tp->stk,src);
 
-  while(parmac_run(tp->stk,&stkDepth,tp,&err)) {
+  while((status=parmac_run(tp->stk,&stkDepth,tp))==parmac_ok) {
     if(stkDepth+1==tp->stkNum) {
       tp->stkNum*=2;
       tp->stk=(struct parmac*)realloc(tp->stk,sizeof(struct parmac)*tp->stkNum);
@@ -857,29 +782,27 @@ void tcl_parser_run(struct tcl_parser *tp,const char *src) {
     }
   }
 
-  printf("\n");
 
   unsigned int i,c=0;
 
-  for(i=0;i<tp->syntaxNext;i++) {
-    struct tcl_syntax *cur=&tp->syntax[i];
-    printf("%u : ",cur->depth);
+  for(i=0;i<tp->syntax->nodesNext;i++) {
+    struct tcl_syntax_node *cur=&tp->syntax->nodes[i];
+
 
     if(cur->type==tcl_syntax_str) {
-      printf("str '%s'",&tp->syntaxChars[c]);
+
       c+=cur->charsNum+1;
     } else if(cur->type==tcl_syntax_spc) {
-      printf("spc");
+
     } else if(cur->type==tcl_syntax_sep) {
-      printf("sep");
+
     }
 
-    printf("\n");
+
   }
 
-  printf("\n");
 
-  if(err) {
+  if(status==parmac_error) {
     printf("Error.\n");
 
     if(tp->errMsg!=NULL) {
@@ -888,12 +811,5 @@ void tcl_parser_run(struct tcl_parser *tp,const char *src) {
   } else if(tp->stk[0].src[0]!='\0') {
     printf("Error.\nUnexpected '%s'\n",tp->stk[0].src);
   }
-
-  //
-  // printSyntax(tp.rootStmt,0);
-
-
-
-  printf("done %i.\n", stkDepth);
 
 }

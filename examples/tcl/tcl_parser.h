@@ -7,37 +7,19 @@
 
 #include <string.h>
 #include <stdlib.h>
-
+#include "tcl_syntax.h"
 #include "../../parmac.h"
 
-#define endof(x) (x+sizeof(x)/sizeof(*x))
-
-enum tcl_syntax_type {
-  tcl_syntax_str,
-  tcl_syntax_spc,
-  tcl_syntax_sep,
-};
-
-struct tcl_syntax {
-  unsigned int depth,pos,row,col;
-  enum tcl_syntax_type type;
-  unsigned int charsNum;
-};
 
 struct tcl_parser {
-  const char *src;
-  unsigned int closingsInd;
-  struct parmac *stk;
-  unsigned int stkNum;
-  const char *errMsg;
-  int pos,row,col;
+  unsigned int closingsInd,stkNum;
   char *closings;
+  struct parmac *stk;
 
   unsigned int depth;
-  unsigned int syntaxNum,syntaxNext;
+  const char *errMsg;
+  const char *src;
   struct tcl_syntax *syntax;
-  unsigned int syntaxCharsNum,syntaxCharsNext;
-  char *syntaxChars;
 };
 
 #ifdef __cplusplus
@@ -46,7 +28,7 @@ extern "C" {
 
   void tcl_parser_init(struct tcl_parser *tp);
   void tcl_parser_uninit(struct tcl_parser *tp);
-  void tcl_parser_run(struct tcl_parser *tp,const char *src);
+  void tcl_parser_run(struct tcl_parser *tp,struct tcl_syntax *syntax,const char *src);
 
 #ifdef __cplusplus
 }
