@@ -42,7 +42,7 @@ struct parmac *parmac_set(struct parmac *p,const char *name,
 struct parmac *parmac_stack_push(struct parmac *stk,unsigned int *pStkDepth,
                                  parmac_machine machine) {
   struct parmac *p=&stk[*pStkDepth];
-  struct parmac *p2=p+1; //get next free mem
+  struct parmac *p2=&stk[(*pStkDepth)+1]; //get next free mem
 
   machine(p2); //p2,p->src
   p2->pos=p->pos;
