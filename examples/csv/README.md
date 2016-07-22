@@ -3,18 +3,18 @@
 Loads a csv file and outputs it to the console. Rules taken from the [wiki](https://en.wikipedia.org/wiki/Comma-separated_values).
 
 ###Diagrams:
-#######Main
+######Main
 ![](diagrams/fsm_main.jpg)
 
-#######Record
+######Record
 ![](diagrams/fsm_record.jpg)
 
 
-#######Field
+######Field
 ![](diagrams/fsm_field.jpg)
 
-#######SStr
+######SStr
 ![](diagrams/fsm_sstr.jpg)
 
-#######QStr
+######QStr
 ![](diagrams/fsm_qstr.jpg)
