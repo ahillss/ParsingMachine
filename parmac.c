@@ -39,7 +39,8 @@ struct parmac *parmac_set(struct parmac *p,const char *name,
   return p;
 }
 
-struct parmac *parmac_stack_push(struct parmac *stk,unsigned int *pStkDepth,
+struct parmac *parmac_stack_push(struct parmac *stk,
+                                 unsigned int *pStkDepth,
                                  parmac_machine machine) {
   struct parmac *p=&stk[*pStkDepth];
   struct parmac *p2=&stk[(*pStkDepth)+1]; //get next free mem
