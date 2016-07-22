@@ -131,7 +131,7 @@ void parmac_prev_callbacks(struct parmac *stk,
 
     parmac_on_state_leave("b",stk,d,
                           &src[stk[d].prevPos], //p2->prevSrc
-                          &src[stk[d].pos], //p2->src,
+                          &src[stk[d].pos], //p2->src
                           userdata,
                           stk[d].trsn->fromState,
                           stk[d].trsn->toState);
@@ -148,7 +148,7 @@ void parmac_state_transition(struct parmac *stk,
 
   parmac_on_state_enter("c",stk,stkDepth,
                         &src[p->pos], //p->src
-                        &src[pos], //src,
+                        &src[pos], //src
                         userdata,
                         p->trsn->fromState,p->trsn->toState);
 
@@ -216,7 +216,8 @@ enum parmac_status parmac_run(struct parmac *stk,
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
     parmac_on_state_leave("d",stk,*pStkDepth,
-                          &src[p->pos],&src[p->pos], //p->src,p->src,
+                          &src[p->pos], //p->src
+                          &src[p->pos], //p->src
                           userdata,
                           p->endState,NULL);
 
@@ -305,7 +306,7 @@ enum parmac_status parmac_run(struct parmac *stk,
       parmac_prev_callbacks(stk,*pStkDepth,src,userdata);
 
       parmac_state_transition(stk,*pStkDepth,src,
-                              eventRet-src,//eventRet
+                              (unsigned int)(eventRet-src),//eventRet
                               userdata);
     }
 
