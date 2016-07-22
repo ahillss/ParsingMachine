@@ -1,4 +1,4 @@
-#include "../../parmac.h"
+#include "../parmac.h"
 
 #ifndef __cplusplus
 #include <stdbool.h>

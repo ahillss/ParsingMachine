@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "tcl_syntax.h"
-#include "../../parmac.h"
+#include "../parmac.h"
 
 
 struct tcl_parser {

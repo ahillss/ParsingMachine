@@ -1,5 +1,5 @@
 OUTDIR = bin
-OUTFILE = $(OUTDIR)/csv
+OUTFILE = $(OUTDIR)/tcltest
 
 CC = gcc
 EXT = c
@@ -24,7 +24,7 @@ $(OUTDIR)/%.o: %.$(EXT)
 	$(CC) $(DEBUG_BUILD) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 	@$(CC) $(CPPFLAGS) $(CFLAGS) -MM $< | sed -e '1,1 s|[^:]*:|$@:|' > $(OUTDIR)/$*.dep
 
-$(OUTDIR)/parmac.o: ../../parmac.c ../../parmac.h
+$(OUTDIR)/parmac.o: ../parmac.c ../parmac.h
 	$(CC) $(DEBUG_BUILD) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 	
 $(OUTFILE) : $(objs) $(OUTDIR)/parmac.o
