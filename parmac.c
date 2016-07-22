@@ -223,8 +223,8 @@ enum parmac_status parmac_run(struct parmac *stk,
     unsigned int pos2=p->pos; //p->src
     p=parmac_stack_pop(stk,pStkDepth);
 
-    parmac_state_transition(stk,*pStkDepth,
-                            src,pos2, //src2
+    parmac_state_transition(stk,*pStkDepth,src,
+                            pos2, //src2
                             userdata);
 
     return parmac_ok;
