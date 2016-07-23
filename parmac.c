@@ -56,9 +56,8 @@ struct parmac *parmac_stack_push(struct parmac *stk,
 
 struct parmac *parmac_stack_pop(struct parmac *stk,unsigned int *pStkDepth) {
   assert((*pStkDepth)!=0);
-  struct parmac *p=(&stk[*pStkDepth])-1;
   (*pStkDepth)--;
-  return p;
+  return &stk[*pStkDepth];
 }
 
 void parmac_on_state_enter(const char *debug,
