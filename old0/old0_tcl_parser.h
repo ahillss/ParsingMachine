@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #endif
 
-#include "old_parmac.h"
+#include "old0_parmac.h"
 
 struct tcl_parser {
   const char *errMsg;

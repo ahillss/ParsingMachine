@@ -2,7 +2,7 @@
 // #define PARMAC_DEBUG_STEPS
 // #define PARMAC_DEBUG_CALLBACKS
 
-#include "old_parmac.h"
+#include "old2_parmac.h"
 
 #include <stdio.h>
 #include <stdlib.h>
