@@ -13,9 +13,13 @@
 
 #define endof(x) (x+sizeof(x)/sizeof(*x))
 
-void tcl_parser_str_leave(unsigned int stkDepth,bool dif,
-               const char *srcStart,const char *srcEnd,
-               void *data) {
+void tcl_parser_str_leave(unsigned int stkDepth,
+                          const char *machine,
+                          const char *fromState,
+                          const char *toState,
+                          const char *srcStart,
+                          const char *srcEnd,
+                          void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   TCL_PARSER_DEBUG_PRINTF("%u str '%.*s'\n",tp->depth,(unsigned int)(srcEnd-srcStart),srcStart);
@@ -68,9 +72,13 @@ void tcl_parser_str_leave(unsigned int stkDepth,bool dif,
 
 }
 
-void tcl_parser_bstr_leave(unsigned int stkDepth,bool dif,
-                const char *srcStart,const char *srcEnd,
-                void *data) {
+void tcl_parser_bstr_leave(unsigned int stkDepth,
+                           const char *machine,
+                           const char *fromState,
+                           const char *toState,
+                           const char *srcStart,
+                           const char *srcEnd,
+                           void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
 
@@ -105,9 +113,13 @@ void tcl_parser_bstr_leave(unsigned int stkDepth,bool dif,
 
 }
 
-void tcl_parser_var_leave(unsigned int stkDepth,bool dif,
-                const char *srcStart,const char *srcEnd,
-               void *data) {
+void tcl_parser_var_leave(unsigned int stkDepth,
+                          const char *machine,
+                          const char *fromState,
+                          const char *toState,
+                          const char *srcStart,
+                          const char *srcEnd,
+                          void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   TCL_PARSER_DEBUG_PRINTF("%u var '%.*s'\n",tp->depth,(int)(srcEnd-srcStart),srcStart);
@@ -145,8 +157,12 @@ void tcl_parser_var_leave(unsigned int stkDepth,bool dif,
 
 }
 
-void tcl_parser_word_leave(unsigned int stkDepth,bool dif,
-                const char *srcStart,const char *srcEnd,
+void tcl_parser_word_leave(unsigned int stkDepth,
+                           const char *machine,
+                           const char *fromState,
+                           const char *toState,
+                           const char *srcStart,
+                           const char *srcEnd,
                 void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
@@ -158,9 +174,13 @@ void tcl_parser_word_leave(unsigned int stkDepth,bool dif,
 
 }
 
-void tcl_parser_stmt_leave(unsigned int stkDepth,bool dif,
-                const char *srcStart,const char *srcEnd,
-                void *data) {
+void tcl_parser_stmt_leave(unsigned int stkDepth,
+                           const char *machine,
+                           const char *fromState,
+                           const char *toState,
+                           const char *srcStart,
+                           const char *srcEnd,
+                           void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   TCL_PARSER_DEBUG_PRINTF("%u stmt\n",tp->depth);
@@ -170,16 +190,24 @@ void tcl_parser_stmt_leave(unsigned int stkDepth,bool dif,
                   tcl_syntax_sep);
 }
 
-void tcl_parser_cmd_enter(unsigned int stkDepth,bool dif,
-                const char *srcStart,const char *srcEnd,
-               void *data) {
+void tcl_parser_cmd_enter(unsigned int stkDepth,
+                          const char *machine,
+                          const char *fromState,
+                          const char *toState,
+                          const char *srcStart,
+                          const char *srcEnd,
+                          void *data) {
 
   struct tcl_parser *tp=(struct tcl_parser*)data;
   tp->depth++;
 }
 
-void cmd_leave(unsigned int stkDepth,bool dif,
-                const char *srcStart,const char *srcEnd,
+void cmd_leave(unsigned int stkDepth,
+               const char *machine,
+               const char *fromState,
+               const char *toState,
+               const char *srcStart,
+               const char *srcEnd,
                void *data) {
 
   struct tcl_parser *tp=(struct tcl_parser*)data;

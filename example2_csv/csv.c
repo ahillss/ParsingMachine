@@ -16,54 +16,86 @@ struct csv_parser_data {
   unsigned int colsCount,colsTotalCount;
 };
 
-void print_singlequote(unsigned int stkDepth,bool dif,
-                 const char *start,const char *end,
-                 void *userdata) {
+void print_singlequote(unsigned int stkDepth,
+                       const char *machine,
+                       const char *fromState,
+                       const char *toState,
+                       const char *start,
+                       const char *end,
+                       void *userdata) {
   printf("'");
 }
 
-void print_quote(unsigned int stkDepth,bool dif,
-                    const char *start,const char *end,
-                    void *userdata) {
+void print_quote(unsigned int stkDepth,
+                 const char *machine,
+                 const char *fromState,
+                 const char *toState,
+                 const char *start,
+                 const char *end,
+                 void *userdata) {
   printf("\"");
 }
 
-void print_char(unsigned int stkDepth,bool dif,
-                const char *start,const char *end,
+void print_char(unsigned int stkDepth,
+                const char *machine,
+                const char *fromState,
+                const char *toState,
+                const char *start,
+                const char *end,
                 void *userdata) {
   printf("%.*s",(int)(end-start),start);
 
 }
 
-void print_comma(unsigned int stkDepth,bool dif,
-              const char *start,const char *end,
-              void *userdata) {
+void print_comma(unsigned int stkDepth,
+                 const char *machine,
+                 const char *fromState,
+                 const char *toState,
+                 const char *start,
+                 const char *end,
+                 void *userdata) {
   printf(", ");
 }
 
-void print_eol(unsigned int stkDepth,bool dif,
-               const char *start,const char *end,
+void print_eol(unsigned int stkDepth,
+               const char *machine,
+               const char *fromState,
+               const char *toState,
+               const char *start,
+               const char *end,
                void *userdata) {
   printf("\n");
 }
 
-void on_field(unsigned int stkDepth,bool dif,
-              const char *start,const char *end,
+void on_field(unsigned int stkDepth,
+              const char *machine,
+              const char *fromState,
+              const char *toState,
+              const char *start,
+              const char *end,
               void *userdata) {
   struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
   parserData->colsCount++;
 }
 
-void on_record1(unsigned int stkDepth,bool dif,
-               const char *start,const char *end,
-               void *userdata) {
+void on_record1(unsigned int stkDepth,
+                const char *machine,
+                const char *fromState,
+                const char *toState,
+                const char *start,
+                const char *end,
+                void *userdata) {
   struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
   parserData->colsTotalCount=parserData->colsCount;
   parserData->colsCount=0;
 }
 
-void on_recordn(unsigned int stkDepth,bool dif,
-               const char *start,const char *end,
+void on_recordn(unsigned int stkDepth,
+                const char *machine,
+                const char *fromState,
+                const char *toState,
+                const char *start,
+                const char *end,
                void *userdata) {
   struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
   parserData->colsCount=0;

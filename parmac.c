@@ -80,7 +80,10 @@ void parmac_on_state_enter(const char *debug,
 #endif
 
   if(toState->enter) {
-    toState->enter(stkDepth,dif,srcStart,srcEnd,userdata);
+    toState->enter(stkDepth,p->name,
+                   fromState?fromState->name:NULL,
+                   toState->name,
+                   srcStart,srcEnd,userdata);
   }
 }
 
@@ -104,7 +107,10 @@ void parmac_on_state_leave(const char *debug,
 #endif
 
   if(fromState->leave) {
-    fromState->leave(stkDepth,dif,srcStart,srcEnd,userdata);
+    fromState->leave(stkDepth,p->name,
+                     fromState->name,
+                     toState?toState->name:NULL,
+                     srcStart,srcEnd,userdata);
   }
 }
 
