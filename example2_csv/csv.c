@@ -67,36 +67,33 @@ void print_eol(unsigned int stkDepth,
   printf("\n");
 }
 
-void on_field(unsigned int stkDepth,
+void countCol(unsigned int stkDepth,
               const char *machine,
               const char *fromState,
               const char *toState,
-              const char *start,
-              const char *end,
               void *userdata) {
   struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
+
   parserData->colsCount++;
+
 }
 
-void on_record1(unsigned int stkDepth,
+void setTotalColCount(unsigned int stkDepth,
                 const char *machine,
                 const char *fromState,
                 const char *toState,
-                const char *start,
-                const char *end,
                 void *userdata) {
   struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
+
   parserData->colsTotalCount=parserData->colsCount;
-  parserData->colsCount=0;
 }
 
-void on_recordn(unsigned int stkDepth,
-                const char *machine,
-                const char *fromState,
-                const char *toState,
-                const char *start,
-                const char *end,
-               void *userdata) {
+
+void zeroColCount(unsigned int stkDepth,
+              const char *machine,
+              const char *fromState,
+              const char *toState,
+              void *userdata) {
   struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
   parserData->colsCount=0;
 }
@@ -165,7 +162,7 @@ const char *parse_eol(const char *src,void *userdata) {
 
 const char *colcheck(const char *src,void *userdata) {
   struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
-
+  printf("%i %i\n",parserData->colsCount,parserData->colsTotalCount);
   if(parserData->colsCount==parserData->colsTotalCount) {
     return src;
   }
@@ -180,8 +177,8 @@ void qstr_machine(struct parmac *p) {
     state_start={"start",NULL,NULL},
     state_lquote={"lquote",NULL,NULL},
     state_rquote={"rquote",NULL,NULL},
-    state_twoquotes={"twoquotes",NULL,print_quote},
-    state_qchar={"qchar",NULL,print_char},
+    state_twoquotes={"twoquotes",print_quote,NULL},
+    state_qchar={"qchar",print_char,NULL},
     state_end={"end",NULL,NULL};
 
   static const struct parmac_transition trsns[]={
@@ -208,7 +205,7 @@ void qstr_machine(struct parmac *p) {
 void sstr_machine(struct parmac *p) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
-    state_schar={"schar",NULL,print_char},
+    state_schar={"schar",print_char,NULL},
     state_end={"end",NULL,NULL};
 
   static const struct parmac_transition trsns[]={
@@ -224,10 +221,10 @@ void sstr_machine(struct parmac *p) {
 
 void field_machine(struct parmac *p) {
   static const struct parmac_state
-    state_start={"start",NULL,print_singlequote},
+    state_start={"start",print_singlequote,NULL},
     state_qstr={"qstr",NULL,NULL},
     state_sstr={"sstr",NULL,NULL},
-    state_end={"end",NULL,print_singlequote};
+    state_end={"end",print_singlequote,NULL};
 
    static const struct parmac_transition trsns[]={
      {&state_start, &state_qstr, NULL, qstr_machine},
@@ -242,10 +239,10 @@ void field_machine(struct parmac *p) {
 
 void record_machine(struct parmac *p) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_field={"field",NULL,on_field},
-    state_comma={"comma",NULL,print_comma},
-    state_end={"end",NULL,print_eol};
+    state_start={"start",NULL,zeroColCount},
+    state_field={"field",NULL,countCol},
+    state_comma={"comma",print_comma,NULL},
+    state_end={"end",print_eol,NULL};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_field, NULL, field_machine},
@@ -262,8 +259,8 @@ void record_machine(struct parmac *p) {
 void main_machine(struct parmac *p) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
-    state_record1={"record1",NULL,on_record1},
-    state_recordn={"recordn",NULL,on_recordn},
+    state_record1={"record1",NULL,setTotalColCount},
+    state_recordn={"recordn",NULL,NULL},
     state_eol={"eol",NULL,NULL},
     state_colcheck={"colcheck",NULL,NULL},
     state_end={"end",NULL,NULL};
@@ -357,6 +354,7 @@ void parse_csv(const char *src) {
   main_machine(stk);
 
   while((status=parmac_run(stk,&stkDepth,src,&parserData))==parmac_ok) {
+
   }
 
   if(status==parmac_error || src[stk[stkDepth].pos]!='\0') {

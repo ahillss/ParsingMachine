@@ -13,7 +13,7 @@
 
 #define endof(x) (x+sizeof(x)/sizeof(*x))
 
-void tcl_parser_str_leave(unsigned int stkDepth,
+void tcl_parser_on_str(unsigned int stkDepth,
                           const char *machine,
                           const char *fromState,
                           const char *toState,
@@ -72,7 +72,7 @@ void tcl_parser_str_leave(unsigned int stkDepth,
 
 }
 
-void tcl_parser_bstr_leave(unsigned int stkDepth,
+void tcl_parser_on_bstr(unsigned int stkDepth,
                            const char *machine,
                            const char *fromState,
                            const char *toState,
@@ -113,7 +113,7 @@ void tcl_parser_bstr_leave(unsigned int stkDepth,
 
 }
 
-void tcl_parser_var_leave(unsigned int stkDepth,
+void tcl_parser_on_var(unsigned int stkDepth,
                           const char *machine,
                           const char *fromState,
                           const char *toState,
@@ -157,7 +157,7 @@ void tcl_parser_var_leave(unsigned int stkDepth,
 
 }
 
-void tcl_parser_word_leave(unsigned int stkDepth,
+void tcl_parser_on_word(unsigned int stkDepth,
                            const char *machine,
                            const char *fromState,
                            const char *toState,
@@ -174,7 +174,7 @@ void tcl_parser_word_leave(unsigned int stkDepth,
 
 }
 
-void tcl_parser_stmt_leave(unsigned int stkDepth,
+void tcl_parser_on_stmt(unsigned int stkDepth,
                            const char *machine,
                            const char *fromState,
                            const char *toState,
@@ -190,7 +190,7 @@ void tcl_parser_stmt_leave(unsigned int stkDepth,
                   tcl_syntax_sep);
 }
 
-void tcl_parser_cmd_enter(unsigned int stkDepth,
+void tcl_parser_on_enter_cmd(unsigned int stkDepth,
                           const char *machine,
                           const char *fromState,
                           const char *toState,
@@ -202,7 +202,7 @@ void tcl_parser_cmd_enter(unsigned int stkDepth,
   tp->depth++;
 }
 
-void cmd_leave(unsigned int stkDepth,
+void tcl_parser_on_leave_cmd(unsigned int stkDepth,
                const char *machine,
                const char *fromState,
                const char *toState,
@@ -569,11 +569,11 @@ void tcl_parser_main_machine(struct parmac *p) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
     state_cmnt={"cmnt",NULL,NULL},
-    state_word={"word",NULL,tcl_parser_word_leave},
+    state_word={"word",tcl_parser_on_word,NULL},
     state_spc={"spc",NULL,NULL},
-    state_sep={"sep",NULL,tcl_parser_stmt_leave},
-    state_eol={"eol",NULL,tcl_parser_stmt_leave},
-    state_end={"end",NULL,tcl_parser_stmt_leave};
+    state_sep={"sep",tcl_parser_on_stmt,NULL},
+    state_eol={"eol",tcl_parser_on_stmt,NULL},
+    state_end={"end",tcl_parser_on_stmt,NULL};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_cmnt, tcl_parser_parse_cmnt, NULL},
@@ -638,7 +638,7 @@ void tcl_parser_bstr_machine(struct parmac *p) {
     state_start={"start",NULL,NULL},
     state_lbrace={"lbrace",NULL,NULL},
     state_rbrace={"rbrace",NULL,NULL},
-    state_bstr={"bstr",NULL,tcl_parser_bstr_leave},
+    state_bstr={"bstr",tcl_parser_on_bstr,NULL},
     state_end={"end",NULL,NULL};
 
   static const struct parmac_transition trsns[]={
@@ -660,7 +660,7 @@ void tcl_parser_qstr_machine(struct parmac *p) {
     state_start={"start",NULL,NULL},
     state_lquote={"lquote",NULL,NULL},
     state_rquote={"rquote",NULL,NULL},
-    state_qstr={"qstr",NULL,tcl_parser_str_leave},
+    state_qstr={"qstr",tcl_parser_on_str,NULL},
     state_var={"var",NULL,NULL},
     state_cmd={"cmd",NULL,NULL},
     state_end={"end",NULL,NULL};
@@ -696,7 +696,7 @@ void tcl_parser_qstr_machine(struct parmac *p) {
 void tcl_parser_sstr_machine(struct parmac *p) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
-    state_sstr={"sstr",NULL,tcl_parser_str_leave},
+    state_sstr={"sstr",tcl_parser_on_str,NULL},
     state_var={"var",NULL,NULL},
     state_cmd={"cmd",NULL,NULL},
     state_end={"end",NULL,NULL};
@@ -728,8 +728,8 @@ void tcl_parser_var_machine(struct parmac *p) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
     state_dollar={"dollar",NULL,NULL},
-    state_idn={"idn",NULL,tcl_parser_var_leave},
-    state_str={"str",NULL,tcl_parser_var_leave},
+    state_idn={"idn",tcl_parser_on_var,NULL},
+    state_str={"str",tcl_parser_on_var,NULL},
     state_lbrace={"lbrace",NULL,NULL},
     state_rbrace={"rbrace",NULL,NULL},
     state_end={"end",NULL,NULL};
@@ -755,11 +755,11 @@ void tcl_parser_var_machine(struct parmac *p) {
 
 void tcl_parser_cmd_machine(struct parmac *p) {
   static const struct parmac_state
-    state_start={"start",tcl_parser_cmd_enter,NULL},
+    state_start={"start",tcl_parser_on_enter_cmd,NULL},
     state_lsqr={"lsqr",NULL,NULL},
     state_rsqr={"rsqr",NULL,NULL},
     state_main={"main",NULL,NULL},
-    state_end={"end",NULL,cmd_leave};
+    state_end={"end",tcl_parser_on_leave_cmd,NULL};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_lsqr, tcl_parser_parse_lsqr, NULL},
