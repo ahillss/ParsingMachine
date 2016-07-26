@@ -72,12 +72,11 @@ void parmac_on_state_enter(const char *debug,
 
   // bool dif=fromState!=toState;
 
-#ifdef PARMAC_DEBUG_CALLBACKS
-  printf("%s : (%u) enter_%s_%s (<-%s) '%.*s'\n",
-         debug,stkDepth,p->name,
-         toState->name,fromState?fromState->name:"_",
-         (unsigned int)(srcEnd-srcStart),srcStart);
-#endif
+  PARMAC_DEBUG_CALLBACKS_PRINTF("%s : (%u) enter_%s_%s (<-%s) '%.*s'\n",
+                                debug,stkDepth,p->name,
+                                toState->name,fromState?fromState->name:"_",
+                                (unsigned int)(srcEnd-srcStart),srcStart);
+
 
   if(toState->enter) {
     toState->enter(stkDepth,p->name,
@@ -99,13 +98,12 @@ void parmac_on_state_leave(const char *debug,
 
   // bool dif=fromState!=toState;
 
-#ifdef PARMAC_DEBUG_CALLBACKS
-  printf("%s : (%u) leave_%s_%s (->%s)\n", //'%.*s'
-         debug,stkDepth,p->name,
-         fromState->name,toState?toState->name:"_",
-         // (unsigned int)(srcEnd-srcStart),srcStart
-         );
-#endif
+  PARMAC_DEBUG_CALLBACKS_PRINTF("%s : (%u) leave_%s_%s (->%s)\n", //'%.*s'
+                                debug,stkDepth,p->name,
+                                fromState->name,toState?toState->name:"_",
+                                // (unsigned int)(srcEnd-srcStart),srcStart
+                                );
+
 
   if(fromState->leave) {
     fromState->leave(stkDepth,p->name,
@@ -183,7 +181,7 @@ enum parmac_status parmac_run(struct parmac *stk,
   //===> debug print pos
 #ifdef PARMAC_DEBUG_STEPS
   {
-    printf("\n");
+    PARMAC_DEBUG_STEPS_PRINTF("\n");
 
     unsigned int d;
 
@@ -193,13 +191,14 @@ enum parmac_status parmac_run(struct parmac *stk,
       const char *to=(p2->trsn==p2->trsnEnd)?"X":p2->trsn->toState->name;
       unsigned int stkDepth=(*pStkDepth)-(unsigned int)(p-p2);
       unsigned int trsn=(unsigned int)(p2->trsn-p2->trsnStart);
-      printf("/ %s : %s (%s -> %s) (d%u p%u t%u)",
-             p2->name,p2->state->name,from,to,stkDepth,p2->pos,trsn);
+      PARMAC_DEBUG_STEPS_PRINTF("/ %s : %s (%s -> %s) (d%u p%u t%u)",
+                                p2->name,p2->state->name,from,to,
+                                stkDepth,p2->pos,trsn);
     }
 
 
 
-    printf("\n");
+    PARMAC_DEBUG_STEPS_PRINTF("\n");
   }
 #endif
 
