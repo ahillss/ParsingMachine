@@ -5,12 +5,6 @@
 #include <stdbool.h>
 #endif
 
-enum parmac_status {
-  parmac_ok,
-  parmac_error,
-  parmac_done
-};
-
 struct parmac;
 struct parmac_state;
 
@@ -62,8 +56,12 @@ extern "C" {
                             const struct parmac_transition *startTrsn,
                             const struct parmac_transition *endTrsn);
 
-  enum parmac_status parmac_run(struct parmac *stk,unsigned int *pStkDepth,
-                                const char *src,void *userdata);
+  bool parmac_run(struct parmac *stk,
+                  unsigned int *pStkDepth,
+                  const char *src,void *userdata);
+
+  bool parmac_failed(struct parmac *stk);
+  const char *parmac_last_src(struct parmac *stk,unsigned int stkDepth,const char *src);
 
 #ifdef __cplusplus
 }

@@ -344,7 +344,6 @@ void parse_csv(const char *src) {
 
   unsigned int stkDepth;
   struct parmac stk[4];
-  enum parmac_status status;
 
   parserData.errMsg=NULL;
   parserData.colsCount=0;
@@ -353,12 +352,12 @@ void parse_csv(const char *src) {
   stkDepth=0;
   main_machine(stk);
 
-  while((status=parmac_run(stk,&stkDepth,src,&parserData))==parmac_ok) {
+  while(parmac_run(stk,&stkDepth,src,&parserData)) {
 
   }
 
-  if(status==parmac_error || src[stk[stkDepth].pos]!='\0') {
-    printSyntaxError(src,&src[stk[stkDepth].pos],parserData.errMsg);
+  if(parmac_failed(stk) || parmac_last_src(stk,stkDepth,src)[0]!='\0') {
+    printSyntaxError(src,parmac_last_src(stk,stkDepth,src),parserData.errMsg);
   } else {
     printf("parse success!\n");
   }

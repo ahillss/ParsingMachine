@@ -14,12 +14,12 @@
 #define endof(x) (x+sizeof(x)/sizeof(*x))
 
 void tcl_parser_on_str(unsigned int stkDepth,
-                          const char *machine,
-                          const char *fromState,
-                          const char *toState,
-                          const char *srcStart,
-                          const char *srcEnd,
-                          void *data) {
+                       const char *machine,
+                       const char *fromState,
+                       const char *toState,
+                       const char *srcStart,
+                       const char *srcEnd,
+                       void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   TCL_PARSER_DEBUG_PRINTF("%u str '%.*s'\n",tp->depth,(unsigned int)(srcEnd-srcStart),srcStart);
@@ -73,12 +73,12 @@ void tcl_parser_on_str(unsigned int stkDepth,
 }
 
 void tcl_parser_on_bstr(unsigned int stkDepth,
-                           const char *machine,
-                           const char *fromState,
-                           const char *toState,
-                           const char *srcStart,
-                           const char *srcEnd,
-                           void *data) {
+                        const char *machine,
+                        const char *fromState,
+                        const char *toState,
+                        const char *srcStart,
+                        const char *srcEnd,
+                        void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
 
@@ -114,12 +114,12 @@ void tcl_parser_on_bstr(unsigned int stkDepth,
 }
 
 void tcl_parser_on_var(unsigned int stkDepth,
-                          const char *machine,
-                          const char *fromState,
-                          const char *toState,
-                          const char *srcStart,
-                          const char *srcEnd,
-                          void *data) {
+                       const char *machine,
+                       const char *fromState,
+                       const char *toState,
+                       const char *srcStart,
+                       const char *srcEnd,
+                       void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   TCL_PARSER_DEBUG_PRINTF("%u var '%.*s'\n",tp->depth,(int)(srcEnd-srcStart),srcStart);
@@ -158,12 +158,12 @@ void tcl_parser_on_var(unsigned int stkDepth,
 }
 
 void tcl_parser_on_word(unsigned int stkDepth,
-                           const char *machine,
-                           const char *fromState,
-                           const char *toState,
-                           const char *srcStart,
-                           const char *srcEnd,
-                void *data) {
+                        const char *machine,
+                        const char *fromState,
+                        const char *toState,
+                        const char *srcStart,
+                        const char *srcEnd,
+                        void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   TCL_PARSER_DEBUG_PRINTF("%u word\n",tp->depth);
@@ -175,12 +175,12 @@ void tcl_parser_on_word(unsigned int stkDepth,
 }
 
 void tcl_parser_on_stmt(unsigned int stkDepth,
-                           const char *machine,
-                           const char *fromState,
-                           const char *toState,
-                           const char *srcStart,
-                           const char *srcEnd,
-                           void *data) {
+                        const char *machine,
+                        const char *fromState,
+                        const char *toState,
+                        const char *srcStart,
+                        const char *srcEnd,
+                        void *data) {
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   TCL_PARSER_DEBUG_PRINTF("%u stmt\n",tp->depth);
@@ -191,24 +191,24 @@ void tcl_parser_on_stmt(unsigned int stkDepth,
 }
 
 void tcl_parser_on_enter_cmd(unsigned int stkDepth,
-                          const char *machine,
-                          const char *fromState,
-                          const char *toState,
-                          const char *srcStart,
-                          const char *srcEnd,
-                          void *data) {
+                             const char *machine,
+                             const char *fromState,
+                             const char *toState,
+                             const char *srcStart,
+                             const char *srcEnd,
+                             void *data) {
 
   struct tcl_parser *tp=(struct tcl_parser*)data;
   tp->depth++;
 }
 
 void tcl_parser_on_leave_cmd(unsigned int stkDepth,
-               const char *machine,
-               const char *fromState,
-               const char *toState,
-               const char *srcStart,
-               const char *srcEnd,
-               void *data) {
+                             const char *machine,
+                             const char *fromState,
+                             const char *toState,
+                             const char *srcStart,
+                             const char *srcEnd,
+                             void *data) {
 
   struct tcl_parser *tp=(struct tcl_parser*)data;
   tp->depth--;
@@ -790,9 +790,11 @@ void tcl_parser_uninit(struct tcl_parser *tp) {
   free(tp->closings);
 }
 
-void tcl_parser_run(struct tcl_parser *tp,struct tcl_syntax *syntax,const char *src) {
+void tcl_parser_run(struct tcl_parser *tp,
+                    struct tcl_syntax *syntax,
+                    const char *src) {
   unsigned int stkDepth=0;
-  enum parmac_status status;
+
 
   tp->closingsInd=0;
   tp->depth=0;
@@ -802,7 +804,7 @@ void tcl_parser_run(struct tcl_parser *tp,struct tcl_syntax *syntax,const char *
 
   tcl_parser_main_machine(tp->stk);
 
-  while((status=parmac_run(tp->stk,&stkDepth,src,tp))==parmac_ok) {
+  while(parmac_run(tp->stk,&stkDepth,src,tp)) {
     if(stkDepth+1==tp->stkNum) {
       tp->stkNum*=2;
       tp->stk=(struct parmac*)realloc(tp->stk,sizeof(struct parmac)*tp->stkNum);
@@ -810,34 +812,29 @@ void tcl_parser_run(struct tcl_parser *tp,struct tcl_syntax *syntax,const char *
     }
   }
 
-
   unsigned int i,c=0;
 
   for(i=0;i<tp->syntax->nodesNext;i++) {
     struct tcl_syntax_node *cur=&tp->syntax->nodes[i];
 
-
     if(cur->type==tcl_syntax_str) {
-
       c+=cur->charsNum+1;
-    } else if(cur->type==tcl_syntax_spc) {
-
-    } else if(cur->type==tcl_syntax_sep) {
-
+      // } else if(cur->type==tcl_syntax_spc) {
+      // } else if(cur->type==tcl_syntax_sep) {
     }
-
-
   }
 
 
-  if(status==parmac_error) {
+  if(parmac_failed(tp->stk)) {
     printf("Error.\n");
 
     if(tp->errMsg!=NULL) {
       printf(tp->errMsg);
     }
-  } else if(src[tp->stk[stkDepth].pos]!='\0') {
-    printf("Error.\nUnexpected '%s'\n",src[tp->stk[stkDepth].pos]);
-  }
+  } else if(parmac_last_src(tp->stk,stkDepth,src)[0]!='\0') {
+    printf("Error.\nUnexpected '%s'\n",parmac_last_src(tp->stk,stkDepth,src));
+  } else {
 
+  }
 }
+//

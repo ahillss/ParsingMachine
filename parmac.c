@@ -165,7 +165,7 @@ void parmac_state_transition(struct parmac *stk,
   p->trsn=p->trsnStart;
 }
 
-enum parmac_status parmac_run(struct parmac *stk,
+bool parmac_run(struct parmac *stk,
                               unsigned int *pStkDepth,
                               const char *src,
                               void *userdata) {
@@ -212,7 +212,7 @@ enum parmac_status parmac_run(struct parmac *stk,
       p->trsn++;
     }
 
-    return parmac_ok;
+    return true;
   }
 
   //===> at end state, not root
@@ -235,7 +235,7 @@ enum parmac_status parmac_run(struct parmac *stk,
                             pos2, //src2
                             userdata);
 
-    return parmac_ok;
+    return true;
   }
 
   //===> at end state, root
@@ -251,7 +251,7 @@ enum parmac_status parmac_run(struct parmac *stk,
                           userdata,
                           p->endState,NULL);
 
-    return parmac_done;
+    return false; //success
   }
 
   //===> trsnEnd, either not startState or at root
@@ -261,7 +261,7 @@ enum parmac_status parmac_run(struct parmac *stk,
       *pStkDepth==0)) {
 
     PARMAC_DEBUG_STEPS_PRINTF("=no trsns left, fail\n");
-    return parmac_error;
+    return false;
   }
 
   //===> trsnEnd, startState, not root
@@ -275,7 +275,7 @@ enum parmac_status parmac_run(struct parmac *stk,
     p=parmac_stack_pop(stk,pStkDepth);
     p->trsn++;
 
-    return parmac_ok;
+    return true;
   }
 
   //===> on machine
@@ -289,7 +289,7 @@ enum parmac_status parmac_run(struct parmac *stk,
 
     p=parmac_stack_push(stk,pStkDepth,p->trsn->machine);
 
-    return parmac_ok;
+    return true;
   }
 
   //===> on event
@@ -317,7 +317,7 @@ enum parmac_status parmac_run(struct parmac *stk,
                               userdata);
     }
 
-    return parmac_ok;
+    return true;
   }
 
   //===> on no machine or event
@@ -336,10 +336,18 @@ enum parmac_status parmac_run(struct parmac *stk,
                             p->pos,//p->src
                             userdata);
 
-    return parmac_ok;
+    return true;
   }
 
   //===> shouldn't reach this point
   assert(0);
-  return parmac_error;
+  return false;
+}
+
+bool parmac_failed(struct parmac *stk) {
+  return (stk[0].state!=stk[0].endState);
+}
+
+const char *parmac_last_src(struct parmac *stk,unsigned int stkDepth,const char *src) {
+  return &src[stk[stkDepth].pos];
 }
