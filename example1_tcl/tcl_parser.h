@@ -9,16 +9,12 @@
 #include <stdlib.h>
 #include "tcl_syntax.h"
 #include "../parmac.h"
-
+#include "tcl_parser_util.h"
 
 struct tcl_parser {
-  unsigned int closingsInd,stkNum;
-  char *closings;
+  unsigned int stkNum,depth,sqrbCount;
   struct parmac *stk;
-
-  unsigned int depth;
-  const char *errMsg;
-  const char *src;
+  const char *errMsg,*src;
   struct tcl_syntax *syntax;
 };
 
