@@ -397,7 +397,7 @@ const char *tcl_parser_parse_sstr(const char *src,void *data) {
     }
 
     if(src[0]=='$' &&
-       (src[1]=='{' || src[1]=='_' ||
+       (src[1]=='{' || src[1]=='_' || src[1]=='(' ||
         (src[1]>='a' && src[1]<='z') ||
         (src[1]>='A' && src[1]<='Z') ||
         (src[1]>='0' && src[1]<='9'))) {
@@ -430,7 +430,7 @@ const char *tcl_parser_parse_qstr(const char *src,void *data) {
     }
 
     if(src[0]=='$' &&
-       (src[1]=='{' || src[1]=='_' ||
+       (src[1]=='{' || src[1]=='_' || src[1]=='(' ||
         (src[1]>='a' && src[1]<='z') ||
         (src[1]>='A' && src[1]<='Z') ||
         (src[1]>='0' && src[1]<='9'))) {
@@ -531,6 +531,19 @@ const char *tcl_parser_parse_var_idn(const char *src,void *data) {
         (src[0]>='a' && src[0]<='z') ||
         (src[0]>='A' && src[0]<='Z') ||
         (src[0]>='0' && src[0]<='9')) {
+    src++;
+  }
+
+  if(src[0]=='(') {
+    while(src[0]!=')') {
+      if(src[0]=='\0') {
+        tp->errMsg="Expecting closing bracket.";
+        return NULL;
+      }
+
+      src++;
+    }
+
     src++;
   }
 
@@ -804,17 +817,17 @@ void tcl_parser_run(struct tcl_parser *tp,
     }
   }
 
-  unsigned int i,c=0;
+  // unsigned int i,c=0;
 
-  for(i=0;i<tp->syntax->nodesNext;i++) {
-    struct tcl_syntax_node *cur=&tp->syntax->nodes[i];
+  // for(i=0;i<tp->syntax->nodesNext;i++) {
+  //   struct tcl_syntax_node *cur=&tp->syntax->nodes[i];
 
-    if(cur->type==tcl_syntax_str) {
-      c+=cur->charsNum+1;
-      // } else if(cur->type==tcl_syntax_spc) {
-      // } else if(cur->type==tcl_syntax_sep) {
-    }
-  }
+  //   if(cur->type==tcl_syntax_str) {
+  //     c+=cur->charsNum+1;
+  //     // } else if(cur->type==tcl_syntax_spc) {
+  //     // } else if(cur->type==tcl_syntax_sep) {
+  //   }
+  // }
 
 
   if(parmac_failed(tp->stk) || (parmac_last_src(tp->stk,stkDepth,src)[0]!='\0')) {

@@ -1,1 +1,1 @@
-puts a""
+puts $abc(def))
