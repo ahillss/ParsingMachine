@@ -47,6 +47,7 @@ struct tcl_syntax_node *tcl_syntax_push(struct tcl_syntax *syntax,
   struct tcl_syntax_node *cur=&(syntax->nodes[syntax->nodesNext]);
   cur->type=type;
   cur->depth=depth;
+  cur->pos=pos;
   cur->charsNum=0;
   syntax->nodesNext++;
 

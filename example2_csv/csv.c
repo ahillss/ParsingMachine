@@ -12,167 +12,195 @@
 #define endof(x) (x+sizeof(x)/sizeof(*x))
 
 struct csv_parser_data {
-  const char *errMsg;
+  const char *src,*errMsg;
   unsigned int colsCount,colsTotalCount;
 };
 
-void print_singlequote(unsigned int stkDepth,
+void print_singlequote(PARMAC_DEPTH stkDepth,
                        const char *machine,
                        const char *fromState,
                        const char *toState,
-                       const char *start,
-                       const char *end,
+                       PARMAC_POS fromPos,
+                       PARMAC_POS toPos,
                        void *userdata) {
   printf("'");
 }
 
-void print_quote(unsigned int stkDepth,
+void print_quote(PARMAC_DEPTH stkDepth,
                  const char *machine,
                  const char *fromState,
                  const char *toState,
-                 const char *start,
-                 const char *end,
+                 PARMAC_POS fromPos,
+                 PARMAC_POS toPos,
                  void *userdata) {
   printf("\"");
 }
 
-void print_char(unsigned int stkDepth,
+void print_char(PARMAC_DEPTH stkDepth,
                 const char *machine,
                 const char *fromState,
                 const char *toState,
-                const char *start,
-                const char *end,
+                PARMAC_POS fromPos,
+                PARMAC_POS toPos,
                 void *userdata) {
-  printf("%.*s",(int)(end-start),start);
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
+  printf("%.*s",(int)(toPos-fromPos),&pd->src[fromPos]);
 
 }
 
-void print_comma(unsigned int stkDepth,
+void print_comma(PARMAC_DEPTH stkDepth,
                  const char *machine,
                  const char *fromState,
                  const char *toState,
-                 const char *start,
-                 const char *end,
+                 PARMAC_POS fromPos,
+                 PARMAC_POS toPos,
                  void *userdata) {
   printf(", ");
 }
 
-void print_eol(unsigned int stkDepth,
+void print_eol(PARMAC_DEPTH stkDepth,
                const char *machine,
                const char *fromState,
                const char *toState,
-               const char *start,
-               const char *end,
+               PARMAC_POS fromPos,
+               PARMAC_POS toPos,
                void *userdata) {
   printf("\n");
 }
 
-void countCol(unsigned int stkDepth,
+void countCol(PARMAC_DEPTH stkDepth,
               const char *machine,
               const char *fromState,
               const char *toState,
               void *userdata) {
-  struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
 
-  parserData->colsCount++;
+  pd->colsCount++;
 
 }
 
-void setTotalColCount(unsigned int stkDepth,
-                const char *machine,
-                const char *fromState,
-                const char *toState,
-                void *userdata) {
-  struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
+void setTotalColCount(PARMAC_DEPTH stkDepth,
+                      const char *machine,
+                      const char *fromState,
+                      const char *toState,
+                      void *userdata) {
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
 
-  parserData->colsTotalCount=parserData->colsCount;
+  pd->colsTotalCount=pd->colsCount;
 }
 
 
-void zeroColCount(unsigned int stkDepth,
-              const char *machine,
-              const char *fromState,
-              const char *toState,
-              void *userdata) {
-  struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
-  parserData->colsCount=0;
+void zeroColCount(PARMAC_DEPTH stkDepth,
+                  const char *machine,
+                  const char *fromState,
+                  const char *toState,
+                  void *userdata) {
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
+  pd->colsCount=0;
 }
 
-const char *parse_schar(const char *src,void *userdata) {
-  if(src[0]==',' || src[0]=='\n' || src[0]=='\0' ||
-     (src[0]=='\r' && src[1]=='\n')) {
-    return NULL;
+bool parse_schar(PARMAC_POS *ppos,void *userdata) {
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
+
+  if(pd->src[*ppos]==',' ||
+     pd->src[*ppos]=='\n' ||
+     pd->src[*ppos]=='\0' ||
+     (pd->src[*ppos]=='\r' &&
+      pd->src[*ppos+1]=='\n')) {
+    return false;
   }
 
-  return src+1;
+  (*ppos)++;
+  return true;
 }
 
-const char *parse_twoquotes(const char *src,void *userdata) {
-  if(src[0]=='"' && src[1]=='"') {
-    return src+2;
+bool parse_twoquotes(PARMAC_POS *ppos,void *userdata) {
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
+
+  if(pd->src[*ppos]=='"' &&
+     pd->src[*ppos+1]=='"') {
+    (*ppos)+=2;
+    return true;
   }
 
-  return NULL;
+  return false;
 }
 
-const char *parse_qchar(const char *src,void *userdata) {
-  if(src[0]=='\0' || src[0]=='"') {
-    return NULL;
+bool parse_qchar(PARMAC_POS *ppos,void *userdata) {
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
+
+  if(pd->src[*ppos]=='\0' ||
+     pd->src[*ppos]=='"') {
+    return false;
   }
 
-  return src+1;
+  (*ppos)++;
+  return true;
 }
 
-const char *parse_lquote(const char *src,void *userdata) {
-  if(src[0]!='"') {
-    return NULL;
+bool parse_lquote(PARMAC_POS *ppos,void *userdata) {
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
+
+  if(pd->src[*ppos]!='"') {
+    return false;
   }
 
-  return src+1;
+  (*ppos)++;
+  return true;
 }
 
-const char *parse_rquote(const char *src,void *userdata) {
-  struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
+bool parse_rquote(PARMAC_POS *ppos,void *userdata) {
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
 
-  if(src[0]!='"') {
-    parserData->errMsg="Expected closing double quote";
-    return NULL;
+  if(pd->src[*ppos]!='"') {
+    pd->errMsg="Expected closing double quote";
+    return false;
   }
 
-  return src+1;
+  (*ppos)++;
+  return true;
 }
 
-const char *parse_comma(const char *src,void *userdata) {
-  if(src[0]!=',') {
-    return NULL;
+bool parse_comma(PARMAC_POS *ppos,void *userdata) {
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
+
+  if(pd->src[*ppos]!=',') {
+    return false;
   }
 
-  return src+1;
+  (*ppos)++;
+  return true;
 }
 
-const char *parse_eol(const char *src,void *userdata) {
-  if(src[0]=='\r' && src[1]=='\n') {
-    return src+2;
-  } else if(src[0]=='\n') {
-    return src+1;
+bool parse_eol(PARMAC_POS *ppos,void *userdata) {
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
+
+  if(pd->src[*ppos]=='\r' && pd->src[*ppos+1]=='\n') {
+    (*ppos)+=2;
+    return true;
+  } else if(pd->src[*ppos]=='\n') {
+    (*ppos)++;
+    return true;
   }
 
-  return NULL;
+  return false;
 }
 
-const char *colcheck(const char *src,void *userdata) {
-  struct csv_parser_data *parserData=(struct csv_parser_data*)userdata;
-  printf("%i %i\n",parserData->colsCount,parserData->colsTotalCount);
-  if(parserData->colsCount==parserData->colsTotalCount) {
-    return src;
+bool colcheck(PARMAC_POS *ppos,void *userdata) {
+  struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
+
+  printf("%i %i\n",pd->colsCount,pd->colsTotalCount);
+
+  if(pd->colsCount==pd->colsTotalCount) {
+    return true;
   }
 
-  parserData->errMsg="Inconsistent columns count";
+  pd->errMsg="Inconsistent columns count";
 
-  return NULL;
+  return false;
 }
 
-void qstr_machine(struct parmac *p) {
+void qstr_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
     state_lquote={"lquote",NULL,NULL},
@@ -199,10 +227,10 @@ void qstr_machine(struct parmac *p) {
     {&state_rquote, &state_end, NULL, NULL},
   };
 
-  parmac_set(p,"qstr",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,"qstr",pos,&state_start,&state_end,trsns,endof(trsns));
 }
 
-void sstr_machine(struct parmac *p) {
+void sstr_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
     state_schar={"schar",print_char,NULL},
@@ -216,10 +244,10 @@ void sstr_machine(struct parmac *p) {
     {&state_schar, &state_end, NULL, NULL},
   };
 
-  parmac_set(p,"sstr",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,"sstr",pos,&state_start,&state_end,trsns,endof(trsns));
 }
 
-void field_machine(struct parmac *p) {
+void field_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start",print_singlequote,NULL},
     state_qstr={"qstr",NULL,NULL},
@@ -234,10 +262,10 @@ void field_machine(struct parmac *p) {
      {&state_sstr, &state_end, NULL, NULL},
    };
 
-   parmac_set(p,"field",&state_start,&state_end,trsns,endof(trsns));
+   parmac_set(p,"field",pos,&state_start,&state_end,trsns,endof(trsns));
 }
 
-void record_machine(struct parmac *p) {
+void record_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start",NULL,zeroColCount},
     state_field={"field",NULL,countCol},
@@ -253,10 +281,10 @@ void record_machine(struct parmac *p) {
     {&state_comma, &state_field, NULL, field_machine}
   };
 
-  parmac_set(p,"record",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,"record",pos,&state_start,&state_end,trsns,endof(trsns));
 }
 
-void main_machine(struct parmac *p) {
+void main_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start",NULL,NULL},
     state_record1={"record1",NULL,setTotalColCount},
@@ -279,7 +307,7 @@ void main_machine(struct parmac *p) {
     {&state_colcheck, &state_end, NULL,      NULL},
   };
 
-  parmac_set(p,"main",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,"main",pos,&state_start,&state_end,trsns,endof(trsns));
 }
 
 void countRowCol(const char *src,const char*srcTo,int *row,int *col,
@@ -342,25 +370,29 @@ void printSyntaxError(const char *src,const char *srcPos,const char *errMsg) {
 void parse_csv(const char *src) {
   struct csv_parser_data parserData;
 
-  unsigned int stkDepth;
+  PARMAC_DEPTH stkDepth;
   struct parmac stk[4];
 
+  parserData.src=src;
   parserData.errMsg=NULL;
   parserData.colsCount=0;
   parserData.colsTotalCount=0;
 
   stkDepth=0;
-  main_machine(stk);
+  main_machine(stk,0);
 
-  while(parmac_run(stk,&stkDepth,src,&parserData)) {
+  while(parmac_run(stk,&stkDepth,&parserData)) {
 
   }
 
-  if(parmac_failed(stk) || parmac_last_src(stk,stkDepth,src)[0]!='\0') {
-    printSyntaxError(src,parmac_last_src(stk,stkDepth,src),parserData.errMsg);
+  if(parmac_failed(stk) || src[parmac_last_pos(stk,stkDepth)]!='\0') {
+    printSyntaxError(src,&src[parmac_last_pos(stk,stkDepth)],parserData.errMsg);
   } else {
     printf("parse success!\n");
   }
+
+  unsigned long long qq=-1;
+  printf("%llu\n",qq+1);
 
 }
 

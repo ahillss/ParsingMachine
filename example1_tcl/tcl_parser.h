@@ -12,10 +12,14 @@
 #include "tcl_parser_util.h"
 
 struct tcl_parser {
-  unsigned int stkNum,depth,sqrbCount;
-  struct parmac *stk;
-  const char *errMsg,*src;
   struct tcl_syntax *syntax;
+  const char *errMsg;
+
+  const char *src;
+  unsigned int depth,sqrbCount;
+
+  unsigned int stkNum;
+  struct parmac *stk;
 };
 
 #ifdef __cplusplus

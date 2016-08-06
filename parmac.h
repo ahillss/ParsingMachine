@@ -5,22 +5,31 @@
 #include <stdbool.h>
 #endif
 
+#include <stdlib.h>
+
+#ifndef PARMAC_POS
+#define PARMAC_POS size_t
+#endif
+
+#ifndef PARMAC_DEPTH
+#define PARMAC_DEPTH size_t
+#endif
+
 struct parmac;
-struct parmac_state;
 
-typedef const char *(*parmac_event)(const char *src,void *userdata);
+typedef bool (*parmac_event)(PARMAC_POS *posPtr,void *userdata);
 
-typedef void (*parmac_machine)(struct parmac *p);
+typedef void (*parmac_machine)(struct parmac *p,PARMAC_POS pos);
 
-typedef void (*parmac_state_enter)(unsigned int stkDepth,
-                                      const char *machineName,
-                                      const char *fromStateName,
-                                      const char *toStateName,
-                                      const char *parseStart,
-                                      const char *parseEnd,
-                                      void *userdata);
+typedef void (*parmac_state_enter)(PARMAC_DEPTH stkDepth,
+                                   const char *machineName,
+                                   const char *fromStateName,
+                                   const char *toStateName,
+                                   PARMAC_POS fromPos,
+                                   PARMAC_POS toPos,
+                                   void *userdata);
 
-typedef void (*parmac_state_leave)(unsigned int stkDepth,
+typedef void (*parmac_state_leave)(PARMAC_DEPTH stkDepth,
                                    const char *machineName,
                                    const char *fromStateName,
                                    const char *toStateName,
@@ -40,7 +49,7 @@ struct parmac_transition {
 
 struct parmac {
   const char *name;
-  unsigned int pos;
+  PARMAC_POS pos;
   const struct parmac_transition *trsn,*trsnStart,*trsnEnd;
   const struct parmac_state *state,*startState,*endState;
 };
@@ -51,17 +60,18 @@ extern "C" {
 
   struct parmac *parmac_set(struct parmac *p,
                             const char *name,
+                            PARMAC_POS pos,
                             const struct parmac_state *startState,
                             const struct parmac_state *endState,
-                            const struct parmac_transition *startTrsn,
-                            const struct parmac_transition *endTrsn);
+                            const struct parmac_transition *trsnStart,
+                            const struct parmac_transition *trsnEnd);
 
   bool parmac_run(struct parmac *stk,
-                  unsigned int *pStkDepth,
-                  const char *src,void *userdata);
+                  PARMAC_DEPTH *stkDepthPtr,
+                  void *userdata);
 
   bool parmac_failed(struct parmac *stk);
-  const char *parmac_last_src(struct parmac *stk,unsigned int stkDepth,const char *src);
+  PARMAC_POS parmac_last_pos(struct parmac *stk,PARMAC_DEPTH stkDepth);
 
 #ifdef __cplusplus
 }
