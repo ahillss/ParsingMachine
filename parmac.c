@@ -153,20 +153,18 @@ bool parmac_run(struct parmac *stk,
   {
     PARMAC_DEBUG_STEPS_PRINTF("\n");
 
-    unsigned int d;
+    PARMAC_DEPTH d;
 
     for(d=0;d<=*stkDepthPtr;d++) {
       struct parmac *p2=&stk[d];
       const char *from=(p2->trsn==p2->trsnEnd)?"X":p2->trsn->fromState->name;
       const char *to=(p2->trsn==p2->trsnEnd)?"X":p2->trsn->toState->name;
-      unsigned int stkDepth=(*stkDepthPtr)-(unsigned int)(p-p2);
+      unsigned int stkDepth=(unsigned int)(*stkDepthPtr)-(unsigned int)(p-p2);
       unsigned int trsn=(unsigned int)(p2->trsn-p2->trsnStart);
       PARMAC_DEBUG_STEPS_PRINTF("/ %s : %s (%s -> %s) (d%u p%u t%u)",
                                 p2->name,p2->state->name,from,to,
                                 stkDepth,p2->pos,trsn);
     }
-
-
 
     PARMAC_DEBUG_STEPS_PRINTF("\n");
   }
@@ -194,7 +192,7 @@ bool parmac_run(struct parmac *stk,
 
     parmac_on_state_leave(stk,*stkDepthPtr,userdata,p->endState,NULL);
 
-    unsigned int pos2=p->pos;
+    PARMAC_POS pos2=p->pos;
     p=parmac_stack_pop(stk,stkDepthPtr);
 
     parmac_state_transition(stk,*stkDepthPtr,pos2,userdata);
