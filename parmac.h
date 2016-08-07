@@ -5,7 +5,9 @@
 #include <stdbool.h>
 #endif
 
+#if !defined(PARMAC_POS) || !defined(PARMAC_DEPTH)
 #include <stdlib.h>
+#endif
 
 #ifndef PARMAC_POS
 #define PARMAC_POS size_t

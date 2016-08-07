@@ -26,15 +26,15 @@ struct parmac *parmac_set(struct parmac *p,
                           PARMAC_POS pos,
                           const struct parmac_state *startState,
                           const struct parmac_state *endState,
-                          const struct parmac_transition *startTrsn,
-                          const struct parmac_transition *endTrsn) {
+                          const struct parmac_transition *trsnStart,
+                          const struct parmac_transition *trsnEnd) {
   p->pos=pos;
   p->state=startState;
   p->startState=startState;
   p->endState=endState;
-  p->trsnStart=startTrsn;
-  p->trsn=startTrsn;
-  p->trsnEnd=endTrsn;
+  p->trsnStart=trsnStart;
+  p->trsn=trsnStart;
+  p->trsnEnd=trsnEnd;
   p->name=name;
   return p;
 }
@@ -192,8 +192,7 @@ bool parmac_run(struct parmac *stk,
     PARMAC_DEBUG_STEPS_PRINTF("=end, not root, pop machine\n");
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
-    parmac_on_state_leave(stk,*stkDepthPtr,userdata,
-                          p->endState,NULL);
+    parmac_on_state_leave(stk,*stkDepthPtr,userdata,p->endState,NULL);
 
     unsigned int pos2=p->pos;
     p=parmac_stack_pop(stk,stkDepthPtr);
@@ -210,8 +209,7 @@ bool parmac_run(struct parmac *stk,
     PARMAC_DEBUG_STEPS_PRINTF("=end, root, finished\n");
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
-    parmac_on_state_leave(stk,*stkDepthPtr,userdata,
-                          p->endState,NULL);
+    parmac_on_state_leave(stk,*stkDepthPtr,userdata,p->endState,NULL);
 
     return false; //success
   }
@@ -263,16 +261,12 @@ bool parmac_run(struct parmac *stk,
 
     PARMAC_POS retPos=p->pos;
 
-
-
     if(p->trsn->event(&retPos, userdata)) {
       PARMAC_DEBUG_STEPS_PRINTF("=event success\n");
       PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
       parmac_prev_callbacks(stk,*stkDepthPtr,userdata);
-
-      parmac_state_transition(stk,*stkDepthPtr,
-                              retPos, userdata);
+      parmac_state_transition(stk,*stkDepthPtr,retPos,userdata);
     } else {
       PARMAC_DEBUG_STEPS_PRINTF("=event failed\n");
       p->trsn++;
@@ -292,7 +286,6 @@ bool parmac_run(struct parmac *stk,
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
     parmac_prev_callbacks(stk,*stkDepthPtr,userdata);
-
     parmac_state_transition(stk,*stkDepthPtr,p->pos,userdata);
 
     return true;

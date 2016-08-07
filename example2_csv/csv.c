@@ -189,8 +189,6 @@ bool parse_eol(PARMAC_POS *ppos,void *userdata) {
 bool colcheck(PARMAC_POS *ppos,void *userdata) {
   struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
 
-  printf("%i %i\n",pd->colsCount,pd->colsTotalCount);
-
   if(pd->colsCount==pd->colsTotalCount) {
     return true;
   }
