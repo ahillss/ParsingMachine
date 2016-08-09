@@ -6,7 +6,7 @@ The motivation for this library is to allow the creation of parsers using hierar
 
 ####Usage
 
-######State Declaration
+#####State Declaration
 A state is a struct that has three fields. A name used for debugging and by the state callbacks.
 
 ```C
@@ -17,8 +17,8 @@ static const struct parmac_state
   state_end={"end",NULL,NULL};
 ```
 
-######Enter State Callback
-A callback entering a state. The *from state* is the previous state and the *to state* is the current state. The **fromPos** parameter is the position from before the state was entered, and **toPos** parameter is the position the state was entered.
+#####Enter State Callback
+A callback for entering a state. The *from state* is the previous state being left and the *to state* is the state being entered. The *fromPos* parameter is the position from before the state was entered, and *toPos* parameter is the position after the state was entered.
 
 ```C
 void on_enter_state_A(PARMAC_DEPTH stkDepth,
@@ -32,10 +32,10 @@ void on_enter_state_A(PARMAC_DEPTH stkDepth,
 }
 ```
 
-######Leave State Callback
-A callback for leaving a state. The *from state* is the current state and the *to state* is the next state. 
+#####Leave State Callback
+A callback for leaving a state. The *from state* is the state being left and the *to state* is the next state being entered. 
 
-The lack of **fromPos** and **toPos** is due to the leave callback is deferred until the next state is entered, if the source being parsed is updated before then (i.e. modified during an event) those parsing positions would be out of date. Though in the future those may be put in anyway.
+The lack of *fromPos* and *toPos* is due to the leave callback is deferred until the next state is entered, if the source being parsed is updated before then (i.e. modified during an event) those parsing positions would be out of date (in the future this may be changed anyway).
 
 ```C
 void on_leave_state_A(PARMAC_DEPTH stkDepth,
@@ -47,12 +47,12 @@ void on_leave_state_A(PARMAC_DEPTH stkDepth,
 
 ```
 
-######Transition Table Declaration
+#####Transition Table Declaration
 A transition has four fields. The to and from state pointers, and the event and machine function pointers.
 
 A transition can either contain an event or a machine, If neither is specified then that transition will always succeed. It cannot accept both an event and a machine (this may be changed to be allowed in the future).
 
-A machine must always have separate designated start and end states. The end state must always being transition to and not from. The start state must always be transitioned from and not to.
+A machine must always have a separate designated start and end states. The end state must always being transition to and not from, and the start state must always be transitioned from and not to.
 
 ```C
   static const struct parmac_transition trsns[]={
@@ -62,8 +62,9 @@ A machine must always have separate designated start and end states. The end sta
   };
 
 ```
-######Event
-A function representing an event, it is used in a transition. The return boolean determines whether or not the event succeeds. The postPtr is a pointer to a variable containing the current parsing position. If the event returns true then the current position will be updated with the value being pointed to. The userdata is used to point to the data being parsed.
+
+#####Event
+A function representing an event, it is used in a **transition**. The return boolean determines whether or not the event succeeds. The *postPtr* is a pointer to a variable containing the current parsing position. If the event returns true then the current position will be updated with the value being pointed to. The *userdata* is used to point to the data being parsed.
 
 ```C
 bool event_A(PARMAC_POS *posPtr,void *userdata) {
@@ -78,8 +79,8 @@ bool event_A(PARMAC_POS *posPtr,void *userdata) {
 }
 
 ```
-###### Machine
-A function representing a machine. Used to both initialise the machine stack and optionally in a transition. The *p* represents the start of the stack when initialising, and when used in a transition it represents the current stack position. The *pos* parameter represents the current position of the parser, zero is used when initialising.
+##### Machine
+A function representing a machine. Used to both initialise the machine stack and optionally in a **transition**. The *p* represents the start of the stack when initialising, and when used in a transition it represents the current stack position. The *pos* parameter represents the current position of the parser, zero is used when initialising.
 
 The *parmac_set* function must be called as shown below.
 * the 1st and 3rd parameters must be the same as the current function's *p* and *pos*
@@ -97,14 +98,14 @@ void root_machine(struct parmac *p,PARMAC_POS pos) {
 }
 ```
 
-###### Running
+#####Running
 The *stkDepth* must be intialised to zero. The *stk* must be initialised with the root machine and the parsing position initialised to zero. The *stk* must be large enough to contain the max depth of the hierahical fsm specified.
 
 If the machine is recursive (i.e. possibly no depth limit) then the stack must always have at least a max depth of one past the current depth. Then in the while loop check if the stack depth==maxDepth and if so then you must resize the stack before calling *parmac_run* again, otherwise you may get a stack overflow.
 
 The *parmac_run* first parameter is the stack, the second is a pointer to the stack depth which will be used by the parser to keep track of the current depth, and the last parameter is a pointer to the data being parsed.
 
-The *parmac_failed* is used to determine whether the machine failed or succeeded and the *parmac_last_pos* returns the parsing position that was last reached.
+The *parmac_failed* is used to determine whether the machine failed or succeeded and the *parmac_last_pos* returns the parsing position that was reached last.
 
 ```C
 
@@ -132,7 +133,7 @@ int main() {
 }
 ```
 
-######Debugging
+#####Debugging
 There are to ways to debug a machine which can be also be used together. 
 
 *Debug Steps* which can be enable by defining the macro **PARMAC_DEBUG_STEPS**, this prints out the stack position and all the steps taken. This was mainly used in debugging problems with the library itself, though it can be useful to get an idea of why your FSM may not be behaving as expected.
