@@ -1,13 +1,13 @@
 ##Parsing Machine
 
-A parser written in C which uses a hierarchical finite state machine. Where the **state** *declarations*, state **enter/leave** *callbacks*, **transition** table *declarations*, **events** *functions* and **machine** *functions* are declared by the user.
+A parser written in C which uses a hierarchical finite state machine. Where the **state** declarations, state **enter/leave** callbacks, **transition** table declarations, **events** functions and **machine** functions are declared by the user.
 
 The motivation for this library is to allow the creation of parsers using hierarchical FSMs without the need for a code generator.
 
 ####Usage
 
 ######State Declaration
-A state is a struct that has three fields. A name used for debugging and by the state callbacks, and the enter and leave callbacks.
+A state is a struct that has three fields. A name used for debugging and by the state callbacks.
 
 ```C
 static const struct parmac_state 
@@ -17,8 +17,8 @@ static const struct parmac_state
   state_end={"end",NULL,NULL};
 ```
 
-######State Enter Callback
-A callback function for when a state has been entered. 'machineName' is the name of the machine passed by **parmac_set**. **fromStateName** and **toStateName** are from the first parameter of the state delclarations. The **from** is the previous state and the **to** is the entered state. **fromPos** is the position from before the state was entered, and **toPos** the position the state was entered at.
+######Enter State Callback
+A callback entering a state. The *from state* is the previous state and the *to state* is the current state. The **fromPos** parameter is the position from before the state was entered, and **toPos** parameter is the position the state was entered.
 
 ```C
 void on_enter_state_A(PARMAC_DEPTH stkDepth,
@@ -32,8 +32,10 @@ void on_enter_state_A(PARMAC_DEPTH stkDepth,
 }
 ```
 
-######State Leave Callback
-A callback function for when a state has been left. **from** is the state that has been left and **to** is the state that is being entered. This callback lacks the **fromPos/toPos**
+######Leave State Callback
+A callback for leaving a state. The *from state* is the current state and the *to state* is the next state. 
+
+The lack of **fromPos** and **toPos** is due to the leave callback is deferred until the next state is entered, if the source being parsed is updated before then (i.e. modified during an event) those parsing positions would be out of date. Though in the future those may be put in anyway.
 
 ```C
 void on_leave_state_A(PARMAC_DEPTH stkDepth,
@@ -48,7 +50,7 @@ void on_leave_state_A(PARMAC_DEPTH stkDepth,
 ######Transition Table Declaration
 A transition has four fields. The to and from state pointers, and the event and machine function pointers.
 
-A transition can either contain an event or a machine, If neither is specified then that transition will always succeed. It cannot accept both an event and a machine.
+A transition can either contain an event or a machine, If neither is specified then that transition will always succeed. It cannot accept both an event and a machine (this may be changed to be allowed in the future).
 
 A machine must always have separate designated start and end states. The end state must always being transition to and not from. The start state must always be transitioned from and not to.
 
@@ -61,7 +63,7 @@ A machine must always have separate designated start and end states. The end sta
 
 ```
 ######Event
-A function representing an event, it is used in the field of a transition. The return boolean determines whether or not the event succeeds. The postPtr is a pointer to a variable containing the current parsing position. If the event returns true then the current position will be updated with the value being pointed to. The userdata is used to point to the data being parsed.
+A function representing an event, it is used in a transition. The return boolean determines whether or not the event succeeds. The postPtr is a pointer to a variable containing the current parsing position. If the event returns true then the current position will be updated with the value being pointed to. The userdata is used to point to the data being parsed.
 
 ```C
 bool event_A(PARMAC_POS *posPtr,void *userdata) {
@@ -77,13 +79,13 @@ bool event_A(PARMAC_POS *posPtr,void *userdata) {
 
 ```
 ###### Machine
-A function representing a machine. Used to both initialise the machine stack and as a field in a transition. The 'p' represents the start of the stack when initialising, and when used in a transition it represents the current stack position. The 'pos' parameter represents the current position of the parser, zero is used when initialising.
+A function representing a machine. Used to both initialise the machine stack and optionally in a transition. The *p* represents the start of the stack when initialising, and when used in a transition it represents the current stack position. The *pos* parameter represents the current position of the parser, zero is used when initialising.
 
-The 'parmac_set' function is called as shown below.
-* the 1st and 3rd parameters must be the same as the current function's 'p' and 'pos'
+The *parmac_set* function must be called as shown below.
+* the 1st and 3rd parameters must be the same as the current function's *p* and *pos*
 * the 2nd parameter represents the machine's name which is used both in debugging and in the state callbacks
 * the 4th and 5th parameters are the machine's start and end state
-* the 6th and 7th parameter are the transition tables start and end pointers
+* the 6th and 7th parameter are the transition table's start and end pointers
 
 ```C
 void root_machine(struct parmac *p,PARMAC_POS pos) {
@@ -96,6 +98,14 @@ void root_machine(struct parmac *p,PARMAC_POS pos) {
 ```
 
 ###### Running
+The *stkDepth* must be intialised to zero. The *stk* must be initialised with the root machine and the parsing position initialised to zero. The *stk* must be large enough to contain the max depth of the hierahical fsm specified.
+
+If the machine is recursive (i.e. possibly no depth limit) then the stack must always have at least a max depth of one past the current depth. Then in the while loop check if the stack depth==maxDepth and if so then you must resize the stack before calling *parmac_run* again, otherwise you may get a stack overflow.
+
+The *parmac_run* first parameter is the stack, the second is a pointer to the stack depth which will be used by the parser to keep track of the current depth, and the last parameter is a pointer to the data being parsed.
+
+The *parmac_failed* is used to determine whether the machine failed or succeeded and the *parmac_last_pos* returns the parsing position that was last reached.
+
 ```C
 
 int main() {
@@ -123,9 +133,8 @@ int main() {
 ```
 
 ######Debugging
-There are to ways to debug a machine which can be used together. 
+There are to ways to debug a machine which can be also be used together. 
 
-*Debug Steps* which can be enable by defining the macro **PARMAC_DEBUG_STEPS**, this prints out the stack position and all the steps taken. This was mainly used in debugging problems with the library itself.
+*Debug Steps* which can be enable by defining the macro **PARMAC_DEBUG_STEPS**, this prints out the stack position and all the steps taken. This was mainly used in debugging problems with the library itself, though it can be useful to get an idea of why your FSM may not be behaving as expected.
 
-*Debug Callbacks* can be enabled by defining the macro **PARMAC_DEBUG_CALLBACKS**, for each enter and leave state this prints their names and parsing positions. This is useful for tracking the path taken by the fsms. 
-
+*Debug Callbacks* can be enabled by defining the macro **PARMAC_DEBUG_CALLBACKS**, for each enter and leave state this prints their names and parsing positions. This is useful for tracking the path taken by the FSM. 
