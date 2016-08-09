@@ -35,7 +35,7 @@ void on_enter_state_A(PARMAC_DEPTH stkDepth,
 #####Leave State Callback
 A callback for leaving a state. The *from state* is the state being left and the *to state* is the next state being entered. 
 
-The lack of *fromPos* and *toPos* is due to the leave callback is deferred until the next state is entered, if the source being parsed is updated before then (i.e. modified during an event) those parsing positions would be out of date (in the future this may be changed anyway).
+The lack of *fromPos* and *toPos* is due to the leave callback is deferred until the next state is entered, if the source being parsed is updated before then (i.e. modified during an event) those parsing positions would be out of date (in the future this may be changed to include those parameters anyway).
 
 ```C
 void on_leave_state_A(PARMAC_DEPTH stkDepth,
@@ -99,9 +99,9 @@ void root_machine(struct parmac *p,PARMAC_POS pos) {
 ```
 
 #####Running
-The *stkDepth* must be intialised to zero. The *stk* must be initialised with the root machine and the parsing position initialised to zero. The *stk* must be large enough to contain the max depth of the hierahical fsm specified.
+The *stkDepth* must be intialised to zero. The *stk* must be initialised with the root machine and the parsing position initialised to zero. The *stk* must be large enough to contain the max depth of the hierahical FSM specified.
 
-If the machine is recursive (i.e. possibly no depth limit) then the stack must always have at least a max depth of one past the current depth. Then in the while loop check if the stack depth==maxDepth and if so then you must resize the stack before calling *parmac_run* again, otherwise you may get a stack overflow.
+If the machine is recursive (i.e. no max depth) then the stack must always have at least a max depth of one past the current depth. Then in the while loop check if the stack depth==maxDepth and if so then you must resize the stack before calling *parmac_run* again, otherwise you may get a stack overflow.
 
 The *parmac_run* first parameter is the stack, the second is a pointer to the stack depth which will be used by the parser to keep track of the current depth, and the last parameter is a pointer to the data being parsed.
 
@@ -138,4 +138,9 @@ There are to ways to debug a machine which can be also be used together.
 
 *Debug Steps* which can be enable by defining the macro **PARMAC_DEBUG_STEPS**, this prints out the stack position and all the steps taken. This was mainly used in debugging problems with the library itself, though it can be useful to get an idea of why your FSM may not be behaving as expected.
 
-*Debug Callbacks* can be enabled by defining the macro **PARMAC_DEBUG_CALLBACKS**, for each enter and leave state this prints their names and parsing positions. This is useful for tracking the path taken by the FSM. 
+*Debug Callbacks* can be enabled by defining the macro **PARMAC_DEBUG_CALLBACKS**, for each enter and leave state this prints their names and parsing positions. This is useful for tracking the path taken by the FSM.
+
+
+#####Examples
+
+There are two examples, a basic CSV parser and a TCL parser, a TCL expr parser is currently being worked on.
