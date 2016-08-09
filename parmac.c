@@ -1,5 +1,5 @@
-// #define PARMAC_DEBUG_STEPS
-// #define PARMAC_DEBUG_CALLBACKS
+#define PARMAC_DEBUG_STEPS
+#define PARMAC_DEBUG_CALLBACKS
 
 #include "parmac.h"
 
@@ -10,13 +10,13 @@
 #include <assert.h>
 
 #ifdef PARMAC_DEBUG_STEPS
-#define PARMAC_DEBUG_STEPS_PRINTF(...) printf(__VA_ARGS__)
+#define PARMAC_DEBUG_STEPS_PRINTF(...) fprintf(stderr,__VA_ARGS__)
 #else
 #define PARMAC_DEBUG_STEPS_PRINTF(...)
 #endif
 
 #ifdef PARMAC_DEBUG_CALLBACKS
-#define PARMAC_DEBUG_CALLBACKS_PRINTF(...) printf(__VA_ARGS__)
+#define PARMAC_DEBUG_CALLBACKS_PRINTF(...) fprintf(stderr,__VA_ARGS__)
 #else
 #define PARMAC_DEBUG_CALLBACKS_PRINTF(...)
 #endif
@@ -65,10 +65,11 @@ void parmac_on_state_enter(struct parmac *stk,
                            const struct parmac_state *toState) {
   struct parmac *p=&stk[stkDepth];
 
-  PARMAC_DEBUG_CALLBACKS_PRINTF("- (%u) enter_%s_%s (<-%s) (%u->%u)\n",
+  PARMAC_DEBUG_CALLBACKS_PRINTF("(%u) enter_%s_%s (<-%s) (%u+%u)\n",
                                 stkDepth,p->name,
                                 toState->name,fromState?fromState->name:"_",
-                                fromPos,toPos);
+                                (unsigned int)fromPos,
+                                (unsigned int)(toPos-fromPos));
 
   if(toState->enter) {
     toState->enter(stkDepth,p->name,
@@ -85,10 +86,9 @@ void parmac_on_state_leave(struct parmac *stk,
                            const struct parmac_state *toState) {
   struct parmac *p=&stk[stkDepth];
 
-  PARMAC_DEBUG_CALLBACKS_PRINTF("- (%u) leave_%s_%s (->%s)\n",
+  PARMAC_DEBUG_CALLBACKS_PRINTF("(%u) leave_%s_%s (->%s)\n",
                                 stkDepth,p->name,
                                 fromState->name,toState?toState->name:"_");
-
 
   if(fromState->leave) {
     fromState->leave(stkDepth,p->name,
