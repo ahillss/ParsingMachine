@@ -7,7 +7,7 @@ The motivation for this library is to allow the creation of parsers using hierar
 ####Usage
 
 #####State Declaration
-A state is a struct that has three fields. A name used for debugging and by the state callbacks.
+A state is a struct that has three fields. A *name* used by the state callbacks and for debugging. An optional *enter* callback and an optional *leave* callback. 
 
 ```C
 static const struct parmac_state 
@@ -18,7 +18,7 @@ static const struct parmac_state
 ```
 
 #####Enter State Callback
-A callback for entering a state. The *from state* is the previous state being left and the *to state* is the state being entered. The *fromPos* parameter is the position from before the state was entered, and *toPos* parameter is the position after the state was entered.
+The *from state* is the previous state being left and the *to state* is the state being entered. The *fromPos* parameter is the position from before the state was entered, and *toPos* parameter is the position after the state was entered.
 
 ```C
 void on_enter_state_A(PARMAC_DEPTH stkDepth,
@@ -33,15 +33,15 @@ void on_enter_state_A(PARMAC_DEPTH stkDepth,
 ```
 
 #####Leave State Callback
-A callback for leaving a state. The *from state* is the state being left and the *to state* is the next state being entered. 
-
-The lack of *fromPos* and *toPos* is due to the leave callback is deferred until the next state is entered, if the source being parsed is updated before then (i.e. modified during an event) those parsing positions would be out of date (in the future this may be changed to include those parameters anyway).
+The *from state* is the state being left and the *to state* is the next state being entered. 
 
 ```C
 void on_leave_state_A(PARMAC_DEPTH stkDepth,
                                     const char *machineName,
                                     const char *fromStateName,
                                     const char *toStateName,
+                                    PARMAC_POS fromPos,
+                                    PARMAC_POS toPos,
                                     void *userdata) {
 }
 
@@ -83,8 +83,8 @@ bool event_A(PARMAC_POS *posPtr,void *userdata) {
 A function representing a machine. Used to both initialise the machine stack and optionally in a **transition**. The *p* represents the start of the stack when initialising, and when used in a transition it represents the current stack position. The *pos* parameter represents the current position of the parser, zero is used when initialising.
 
 The *parmac_set* function must be called as shown below.
-* the 1st and 3rd parameters must be the same as the current function's *p* and *pos*
-* the 2nd parameter represents the machine's name which is used both in debugging and in the state callbacks
+* the 1st and 2nd parameters must be the same as the function's parameters *p* and *pos*
+* the 3rd parameter represents the machine's name which is used both in debugging and in the state callbacks
 * the 4th and 5th parameters are the machine's start and end state
 * the 6th and 7th parameter are the transition table's start and end pointers
 
