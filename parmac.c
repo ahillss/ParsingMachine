@@ -1,5 +1,5 @@
-#define PARMAC_DEBUG_STEPS
-#define PARMAC_DEBUG_CALLBACKS
+// #define PARMAC_DEBUG_STEPS
+// #define PARMAC_DEBUG_CALLBACKS
 
 #include "parmac.h"
 
@@ -22,20 +22,21 @@
 #endif
 
 struct parmac *parmac_set(struct parmac *p,
-                          const char *name,
                           PARMAC_POS pos,
+                          const char *name,
                           const struct parmac_state *startState,
                           const struct parmac_state *endState,
                           const struct parmac_transition *trsnStart,
                           const struct parmac_transition *trsnEnd) {
   p->pos=pos;
+  p->prevPos=pos;
+  p->name=name;
   p->state=startState;
   p->startState=startState;
   p->endState=endState;
-  p->trsnStart=trsnStart;
   p->trsn=trsnStart;
+  p->trsnStart=trsnStart;
   p->trsnEnd=trsnEnd;
-  p->name=name;
   return p;
 }
 
@@ -65,11 +66,11 @@ void parmac_on_state_enter(struct parmac *stk,
                            const struct parmac_state *toState) {
   struct parmac *p=&stk[stkDepth];
 
-  PARMAC_DEBUG_CALLBACKS_PRINTF("(%u) enter_%s_%s (<-%s) (%u+%u)\n",
+  PARMAC_DEBUG_CALLBACKS_PRINTF("(%u) enter_%s_%s (<-%s) p%u_%u\n",
                                 stkDepth,p->name,
                                 toState->name,fromState?fromState->name:"_",
                                 (unsigned int)fromPos,
-                                (unsigned int)(toPos-fromPos));
+                                (unsigned int)toPos);
 
   if(toState->enter) {
     toState->enter(stkDepth,p->name,
@@ -81,20 +82,24 @@ void parmac_on_state_enter(struct parmac *stk,
 
 void parmac_on_state_leave(struct parmac *stk,
                            PARMAC_DEPTH stkDepth,
+                           PARMAC_POS fromPos,
+                           PARMAC_POS toPos,
                            void *userdata,
                            const struct parmac_state *fromState,
                            const struct parmac_state *toState) {
   struct parmac *p=&stk[stkDepth];
 
-  PARMAC_DEBUG_CALLBACKS_PRINTF("(%u) leave_%s_%s (->%s)\n",
+  PARMAC_DEBUG_CALLBACKS_PRINTF("(%u) leave_%s_%s (->%s) p%u_%u\n",
                                 stkDepth,p->name,
-                                fromState->name,toState?toState->name:"_");
+                                fromState->name,toState?toState->name:"_",
+                                (unsigned int)fromPos,
+                                (unsigned int)toPos);
 
   if(fromState->leave) {
     fromState->leave(stkDepth,p->name,
                      fromState->name,
                      toState?toState->name:NULL,
-                     userdata);
+                     fromPos,toPos,userdata);
   }
 }
 
@@ -114,7 +119,9 @@ void parmac_prev_callbacks(struct parmac *stk,
                             NULL,stk[d].trsn->fromState);
     }
 
-    parmac_on_state_leave(stk,d,userdata,
+    parmac_on_state_leave(stk,d,
+                          stk[d].prevPos,stk[d].pos,
+                          userdata,
                           stk[d].trsn->fromState,
                           stk[d].trsn->toState);
   }
@@ -132,6 +139,7 @@ void parmac_state_transition(struct parmac *stk,
 
   //change state
   p->state=p->trsn->toState;
+  p->prevPos=pos;
   p->pos=pos;
   p->trsn=p->trsnStart;
 }
@@ -190,7 +198,7 @@ bool parmac_run(struct parmac *stk,
     PARMAC_DEBUG_STEPS_PRINTF("=end, not root, pop machine\n");
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
-    parmac_on_state_leave(stk,*stkDepthPtr,userdata,p->endState,NULL);
+    parmac_on_state_leave(stk,*stkDepthPtr,p->pos,p->pos,userdata,p->endState,NULL);
 
     PARMAC_POS pos2=p->pos;
     p=parmac_stack_pop(stk,stkDepthPtr);
@@ -207,7 +215,7 @@ bool parmac_run(struct parmac *stk,
     PARMAC_DEBUG_STEPS_PRINTF("=end, root, finished\n");
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
-    parmac_on_state_leave(stk,*stkDepthPtr,userdata,p->endState,NULL);
+    parmac_on_state_leave(stk,*stkDepthPtr,p->pos,p->pos,userdata,p->endState,NULL);
 
     return false; //success
   }

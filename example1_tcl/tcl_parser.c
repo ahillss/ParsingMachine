@@ -587,7 +587,7 @@ void tcl_parser_cmd_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_rsqr, &state_end, NULL, NULL}
   };
 
-  parmac_set(p,"tcmd",pos,&state_start,&state_end,trsns, endof(trsns));
+  parmac_set(p,pos,"tcmd",&state_start,&state_end,trsns, endof(trsns));
 }
 
 void tcl_parser_var_machine(struct parmac *p,PARMAC_POS pos) {
@@ -616,7 +616,7 @@ void tcl_parser_var_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_idn, &state_end, NULL, NULL}
   };
 
-  parmac_set(p,"tvar",pos,&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"tvar",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void tcl_parser_sstr_machine(struct parmac *p,PARMAC_POS pos) {
@@ -647,7 +647,7 @@ void tcl_parser_sstr_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_sstr, &state_end, NULL, NULL}
   };
 
-  parmac_set(p,"tsstr",pos,&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"tsstr",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void tcl_parser_qstr_machine(struct parmac *p,PARMAC_POS pos) {
@@ -685,7 +685,7 @@ void tcl_parser_qstr_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_rquote, &state_end, NULL, NULL}
   };
 
-  parmac_set(p,"tqstr",pos,&state_start,&state_end,trsns, endof(trsns));
+  parmac_set(p,pos,"tqstr",&state_start,&state_end,trsns, endof(trsns));
 }
 
 void tcl_parser_bstr_machine(struct parmac *p,PARMAC_POS pos) {
@@ -707,7 +707,7 @@ void tcl_parser_bstr_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_rbrace, &state_end, NULL, NULL},
   };
 
-  parmac_set(p,"tbstr",pos,&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"tbstr",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void tcl_parser_word_machine(struct parmac *p,PARMAC_POS pos) {
@@ -728,7 +728,7 @@ void tcl_parser_word_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_sstr, &state_end, NULL, NULL}
   };
 
-  parmac_set(p,"tword",pos,&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"tword",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void tcl_parser_main_machine(struct parmac *p,PARMAC_POS pos) {
@@ -775,7 +775,7 @@ void tcl_parser_main_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_eol, &state_end, NULL, NULL}
   };
 
-  parmac_set(p,"tmain",pos,&state_start,&state_end,trsns, endof(trsns));
+  parmac_set(p,pos,"tmain",&state_start,&state_end,trsns, endof(trsns));
 }
 
 void tcl_parser_init(struct tcl_parser *tp) {

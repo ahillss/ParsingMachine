@@ -72,6 +72,8 @@ void countCol(PARMAC_DEPTH stkDepth,
               const char *machine,
               const char *fromState,
               const char *toState,
+              PARMAC_POS fromPos,
+              PARMAC_POS toPos,
               void *userdata) {
   struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
 
@@ -83,6 +85,8 @@ void setTotalColCount(PARMAC_DEPTH stkDepth,
                       const char *machine,
                       const char *fromState,
                       const char *toState,
+                      PARMAC_POS fromPos,
+                      PARMAC_POS toPos,
                       void *userdata) {
   struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
 
@@ -94,6 +98,8 @@ void zeroColCount(PARMAC_DEPTH stkDepth,
                   const char *machine,
                   const char *fromState,
                   const char *toState,
+                  PARMAC_POS fromPos,
+                  PARMAC_POS toPos,
                   void *userdata) {
   struct csv_parser_data *pd=(struct csv_parser_data*)userdata;
   pd->colsCount=0;
@@ -225,7 +231,7 @@ void qstr_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_rquote, &state_end, NULL, NULL},
   };
 
-  parmac_set(p,"qstr",pos,&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"qstr",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void sstr_machine(struct parmac *p,PARMAC_POS pos) {
@@ -242,7 +248,7 @@ void sstr_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_schar, &state_end, NULL, NULL},
   };
 
-  parmac_set(p,"sstr",pos,&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"sstr",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void field_machine(struct parmac *p,PARMAC_POS pos) {
@@ -260,7 +266,7 @@ void field_machine(struct parmac *p,PARMAC_POS pos) {
      {&state_sstr, &state_end, NULL, NULL},
    };
 
-   parmac_set(p,"field",pos,&state_start,&state_end,trsns,endof(trsns));
+   parmac_set(p,pos,"field",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void record_machine(struct parmac *p,PARMAC_POS pos) {
@@ -279,7 +285,7 @@ void record_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_comma, &state_field, NULL, field_machine}
   };
 
-  parmac_set(p,"record",pos,&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"record",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void main_machine(struct parmac *p,PARMAC_POS pos) {
@@ -305,7 +311,7 @@ void main_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_colcheck, &state_end, NULL,      NULL},
   };
 
-  parmac_set(p,"main",pos,&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"main",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void countRowCol(const char *src,const char*srcTo,int *row,int *col,

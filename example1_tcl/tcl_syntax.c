@@ -54,7 +54,6 @@ struct tcl_syntax_node *tcl_syntax_push(struct tcl_syntax *syntax,
   return cur;
 }
 
-
 char *tcl_syntax_str_push(struct tcl_syntax *syntax,unsigned int len) {
   if(syntax->charsNext+len >= syntax->charsNum) {
     while(syntax->charsNext+len >= syntax->charsNum) {

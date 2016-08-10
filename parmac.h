@@ -23,7 +23,7 @@ typedef bool (*parmac_event)(PARMAC_POS *posPtr,void *userdata);
 
 typedef void (*parmac_machine)(struct parmac *p,PARMAC_POS pos);
 
-typedef void (*parmac_state_enter)(PARMAC_DEPTH stkDepth,
+typedef void (*parmac_state_callback)(PARMAC_DEPTH stkDepth,
                                    const char *machineName,
                                    const char *fromStateName,
                                    const char *toStateName,
@@ -31,16 +31,9 @@ typedef void (*parmac_state_enter)(PARMAC_DEPTH stkDepth,
                                    PARMAC_POS toPos,
                                    void *userdata);
 
-typedef void (*parmac_state_leave)(PARMAC_DEPTH stkDepth,
-                                   const char *machineName,
-                                   const char *fromStateName,
-                                   const char *toStateName,
-                                   void *userdata);
-
 struct parmac_state {
   const char *name;
-  parmac_state_enter enter;
-  parmac_state_leave leave;
+  parmac_state_callback enter,leave;
 };
 
 struct parmac_transition {
@@ -51,7 +44,7 @@ struct parmac_transition {
 
 struct parmac {
   const char *name;
-  PARMAC_POS pos;
+  PARMAC_POS pos,prevPos;
   const struct parmac_transition *trsn,*trsnStart,*trsnEnd;
   const struct parmac_state *state,*startState,*endState;
 };
@@ -61,8 +54,8 @@ extern "C" {
 #endif
 
   struct parmac *parmac_set(struct parmac *p,
-                            const char *name,
                             PARMAC_POS pos,
+                            const char *name,
                             const struct parmac_state *startState,
                             const struct parmac_state *endState,
                             const struct parmac_transition *trsnStart,
