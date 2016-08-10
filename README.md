@@ -145,4 +145,4 @@ There are to ways to debug a machine which can be also be used together.
 
 #####Examples
 
-There are two examples, a basic CSV parser and a TCL parser, a TCL expr parser is currently being worked on.
+There are two examples, a basic CSV parser and a TCL parser. A TCL expr parser is currently being worked on.
