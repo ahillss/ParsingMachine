@@ -28,6 +28,9 @@ void on_enter_state_A(PARMAC_DEPTH stkDepth,
                                     PARMAC_POS fromPos,
                                     PARMAC_POS toPos,
                                     void *userdata) {
+  const char *src=(const char*)userdata;
+  
+  printf("on enter: '%.*s'\n",(int)(toPos-fromPos),&src[fromPos]);
 
 }
 ```
@@ -43,6 +46,7 @@ void on_leave_state_A(PARMAC_DEPTH stkDepth,
                                     PARMAC_POS fromPos,
                                     PARMAC_POS toPos,
                                     void *userdata) {
+  printf("on leave: '%.*s'\n",(int)(toPos-fromPos),&src[fromPos]);
 }
 
 ```
