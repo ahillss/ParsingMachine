@@ -90,11 +90,13 @@ The *parmac_set* function must be called as shown below.
 
 ```C
 void root_machine(struct parmac *p,PARMAC_POS pos) {
-  //usually statically declare states for the machine here...
+  //... statically declare states for the machine here ...
   
-  //usually statically declare the transition table  for the machine here...
+  //... statically declare the transition table for the machine here ...
 
-  parmac_set(p,"root",pos,&state_start,&state_end,trsns,trsns+sizeof(trsns)/sizeof(struct parmac_transition));
+  static const size_t trsnsEnd=trsns+sizeof(trsns)/sizeof(struct parmac_transition);
+  
+  parmac_set(p,pos,"root",&state_start,&state_end,trsns,trsnsEnd);
 }
 ```
 
