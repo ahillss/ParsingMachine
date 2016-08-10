@@ -58,6 +58,10 @@ A transition can either contain an event or a machine, If neither is specified t
 
 A machine must always have a separate designated start and end states. The end state must always being transition to and not from, and the start state must always be transitioned from and not to.
 
+When using a machine instead of an event for a transition, the sub machine will be pushed on the stack. If the sub machine manages to reach its end state, then the parent machine's transition will suceed and will transition to the *toState* specified. If the sub machine does not manage to transition past its start state then the parent machine's transition will have failed and will continue on with the next transition. But if the sub machine does manage to get past its start state but fails from there after, then the parser will fail.
+This was done so there will be no backtracking, which would have played havoc with the state callbacks complicating the implementation.
+
+
 ```C
   static const struct parmac_transition trsns[]={
     {&state_start, &state_A, event_A, NULL},
