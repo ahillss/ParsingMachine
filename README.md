@@ -94,7 +94,7 @@ void root_machine(struct parmac *p,PARMAC_POS pos) {
   
   //... statically declare the transition table for the machine here ...
 
-  static const size_t trsnsEnd=trsns+sizeof(trsns)/sizeof(struct parmac_transition);
+  static const struct parmac_transition *trsnsEnd=trsns+sizeof(trsns)/sizeof(struct parmac_transition);
   
   parmac_set(p,pos,"root",&state_start,&state_end,trsns,trsnsEnd);
 }
