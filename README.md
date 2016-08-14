@@ -35,7 +35,7 @@ void on_enter_state_A(PARMAC_DEPTH stkDepth,
 ```
 
 ####Leave State Callback
-The *from state* is the state being left and the *to state* is the next state being entered. 
+The *from state* is the state being left and the *to state* is the next state being entered.
 
 ```C
 void on_leave_state_A(PARMAC_DEPTH stkDepth,
@@ -70,7 +70,7 @@ When using a machine instead of an event for a transition, the sub machine will 
 ```
 
 ####Event
-A function representing an event, it is used in a **transition**. The return boolean determines whether or not the event succeeds. The *postPtr* is a pointer to a variable containing the current parsing position. If the event returns true then the current position will be updated with the value being pointed to. The *userdata* is used to point to the data being parsed.
+A function representing an event, it is used in a *transition*. The return boolean determines whether or not the event succeeds. The *postPtr* is a pointer to a variable containing the current parsing position. If the event returns true then the current position will be updated with the value being pointed to. The *userdata* is used to point to the data being parsed.
 
 ```C
 bool event_A(PARMAC_POS *posPtr,void *userdata) {
@@ -86,7 +86,7 @@ bool event_A(PARMAC_POS *posPtr,void *userdata) {
 
 ```
 #### Machine
-A function representing a machine. Used to both initialise the machine stack and optionally in a **transition**. The *p* represents the start of the stack when initialising, and when used in a transition it represents the current stack position. The *pos* parameter represents the current position of the parser, zero is used when initialising.
+A function representing a machine. Used to both initialise the machine stack and optionally in a *transition*. The *p* represents the start of the stack when initialising, and when used in a transition it represents the current stack position. The *pos* parameter represents the current position of the parser, zero is used when initialising.
 
 The *parmac_set* function must be called as shown below.
 * the 1st and 2nd parameters must be the same as the function's parameters *p* and *pos*
@@ -142,7 +142,7 @@ int main() {
 ```
 
 ####Debugging
-There are to ways to debug a machine which can be also be used together. 
+There are two ways to debug a machine which can be also be used together. 
 
 *Debug Steps* which can be enable by defining the macro **PARMAC_DEBUG_STEPS**, this prints out the stack position and all the steps taken. This was mainly used in debugging problems with the library itself, though it can be useful to get an idea of why your FSM may not be behaving as expected.
 
