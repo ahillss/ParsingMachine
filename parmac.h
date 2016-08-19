@@ -33,13 +33,13 @@ typedef void (*parmac_state_callback)(PARMAC_DEPTH stkDepth,
 
 struct parmac_state {
   const char *name;
+  parmac_event event;
+  parmac_machine machine;
   parmac_state_callback enter,leave;
 };
 
 struct parmac_transition {
   const struct parmac_state *fromState,*toState;
-  parmac_event event;
-  parmac_machine machine;
 };
 
 struct parmac {

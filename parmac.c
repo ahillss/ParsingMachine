@@ -153,7 +153,7 @@ bool parmac_run(struct parmac *stk,
   //===
   assert(p->trsn==p->trsnEnd || p->trsn->fromState!=p->endState);
   assert(p->trsn==p->trsnEnd || p->trsn->toState!=p->startState);
-  assert(p->trsn==p->trsnEnd || !p->trsn->event || !p->trsn->machine);
+  // assert(p->trsn==p->trsnEnd || !p->trsn->event || !p->trsn->machine);
   assert(p->startState!=p->endState);
 
   //===> debug print pos
@@ -248,12 +248,18 @@ bool parmac_run(struct parmac *stk,
   if(p->trsn!=p->trsnEnd &&
      p->state==p->trsn->fromState &&
      p->state!=p->endState &&
-     p->trsn->machine &&
-     !p->trsn->event) {
+     // p->trsn->machine &&
+     p->trsn->toState->machine &&
+     // !p->trsn->event
+     !p->trsn->toState->event
+     ) {
 
     PARMAC_DEBUG_STEPS_PRINTF("=pushed machine\n");
 
-    p=parmac_stack_push(stk,stkDepthPtr,p->trsn->machine);
+    p=parmac_stack_push(stk,stkDepthPtr,
+                        // p->trsn->machine
+                        p->trsn->toState->machine
+                        );
 
     return true;
   }
@@ -262,12 +268,17 @@ bool parmac_run(struct parmac *stk,
   if(p->trsn!=p->trsnEnd &&
      p->state==p->trsn->fromState &&
      p->state!=p->endState &&
-     p->trsn->event &&
-     !p->trsn->machine) {
+     // p->trsn->event &&
+     p->trsn->toState->event &&
+     // !p->trsn->machine
+     !p->trsn->toState->machine
+     ) {
 
     PARMAC_POS retPos=p->pos;
 
-    if(p->trsn->event(&retPos, userdata)) {
+    if( //p->trsn->event(&retPos, userdata)
+       p->trsn->toState->event(&retPos, userdata)
+       ) {
       PARMAC_DEBUG_STEPS_PRINTF("=event success\n");
       PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
@@ -285,8 +296,12 @@ bool parmac_run(struct parmac *stk,
   if(p->trsn!=p->trsnEnd &&
      p->state==p->trsn->fromState &&
      p->state!=p->endState &&
-     !p->trsn->event &&
-     !p->trsn->machine) {
+     // !p->trsn->event &&
+     // !p->trsn->machine
+
+     !p->trsn->toState->event &&
+     !p->trsn->toState->machine
+     ) {
 
     PARMAC_DEBUG_STEPS_PRINTF("=no machine or event\n");
     PARMAC_DEBUG_CALLBACKS_PRINTF("\n");

@@ -5,6 +5,11 @@
 
 #define endof(x) (x+sizeof(x)/sizeof(*x))
 
+char tcl_parser_convert_schar(const char *src) {
+
+
+}
+
 void tcl_parser_on_str(PARMAC_DEPTH stkDepth,
                        const char *machine,
                        const char *fromState,
@@ -570,212 +575,187 @@ void tcl_parser_main_machine(struct parmac *p,PARMAC_POS pos);
 
 void tcl_parser_cmd_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start",tcl_parser_on_enter_cmd,NULL},
-    state_lsqr={"lsqr",NULL,NULL},
-    state_rsqr={"rsqr",NULL,NULL},
-    state_main={"main",NULL,NULL},
-    state_end={"end",tcl_parser_on_leave_cmd,NULL};
+    state_start={"start", NULL,NULL, tcl_parser_on_enter_cmd,NULL},
+    state_lsqr={"lsqr", tcl_parser_parse_lsqr,NULL, NULL,NULL},
+    state_rsqr={"rsqr", tcl_parser_parse_rsqr,NULL, NULL,NULL},
+    state_main={"main", NULL,tcl_parser_main_machine, NULL,NULL},
+    state_end={"end", NULL,NULL, tcl_parser_on_leave_cmd,NULL};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_lsqr, tcl_parser_parse_lsqr, NULL},
-
-    {&state_lsqr, &state_rsqr, tcl_parser_parse_rsqr, NULL},
-    {&state_lsqr, &state_main, NULL, tcl_parser_main_machine},
-
-    {&state_main, &state_rsqr, tcl_parser_parse_rsqr, NULL},
-
-    {&state_rsqr, &state_end, NULL, NULL}
+    {&state_start, &state_lsqr},
+    {&state_lsqr, &state_rsqr},
+    {&state_lsqr, &state_main},
+    {&state_main, &state_rsqr},
+    {&state_rsqr, &state_end}
   };
 
-  parmac_set(p,pos,"tcmd",&state_start,&state_end,trsns, endof(trsns));
+  parmac_set(p,pos,"t_cmd",&state_start,&state_end,trsns, endof(trsns));
 }
 
 void tcl_parser_var_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_dollar={"dollar",NULL,NULL},
-    state_idn={"idn",tcl_parser_on_var,NULL},
-    state_str={"str",tcl_parser_on_var,NULL},
-    state_lbrace={"lbrace",NULL,NULL},
-    state_rbrace={"rbrace",NULL,NULL},
-    state_end={"end",NULL,NULL};
+    state_start={"start", NULL,NULL, NULL,NULL},
+    state_dollar={"dollar", tcl_parser_parse_dollar,NULL, NULL,NULL},
+    state_idn={"idn", tcl_parser_parse_var_idn,NULL, tcl_parser_on_var,NULL},
+    state_str={"str", tcl_parser_parse_var_str,NULL, tcl_parser_on_var,NULL},
+    state_lbrace={"lbrace", tcl_parser_parse_lbrace,NULL, NULL,NULL},
+    state_rbrace={"rbrace", tcl_parser_parse_rbrace,NULL, NULL,NULL},
+    state_end={"end", NULL,NULL, NULL,NULL};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_dollar, tcl_parser_parse_dollar, NULL},
-
-    {&state_dollar, &state_lbrace, tcl_parser_parse_lbrace, NULL},
-    {&state_dollar, &state_idn, tcl_parser_parse_var_idn, NULL},
-
-    {&state_lbrace, &state_rbrace, tcl_parser_parse_rbrace,  NULL},
-    {&state_lbrace, &state_str, tcl_parser_parse_var_str, NULL},
-
-    {&state_str, &state_rbrace, tcl_parser_parse_rbrace, NULL},
-
-    {&state_rbrace, &state_end, NULL, NULL},
-
-    {&state_idn, &state_end, NULL, NULL}
+    {&state_start, &state_dollar},
+    {&state_dollar, &state_lbrace},
+    {&state_dollar, &state_idn},
+    {&state_lbrace, &state_rbrace},
+    {&state_lbrace, &state_str},
+    {&state_str, &state_rbrace},
+    {&state_rbrace, &state_end},
+    {&state_idn, &state_end}
   };
 
-  parmac_set(p,pos,"tvar",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"t_var",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void tcl_parser_sstr_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_sstr={"sstr",tcl_parser_on_str,NULL},
-    state_var={"var",NULL,NULL},
-    state_cmd={"cmd",NULL,NULL},
-    state_end={"end",NULL,NULL};
+    state_start={"start", NULL,NULL, NULL,NULL},
+    state_sstr={"sstr", tcl_parser_parse_sstr,NULL, tcl_parser_on_str,NULL},
+    state_var={"var", NULL,tcl_parser_var_machine, NULL,NULL},
+    state_cmd={"cmd", NULL,tcl_parser_cmd_machine, NULL,NULL},
+    state_end={"end", NULL,NULL, NULL,NULL};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_sstr, tcl_parser_parse_sstr, NULL},
-    {&state_start, &state_var, NULL, tcl_parser_var_machine},
-    {&state_start, &state_cmd, NULL, tcl_parser_cmd_machine},
-
-    {&state_var, &state_sstr, tcl_parser_parse_sstr, NULL},
-    {&state_var, &state_var, NULL, tcl_parser_var_machine},
-    {&state_var, &state_cmd, NULL, tcl_parser_cmd_machine},
-    {&state_var, &state_end, NULL, NULL},
-
-    {&state_cmd, &state_sstr, tcl_parser_parse_sstr, NULL},
-    {&state_cmd, &state_var, NULL, tcl_parser_var_machine},
-    {&state_cmd, &state_cmd, NULL, tcl_parser_cmd_machine},
-    {&state_cmd, &state_end, NULL, NULL},
-
-    {&state_sstr, &state_var, NULL, tcl_parser_var_machine},
-    {&state_sstr, &state_cmd, NULL, tcl_parser_cmd_machine},
-    {&state_sstr, &state_end, NULL, NULL}
+    {&state_start, &state_sstr},
+    {&state_start, &state_var},
+    {&state_start, &state_cmd},
+    {&state_var, &state_sstr},
+    {&state_var, &state_var},
+    {&state_var, &state_cmd},
+    {&state_var, &state_end},
+    {&state_cmd, &state_sstr},
+    {&state_cmd, &state_var},
+    {&state_cmd, &state_cmd},
+    {&state_cmd, &state_end},
+    {&state_sstr, &state_var},
+    {&state_sstr, &state_cmd},
+    {&state_sstr, &state_end}
   };
 
-  parmac_set(p,pos,"tsstr",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"t_sstr",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void tcl_parser_qstr_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_lquote={"lquote",NULL,NULL},
-    state_rquote={"rquote",NULL,NULL},
-    state_qstr={"qstr",tcl_parser_on_str,NULL},
-    state_var={"var",NULL,NULL},
-    state_cmd={"cmd",NULL,NULL},
-    state_end={"end",NULL,NULL};
+    state_start={"start", NULL,NULL, NULL,NULL},
+    state_lquote={"lquote", tcl_parser_parse_lquote,NULL, NULL,NULL},
+    state_rquote={"rquote", tcl_parser_parse_rquote,NULL, NULL,NULL},
+    state_qstr={"qstr", tcl_parser_parse_qstr,NULL, tcl_parser_on_str,NULL},
+    state_var={"var", NULL,tcl_parser_var_machine, NULL,NULL},
+    state_cmd={"cmd", NULL,tcl_parser_cmd_machine, NULL,NULL},
+    state_end={"end", NULL,NULL, NULL,NULL};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_lquote, tcl_parser_parse_lquote, NULL},
-
-    {&state_lquote, &state_rquote, tcl_parser_parse_rquote, NULL},
-    {&state_lquote, &state_qstr, tcl_parser_parse_qstr, NULL},
-    {&state_lquote, &state_var, NULL, tcl_parser_var_machine},
-    {&state_lquote, &state_cmd, NULL, tcl_parser_cmd_machine},
-
-    {&state_var, &state_rquote, tcl_parser_parse_rquote, NULL},
-    {&state_var, &state_qstr, tcl_parser_parse_qstr, NULL},
-    {&state_var, &state_var, NULL, tcl_parser_var_machine},
-    {&state_var, &state_cmd, NULL, tcl_parser_cmd_machine},
-
-    {&state_cmd, &state_rquote, tcl_parser_parse_rquote, NULL},
-    {&state_cmd, &state_qstr, tcl_parser_parse_qstr, NULL},
-    {&state_cmd, &state_var, NULL, tcl_parser_var_machine},
-    {&state_cmd, &state_cmd, NULL, tcl_parser_cmd_machine},
-
-    {&state_qstr, &state_rquote, tcl_parser_parse_rquote, NULL},
-    {&state_qstr, &state_var, NULL, tcl_parser_var_machine},
-    {&state_qstr, &state_cmd, NULL, tcl_parser_cmd_machine},
-
-    {&state_rquote, &state_end, NULL, NULL}
+    {&state_start, &state_lquote},
+    {&state_lquote, &state_rquote},
+    {&state_lquote, &state_qstr},
+    {&state_lquote, &state_var},
+    {&state_lquote, &state_cmd},
+    {&state_var, &state_rquote},
+    {&state_var, &state_qstr},
+    {&state_var, &state_var},
+    {&state_var, &state_cmd},
+    {&state_cmd, &state_rquote},
+    {&state_cmd, &state_qstr},
+    {&state_cmd, &state_var},
+    {&state_cmd, &state_cmd},
+    {&state_qstr, &state_rquote},
+    {&state_qstr, &state_var},
+    {&state_qstr, &state_cmd},
+    {&state_rquote, &state_end}
   };
 
-  parmac_set(p,pos,"tqstr",&state_start,&state_end,trsns, endof(trsns));
+  parmac_set(p,pos,"t_qstr",&state_start,&state_end,trsns, endof(trsns));
 }
 
 void tcl_parser_bstr_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_lbrace={"lbrace",NULL,NULL},
-    state_rbrace={"rbrace",NULL,NULL},
-    state_bstr={"bstr",tcl_parser_on_bstr,NULL},
-    state_end={"end",NULL,NULL};
+    state_start={"start", NULL,NULL, NULL,NULL},
+    state_lbrace={"lbrace", tcl_parser_parse_lbrace,NULL, NULL,NULL},
+    state_rbrace={"rbrace", tcl_parser_parse_rbrace,NULL, NULL,NULL},
+    state_bstr={"bstr", tcl_parser_parse_bstr,NULL, tcl_parser_on_bstr,NULL},
+    state_end={"end", NULL,NULL, NULL,NULL};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_lbrace, tcl_parser_parse_lbrace, NULL},
-
-    {&state_lbrace, &state_rbrace, tcl_parser_parse_rbrace, NULL},
-    {&state_lbrace, &state_bstr, tcl_parser_parse_bstr, NULL},
-
-    {&state_bstr, &state_rbrace, tcl_parser_parse_rbrace, NULL},
-
-    {&state_rbrace, &state_end, NULL, NULL},
+    {&state_start, &state_lbrace},
+    {&state_lbrace, &state_rbrace},
+    {&state_lbrace, &state_bstr},
+    {&state_bstr, &state_rbrace},
+    {&state_rbrace, &state_end},
   };
 
-  parmac_set(p,pos,"tbstr",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"t_bstr",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void tcl_parser_word_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_bstr={"bstr",NULL,NULL},
-    state_qstr={"qstr",NULL,NULL},
-    state_sstr={"sstr",NULL,NULL},
-    state_end={"end",NULL,NULL};
+    state_start={"start", NULL,NULL, NULL,NULL},
+    state_bstr={"bstr", NULL,tcl_parser_bstr_machine, NULL,NULL},
+    state_qstr={"qstr", NULL,tcl_parser_qstr_machine, NULL,NULL},
+    state_sstr={"sstr", NULL,tcl_parser_sstr_machine, NULL,NULL},
+    state_end={"end", NULL,NULL, NULL,NULL};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_qstr, NULL, tcl_parser_qstr_machine},
-    {&state_start, &state_bstr, NULL, tcl_parser_bstr_machine},
-    {&state_start, &state_sstr, NULL, tcl_parser_sstr_machine},
-
-    {&state_qstr, &state_end, NULL, NULL},
-    {&state_bstr, &state_end, NULL, NULL},
-    {&state_sstr, &state_end, NULL, NULL}
+    {&state_start, &state_qstr},
+    {&state_start, &state_bstr},
+    {&state_start, &state_sstr},
+    {&state_qstr, &state_end},
+    {&state_bstr, &state_end},
+    {&state_sstr, &state_end}
   };
 
-  parmac_set(p,pos,"tword",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"t_word",&state_start,&state_end,trsns,endof(trsns));
 }
 
 void tcl_parser_main_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_cmnt={"cmnt",NULL,NULL},
-    state_word={"word",tcl_parser_on_word,NULL},
-    state_spc={"spc",NULL,NULL},
-    state_sep={"sep",tcl_parser_on_stmt,NULL},
-    state_eol={"eol",tcl_parser_on_stmt,NULL},
-    state_end={"end",tcl_parser_on_stmt,NULL};
+    state_start={"start", NULL,NULL, NULL,NULL},
+    state_cmnt={"cmnt", tcl_parser_parse_cmnt,NULL, NULL,NULL},
+    state_word={"word", NULL,tcl_parser_word_machine, tcl_parser_on_word,NULL},
+    state_spc={"spc", tcl_parser_parse_spc,NULL, NULL,NULL},
+    state_sep={"sep", tcl_parser_parse_sep,NULL, tcl_parser_on_stmt,NULL},
+    state_eol={"eol", tcl_parser_parse_eol,NULL, tcl_parser_on_stmt,NULL},
+    state_end={"end", NULL,NULL, tcl_parser_on_stmt,NULL};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_cmnt, tcl_parser_parse_cmnt, NULL},
-    {&state_start, &state_sep, tcl_parser_parse_sep,  NULL},
-    {&state_start, &state_eol, tcl_parser_parse_eol,  NULL},
-    {&state_start, &state_spc, tcl_parser_parse_spc,  NULL},
-    {&state_start, &state_word, NULL, tcl_parser_word_machine},
-    {&state_start, &state_end, NULL, NULL},
-
-    {&state_cmnt, &state_eol, tcl_parser_parse_eol, NULL},
-    {&state_cmnt, &state_end, NULL, NULL},
-
-    {&state_word, &state_spc, tcl_parser_parse_spc, NULL},
-    {&state_word, &state_sep, tcl_parser_parse_sep, NULL},
-    {&state_word, &state_eol, tcl_parser_parse_eol, NULL},
-    {&state_word, &state_end, NULL, NULL},
-
-    {&state_spc, &state_sep, tcl_parser_parse_sep, NULL},
-    {&state_spc, &state_eol, tcl_parser_parse_eol, NULL},
-    {&state_spc, &state_word, NULL, tcl_parser_word_machine},
-    {&state_spc, &state_end, NULL, NULL},
-
-    {&state_sep, &state_cmnt, tcl_parser_parse_cmnt, NULL},
-    {&state_sep, &state_spc, tcl_parser_parse_spc, NULL},
-    {&state_sep, &state_eol, tcl_parser_parse_eol, NULL},
-    {&state_sep, &state_word, NULL, tcl_parser_word_machine},
-    {&state_sep, &state_end, NULL, NULL},
-
-    {&state_eol, &state_cmnt, tcl_parser_parse_cmnt, NULL},
-    {&state_eol, &state_spc, tcl_parser_parse_spc,  NULL},
-    {&state_eol, &state_sep, tcl_parser_parse_sep,  NULL},
-    {&state_eol, &state_word, NULL, tcl_parser_word_machine},
-    {&state_eol, &state_end, NULL, NULL}
+    {&state_start, &state_cmnt},
+    {&state_start, &state_sep},
+    {&state_start, &state_eol},
+    {&state_start, &state_spc},
+    {&state_start, &state_word},
+    {&state_start, &state_end},
+    {&state_cmnt, &state_eol},
+    {&state_cmnt, &state_end},
+    {&state_word, &state_spc},
+    {&state_word, &state_sep},
+    {&state_word, &state_eol},
+    {&state_word, &state_end},
+    {&state_spc, &state_sep},
+    {&state_spc, &state_eol},
+    {&state_spc, &state_word},
+    {&state_spc, &state_end},
+    {&state_sep, &state_cmnt},
+    {&state_sep, &state_spc},
+    {&state_sep, &state_eol},
+    {&state_sep, &state_word},
+    {&state_sep, &state_end},
+    {&state_eol, &state_cmnt},
+    {&state_eol, &state_spc},
+    {&state_eol, &state_sep},
+    {&state_eol, &state_word},
+    {&state_eol, &state_end}
   };
 
-  parmac_set(p,pos,"tmain",&state_start,&state_end,trsns, endof(trsns));
+  parmac_set(p,pos,"t_main",&state_start,&state_end,trsns, endof(trsns));
 }
 
 void tcl_parser_init(struct tcl_parser *tp) {

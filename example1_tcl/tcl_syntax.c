@@ -20,9 +20,11 @@ void tcl_syntax_uninit(struct tcl_syntax *syntax) {
 }
 
 struct tcl_syntax_node *tcl_syntax_push(struct tcl_syntax *syntax,
-                                     unsigned int depth,
-                                     unsigned int pos,
-                                     enum tcl_syntax_node_type type) {
+                                        unsigned int depth,
+                                        unsigned int pos,
+                                        enum tcl_syntax_node_type type //,
+                                        // unsigned int strMaxLen
+                                        ) {
 
   //
   struct tcl_syntax_node *top;
@@ -36,6 +38,10 @@ struct tcl_syntax_node *tcl_syntax_push(struct tcl_syntax *syntax,
     top->type=tcl_syntax_sep;
     return top;
   }
+
+  // if(type==tcl_syntax_str && top->depth==depth && top->type==tcl_syntax_str) {
+  //   return top;
+  // }
 
   //
   if(syntax->nodesNext >= syntax->nodesNum) {
