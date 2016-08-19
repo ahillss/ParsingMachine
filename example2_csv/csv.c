@@ -206,12 +206,12 @@ bool colcheck(PARMAC_POS *ppos,void *userdata) {
 
 void qstr_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start", NULL,NULL, NULL,NULL},
-    state_lquote={"lquote", parse_lquote,NULL, NULL,NULL},
-    state_rquote={"rquote", parse_rquote,NULL, NULL,NULL},
-    state_twoquotes={"twoquotes", parse_twoquotes,NULL, print_quote,NULL},
-    state_qchar={"qchar", parse_qchar,NULL, print_char,NULL},
-    state_end={"end", NULL,NULL, NULL,NULL};
+    state_start={"start"},
+    state_lquote={"lquote",.event=parse_lquote},
+    state_rquote={"rquote",.event=parse_rquote},
+    state_twoquotes={"twoquotes",.event=parse_twoquotes,.enter=print_quote},
+    state_qchar={"qchar",.event=parse_qchar,.enter=print_char},
+    state_end={"end"};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_lquote},
@@ -232,9 +232,9 @@ void qstr_machine(struct parmac *p,PARMAC_POS pos) {
 
 void sstr_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start",NULL,NULL},
-    state_schar={"schar", parse_schar,NULL, print_char,NULL},
-    state_end={"end", NULL,NULL, NULL,NULL};
+    state_start={"start"},
+    state_schar={"schar",.event=parse_schar,.enter=print_char},
+    state_end={"end"};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_schar},
@@ -248,10 +248,10 @@ void sstr_machine(struct parmac *p,PARMAC_POS pos) {
 
 void field_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start", NULL,NULL, print_singlequote,NULL},
-    state_qstr={"qstr", NULL,qstr_machine, NULL,NULL},
-    state_sstr={"sstr", NULL,sstr_machine, NULL,NULL},
-    state_end={"end", NULL,NULL, print_singlequote,NULL};
+    state_start={"start",.enter=print_singlequote},
+    state_qstr={"qstr",.machine=qstr_machine},
+    state_sstr={"sstr",.machine=sstr_machine},
+    state_end={"end",.enter=print_singlequote};
 
    static const struct parmac_transition trsns[]={
      {&state_start, &state_qstr},
@@ -265,10 +265,10 @@ void field_machine(struct parmac *p,PARMAC_POS pos) {
 
 void record_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start", NULL,NULL, NULL,zeroColCount},
-    state_field={"field", NULL,field_machine, NULL,countCol},
-    state_comma={"comma", parse_comma,NULL, print_comma,NULL},
-    state_end={"end", NULL,NULL, print_eol,NULL};
+    state_start={"start",.leave=zeroColCount},
+    state_field={"field",.machine=field_machine,.leave=countCol},
+    state_comma={"comma",.event=parse_comma,.enter=print_comma},
+    state_end={"end",.enter=print_eol};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_field},
@@ -282,12 +282,12 @@ void record_machine(struct parmac *p,PARMAC_POS pos) {
 
 void main_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
-    state_start={"start", NULL,NULL, NULL,NULL},
-    state_record1={"record1", NULL,record_machine, NULL,setTotalColCount},
-    state_recordn={"recordn", NULL,record_machine, NULL,NULL},
-    state_eol={"eol", parse_eol,NULL, NULL,NULL},
-    state_colcheck={"colcheck", colcheck,NULL, NULL,NULL},
-    state_end={"end", NULL,NULL, NULL,NULL};
+    state_start={"start"},
+    state_record1={"record1",.machine=record_machine,.leave=setTotalColCount},
+    state_recordn={"recordn",.machine=record_machine},
+    state_eol={"eol",.event=parse_eol},
+    state_colcheck={"colcheck",.event=colcheck},
+    state_end={"end"};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_record1},

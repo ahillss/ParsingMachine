@@ -15,10 +15,10 @@ When a transition comes across a state using a machine instead of an event, the 
 
 ```C
 static const struct parmac_state 
-  state_start={"start", NULL,NULL, NULL,NULL},
-  state_A={"A", event_A,NULL, on_enter_state_A,on_leave_state_A},
-  state_B={"B", NULL,machine_B, NULL,NULL},
-  state_end={"end", NULL,NULL, NULL,NULL};
+  state_start={"start"},
+  state_A={"A", .event=event_A, .enter=on_enter_state_A, .leave=on_leave_state_A},
+  state_B={"B", .machine=machine_B},
+  state_end={"end"};
 ```
 
 ####Enter State Callback
