@@ -21,7 +21,7 @@
 #define PARMAC_DEBUG_CALLBACKS_PRINTF(...)
 #endif
 
-#define IS_TRSN_END(P) (!p->trsnIt->fromState)
+#define IS_TRSN_END(P) (!P->trsnIt->fromState)
 
 struct parmac *parmac_set(struct parmac *p,
                           PARMAC_POS pos,

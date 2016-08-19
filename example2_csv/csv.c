@@ -382,10 +382,6 @@ void parse_csv(const char *src) {
   } else {
     printf("parse success!\n");
   }
-
-  unsigned long long qq=-1;
-  printf("%llu\n",qq+1);
-
 }
 
 char *string_from_file(const char *fn) {
