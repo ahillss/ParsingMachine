@@ -17,6 +17,7 @@
 #define PARMAC_DEPTH size_t
 #endif
 
+#define PARMAC_TRANSITION_END {0,0}
 struct parmac;
 
 typedef bool (*parmac_event)(PARMAC_POS *posPtr,void *userdata);

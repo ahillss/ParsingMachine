@@ -225,7 +225,7 @@ void qstr_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_twoquotes, &state_qchar},
     {&state_twoquotes, &state_rquote},
     {&state_rquote, &state_end},
-    {NULL,NULL}};
+    PARMAC_TRANSITION_END};
 
   parmac_set(p,pos,"qstr",&state_start,&state_end,trsns);
 }
@@ -241,7 +241,7 @@ void sstr_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_start, &state_end},
     {&state_schar, &state_schar},
     {&state_schar, &state_end},
-    {NULL,NULL}};
+    PARMAC_TRANSITION_END};
 
   parmac_set(p,pos,"sstr",&state_start,&state_end,trsns);
 }
@@ -258,7 +258,7 @@ void field_machine(struct parmac *p,PARMAC_POS pos) {
      {&state_start, &state_sstr},
      {&state_qstr, &state_end, NULL, NULL},
      {&state_sstr, &state_end, NULL, NULL},
-     {NULL,NULL}};
+     PARMAC_TRANSITION_END};
 
    parmac_set(p,pos,"field",&state_start,&state_end,trsns);
 }
@@ -275,7 +275,7 @@ void record_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_field, &state_comma},
     {&state_field, &state_end},
     {&state_comma, &state_field},
-    {NULL,NULL}};
+    PARMAC_TRANSITION_END};
 
   parmac_set(p,pos,"record",&state_start,&state_end,trsns);
 }
@@ -297,7 +297,7 @@ void main_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_recordn, &state_colcheck},
     {&state_colcheck, &state_eol},
     {&state_colcheck, &state_end},
-    {NULL,NULL}};
+    PARMAC_TRANSITION_END};
 
   parmac_set(p,pos,"main",&state_start,&state_end,trsns);
 }

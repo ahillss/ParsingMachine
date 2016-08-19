@@ -60,13 +60,13 @@ A transition has four fields. The to and from state pointers, and the event and 
 
 A machine must always have a separate designated start and end states. The end state must always being transition to and not from, and the start state must always be transitioned from and not to.
 
-The end of the transition table is delimited by a ```{NULL,NULL}```.
+The end of the transition table must be delimited by a the ```PARMAC_TRANSITION_END``` macro.
 ```C
   static const struct parmac_transition trsns[]={
     {&state_start, &state_A},
     {&state_A, &state_B},
     {&state_B &state_end},
-	{NULL,NULL}};
+	PARMAC_TRANSITION_END};
 
 ```
 

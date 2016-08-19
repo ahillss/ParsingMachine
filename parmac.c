@@ -21,6 +21,8 @@
 #define PARMAC_DEBUG_CALLBACKS_PRINTF(...)
 #endif
 
+#define IS_TRSN_END(P) (!p->trsnIt->fromState)
+
 struct parmac *parmac_set(struct parmac *p,
                           PARMAC_POS pos,
                           const char *name,
@@ -149,9 +151,9 @@ bool parmac_run(struct parmac *stk,
   struct parmac *p=&stk[*stkDepthPtr];
 
   //===
-  assert(!p->trsnIt->fromState || p->trsnIt->fromState!=p->endState);
-  assert(!p->trsnIt->fromState || p->trsnIt->toState!=p->startState);
-  // assert(!p->trsnIt->fromState || !p->trsnIt->event || !p->trsnIt->machine);
+  assert(IS_TRSN_END(p) || p->trsnIt->fromState!=p->endState);
+  assert(IS_TRSN_END(p) || p->trsnIt->toState!=p->startState);
+  assert(IS_TRSN_END(p) || !p->trsnIt->toState->event || !p->trsnIt->toState->machine);
   assert(p->startState!=p->endState);
 
   //===> debug print pos
@@ -163,8 +165,8 @@ bool parmac_run(struct parmac *stk,
 
     for(d=0;d<=*stkDepthPtr;d++) {
       struct parmac *p2=&stk[d];
-      const char *from=p2->trsnIt->fromState?p2->trsnIt->fromState->name:"X";
-      const char *to=p2->trsnIt->fromState?p2->trsnIt->toState->name:"X";
+      const char *from=IS_TRSN_END(p2)?"X":p2->trsnIt->fromState->name;
+      const char *to=IS_TRSN_END(p2)?"X":p2->trsnIt->toState->name;
       unsigned int stkDepth=(unsigned int)(*stkDepthPtr)-(unsigned int)(p-p2);
       unsigned int trsnIt=(unsigned int)(p2->trsnIt-p2->trsns);
       PARMAC_DEBUG_STEPS_PRINTF("/ %s : %s (%s -> %s) (d%u p%u t%u)",
@@ -177,12 +179,12 @@ bool parmac_run(struct parmac *stk,
 #endif
 
   //===> transition fromState doesn't match state
-  if(p->trsnIt->fromState &&
+  if(!IS_TRSN_END(p) &&
      p->state!=p->trsnIt->fromState &&
      p->state!=p->endState) {
     PARMAC_DEBUG_STEPS_PRINTF("=iterating trsns\n");
 
-    while(p->trsnIt->fromState && p->state!=p->trsnIt->fromState) {
+    while(!IS_TRSN_END(p) && p->state!=p->trsnIt->fromState) {
       p->trsnIt++;
     }
 
@@ -219,7 +221,7 @@ bool parmac_run(struct parmac *stk,
   }
 
   //===> trsnEnd, either not startState or at root
-  if(!p->trsnIt->fromState &&
+  if(IS_TRSN_END(p) &&
      p->state!=p->endState &&
      (p->state!=p->startState ||
       *stkDepthPtr==0)) {
@@ -229,7 +231,7 @@ bool parmac_run(struct parmac *stk,
   }
 
   //===> trsnEnd, startState, not root
-  if(!p->trsnIt->fromState &&
+  if(IS_TRSN_END(p) &&
      p->state==p->startState &&
      p->state!=p->endState &&
      *stkDepthPtr != 0) {
@@ -243,7 +245,7 @@ bool parmac_run(struct parmac *stk,
   }
 
   //===> on machine
-  if(p->trsnIt->fromState &&
+  if(!IS_TRSN_END(p) &&
      p->state==p->trsnIt->fromState &&
      p->state!=p->endState &&
      p->trsnIt->toState->machine &&
@@ -258,7 +260,7 @@ bool parmac_run(struct parmac *stk,
   }
 
   //===> on event
-  if(p->trsnIt->fromState &&
+  if(!IS_TRSN_END(p) &&
      p->state==p->trsnIt->fromState &&
      p->state!=p->endState &&
      p->trsnIt->toState->event &&
@@ -283,7 +285,7 @@ bool parmac_run(struct parmac *stk,
   }
 
   //===> on no machine or event
-  if(p->trsnIt->fromState &&
+  if(!IS_TRSN_END(p) &&
      p->state==p->trsnIt->fromState &&
      p->state!=p->endState &&
      !p->trsnIt->toState->event &&
