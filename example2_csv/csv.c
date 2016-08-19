@@ -256,8 +256,8 @@ void field_machine(struct parmac *p,PARMAC_POS pos) {
    static const struct parmac_transition trsns[]={
      {&state_start, &state_qstr},
      {&state_start, &state_sstr},
-     {&state_qstr, &state_end, NULL, NULL},
-     {&state_sstr, &state_end, NULL, NULL},
+     {&state_qstr, &state_end},
+     {&state_sstr, &state_end},
      PARMAC_TRANSITION_END};
 
    parmac_set(p,pos,"field",&state_start,&state_end,trsns);
