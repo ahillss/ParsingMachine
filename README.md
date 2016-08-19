@@ -60,12 +60,13 @@ A transition has four fields. The to and from state pointers, and the event and 
 
 A machine must always have a separate designated start and end states. The end state must always being transition to and not from, and the start state must always be transitioned from and not to.
 
+The end of the transition table is delimited by a ```{NULL,NULL}```.
 ```C
   static const struct parmac_transition trsns[]={
     {&state_start, &state_A},
     {&state_A, &state_B},
     {&state_B &state_end},
-  };
+	{NULL,NULL}};
 
 ```
 
@@ -92,7 +93,7 @@ The *parmac_set* function must be called as shown below.
 * the 1st and 2nd parameters must be the same as the function's parameters *p* and *pos*
 * the 3rd parameter represents the machine's name which is used both in debugging and in the state callbacks
 * the 4th and 5th parameters are the machine's start and end state
-* the 6th and 7th parameter are the transition table's start and end pointers
+* the 6th parameter is the transition table
 
 ```C
 void root_machine(struct parmac *p,PARMAC_POS pos) {
@@ -100,9 +101,7 @@ void root_machine(struct parmac *p,PARMAC_POS pos) {
   
   //... statically declare the transition table for the machine here ...
 
-  static const struct parmac_transition *trsnsEnd=trsns+sizeof(trsns)/sizeof(struct parmac_transition);
-  
-  parmac_set(p,pos,"root",&state_start,&state_end,trsns,trsnsEnd);
+  parmac_set(p,pos,"root",&state_start,&state_end,trsns);
 }
 ```
 

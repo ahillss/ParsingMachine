@@ -586,10 +586,10 @@ void tcl_parser_cmd_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_lsqr, &state_rsqr},
     {&state_lsqr, &state_main},
     {&state_main, &state_rsqr},
-    {&state_rsqr, &state_end}
-  };
+    {&state_rsqr, &state_end},
+    {NULL,NULL}};
 
-  parmac_set(p,pos,"t_cmd",&state_start,&state_end,trsns, endof(trsns));
+  parmac_set(p,pos,"t_cmd",&state_start,&state_end,trsns);
 }
 
 void tcl_parser_var_machine(struct parmac *p,PARMAC_POS pos) {
@@ -610,10 +610,10 @@ void tcl_parser_var_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_lbrace, &state_str},
     {&state_str, &state_rbrace},
     {&state_rbrace, &state_end},
-    {&state_idn, &state_end}
-  };
+    {&state_idn, &state_end},
+    {NULL,NULL}};
 
-  parmac_set(p,pos,"t_var",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"t_var",&state_start,&state_end,trsns);
 }
 
 void tcl_parser_sstr_machine(struct parmac *p,PARMAC_POS pos) {
@@ -638,10 +638,10 @@ void tcl_parser_sstr_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_cmd, &state_end},
     {&state_sstr, &state_var},
     {&state_sstr, &state_cmd},
-    {&state_sstr, &state_end}
-  };
+    {&state_sstr, &state_end},
+    {NULL,NULL}};
 
-  parmac_set(p,pos,"t_sstr",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"t_sstr",&state_start,&state_end,trsns);
 }
 
 void tcl_parser_qstr_machine(struct parmac *p,PARMAC_POS pos) {
@@ -671,10 +671,10 @@ void tcl_parser_qstr_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_qstr, &state_rquote},
     {&state_qstr, &state_var},
     {&state_qstr, &state_cmd},
-    {&state_rquote, &state_end}
-  };
+    {&state_rquote, &state_end},
+    {NULL,NULL}};
 
-  parmac_set(p,pos,"t_qstr",&state_start,&state_end,trsns, endof(trsns));
+  parmac_set(p,pos,"t_qstr",&state_start,&state_end,trsns);
 }
 
 void tcl_parser_bstr_machine(struct parmac *p,PARMAC_POS pos) {
@@ -691,9 +691,9 @@ void tcl_parser_bstr_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_lbrace, &state_bstr},
     {&state_bstr, &state_rbrace},
     {&state_rbrace, &state_end},
-  };
+    {NULL,NULL}};
 
-  parmac_set(p,pos,"t_bstr",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"t_bstr",&state_start,&state_end,trsns);
 }
 
 void tcl_parser_word_machine(struct parmac *p,PARMAC_POS pos) {
@@ -710,10 +710,10 @@ void tcl_parser_word_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_start, &state_sstr},
     {&state_qstr, &state_end},
     {&state_bstr, &state_end},
-    {&state_sstr, &state_end}
-  };
+    {&state_sstr, &state_end},
+    {NULL,NULL}};
 
-  parmac_set(p,pos,"t_word",&state_start,&state_end,trsns,endof(trsns));
+  parmac_set(p,pos,"t_word",&state_start,&state_end,trsns);
 }
 
 void tcl_parser_main_machine(struct parmac *p,PARMAC_POS pos) {
@@ -752,10 +752,10 @@ void tcl_parser_main_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_eol, &state_spc},
     {&state_eol, &state_sep},
     {&state_eol, &state_word},
-    {&state_eol, &state_end}
-  };
+    {&state_eol, &state_end},
+    {NULL,NULL}};
 
-  parmac_set(p,pos,"t_main",&state_start,&state_end,trsns, endof(trsns));
+  parmac_set(p,pos,"t_main",&state_start,&state_end,trsns);
 }
 
 void tcl_parser_init(struct tcl_parser *tp) {

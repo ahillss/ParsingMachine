@@ -45,7 +45,7 @@ struct parmac_transition {
 struct parmac {
   const char *name;
   PARMAC_POS pos,prevPos;
-  const struct parmac_transition *trsn,*trsnStart,*trsnEnd;
+  const struct parmac_transition *trsnIt,*trsns;
   const struct parmac_state *state,*startState,*endState;
 };
 
@@ -58,8 +58,7 @@ extern "C" {
                             const char *name,
                             const struct parmac_state *startState,
                             const struct parmac_state *endState,
-                            const struct parmac_transition *trsnStart,
-                            const struct parmac_transition *trsnEnd);
+                            const struct parmac_transition *trsns);
 
   bool parmac_run(struct parmac *stk,
                   PARMAC_DEPTH *stkDepthPtr,
