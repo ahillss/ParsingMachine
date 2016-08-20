@@ -27,6 +27,12 @@ char *string_from_file(const char *fn) {
   return str;
 }
 
+void print_spaces(unsigned int s) {
+  while(s>0) {
+    printf(" ");
+    s--;
+  }
+}
 
 int main() {
   char *txt=string_from_file("test6.tcl");
@@ -49,6 +55,7 @@ int main() {
 
   for(i=0;i<syntax.nodesNext;i++) {
     struct tcl_syntax_node *cur=&syntax.nodes[i];
+    // print_spaces(cur->depth*2);
     printf("%u : %u : ",cur->depth,cur->pos);
 
     if(cur->type==tcl_syntax_str) {

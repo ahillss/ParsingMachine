@@ -333,7 +333,6 @@ bool tcl_parser_parse_esc_eol(PARMAC_POS *ppos,void *userdata) {
   struct tcl_parser *tp=(struct tcl_parser*)userdata;
 
   if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='\n') {
-    printf("aaa\n");
     (*ppos)+=2;
     return true;
   }
@@ -341,7 +340,6 @@ bool tcl_parser_parse_esc_eol(PARMAC_POS *ppos,void *userdata) {
   if(tp->src[*ppos]=='\\' &&
      tp->src[*ppos+1]=='\r' &&
      tp->src[*ppos+2]=='\n') {
-    printf("bbb\n");
     (*ppos)+=3;
     return true;
   }
