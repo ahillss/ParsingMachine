@@ -29,7 +29,7 @@ char *string_from_file(const char *fn) {
 
 
 int main() {
-  char *txt=string_from_file("test5.tcl");
+  char *txt=string_from_file("test6.tcl");
 
   if(!txt) {
     return 1;
