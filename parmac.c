@@ -10,13 +10,13 @@
 #include <assert.h>
 
 #ifdef PARMAC_DEBUG_STEPS
-#define PARMAC_DEBUG_STEPS_PRINTF(...) fprintf(stderr,__VA_ARGS__)
+#define PARMAC_DEBUG_STEPS_PRINTF(...) printf(__VA_ARGS__)
 #else
 #define PARMAC_DEBUG_STEPS_PRINTF(...)
 #endif
 
 #ifdef PARMAC_DEBUG_CALLBACKS
-#define PARMAC_DEBUG_CALLBACKS_PRINTF(...) fprintf(stderr,__VA_ARGS__)
+#define PARMAC_DEBUG_CALLBACKS_PRINTF(...) printf(__VA_ARGS__)
 #else
 #define PARMAC_DEBUG_CALLBACKS_PRINTF(...)
 #endif
@@ -157,26 +157,13 @@ bool parmac_run(struct parmac *stk,
   assert(p->startState!=p->endState);
 
   //===> debug print pos
-#ifdef PARMAC_DEBUG_STEPS
-  {
-    PARMAC_DEBUG_STEPS_PRINTF("\n");
+  PARMAC_DEBUG_STEPS_PRINTF("\n(%u) %s : %s (%s -> %s) @%u\n",
+                            *stkDepthPtr,p->name,p->state->name,
+                            IS_TRSN_END(p)?"X":p->trsnIt->fromState->name,
+                            IS_TRSN_END(p)?"X":p->trsnIt->toState->name,
+                            p->pos);
 
-    PARMAC_DEPTH d;
 
-    for(d=0;d<=*stkDepthPtr;d++) {
-      struct parmac *p2=&stk[d];
-      const char *from=IS_TRSN_END(p2)?"X":p2->trsnIt->fromState->name;
-      const char *to=IS_TRSN_END(p2)?"X":p2->trsnIt->toState->name;
-      unsigned int stkDepth=(unsigned int)(*stkDepthPtr)-(unsigned int)(p-p2);
-      unsigned int trsnIt=(unsigned int)(p2->trsnIt-p2->trsns);
-      PARMAC_DEBUG_STEPS_PRINTF("/ %s : %s (%s -> %s) (d%u p%u t%u)",
-                                p2->name,p2->state->name,from,to,
-                                stkDepth,p2->pos,trsnIt);
-    }
-
-    PARMAC_DEBUG_STEPS_PRINTF("\n");
-  }
-#endif
 
   //===> transition fromState doesn't match state
   if(!IS_TRSN_END(p) &&
