@@ -7,7 +7,7 @@ The motivation for this library is to allow the creation of parsers using hierar
 ##Usage
 
 ####State Declaration
-A state is a struct that has three fields. A *name* used by the state callbacks and for debugging. An *event* and a *machine* function pointers. An optional *enter* callback and an optional *leave* callback. 
+A state is a struct that has five fields. A *name* used by the state callbacks and for debugging. An *event* and a *machine* function pointers. An optional *enter* callback and an optional *leave* callback. All fields but the *name* are optional.
 
 A state can either contain an event or a machine, if neither is specified then that transition will always succeed. It cannot accept both an event and a machine.
 
@@ -56,11 +56,11 @@ void on_leave_state_A(PARMAC_DEPTH stkDepth,
 ```
 
 ####Transition Table Declaration
-A transition has four fields. The to and from state pointers, and the event and machine function pointers.
+A transition has two fields. The *to* and *from* state pointers.
 
 A machine must always have a separate designated start and end states. The end state must always being transition to and not from, and the start state must always be transitioned from and not to.
 
-The end of the transition table must be delimited by a the ```PARMAC_TRANSITION_END``` macro.
+The end of the transition table must end with the ```PARMAC_TRANSITION_END``` macro or a ```{NULL,NULL}```.
 ```C
   static const struct parmac_transition trsns[]={
     {&state_start, &state_A},
