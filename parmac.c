@@ -66,7 +66,7 @@ void parmac_on_state_enter(struct parmac *stk,
                            const struct parmac_state *toState) {
   struct parmac *p=&stk[stkDepth];
 
-  PARMAC_DEBUG_CALLBACKS_PRINTF("(%u) enter_%s_%s (<-%s) p%u_%u\n",
+  PARMAC_DEBUG_CALLBACKS_PRINTF("(%u) enter_%s_%s (<-%s) [%u-%u]\n",
                                 stkDepth,p->name,
                                 toState->name,fromState?fromState->name:"_",
                                 (unsigned int)fromPos,
@@ -89,7 +89,7 @@ void parmac_on_state_leave(struct parmac *stk,
                            const struct parmac_state *toState) {
   struct parmac *p=&stk[stkDepth];
 
-  PARMAC_DEBUG_CALLBACKS_PRINTF("(%u) leave_%s_%s (->%s) p%u_%u\n",
+  PARMAC_DEBUG_CALLBACKS_PRINTF("(%u) leave_%s_%s (->%s) [%u-%u]\n",
                                 stkDepth,p->name,
                                 fromState->name,toState?toState->name:"_",
                                 (unsigned int)fromPos,
