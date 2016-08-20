@@ -121,16 +121,12 @@
   <ItemGroup>
     <ClCompile Include="..\..\parmac.c" />
     <ClCompile Include="..\main.c" />
-    <ClCompile Include="..\tcl_expr_parser.c" />
-    <ClCompile Include="..\tcl_expr_syntax.c" />
     <ClCompile Include="..\tcl_parser.c" />
     <ClCompile Include="..\tcl_parser_util.c" />
     <ClCompile Include="..\tcl_syntax.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\parmac.h" />
-    <ClInclude Include="..\tcl_expr_parser.h" />
-    <ClInclude Include="..\tcl_expr_syntax.h" />
     <ClInclude Include="..\tcl_parser.h" />
     <ClInclude Include="..\tcl_parser_util.h" />
     <ClInclude Include="..\tcl_syntax.h" />

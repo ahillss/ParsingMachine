@@ -71,5 +71,6 @@ int main() {
 #ifdef _MSC_VER
   system("pause");
 #endif
+
   return 0;
 }

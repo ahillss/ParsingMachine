@@ -24,12 +24,6 @@
     <ClCompile Include="..\..\parmac.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\tcl_expr_parser.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tcl_expr_syntax.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\tcl_syntax.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -42,12 +36,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\parmac.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\tcl_expr_parser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\tcl_expr_syntax.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\tcl_syntax.h">

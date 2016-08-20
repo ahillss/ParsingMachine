@@ -12,6 +12,7 @@ void tcl_syntax_init(struct tcl_syntax *syntax) {
   syntax->charsNum=16;
   syntax->charsNext=0;
   syntax->chars=(char*)malloc(syntax->charsNum);
+  memset(syntax->chars, 0, syntax->charsNum);
 }
 
 void tcl_syntax_uninit(struct tcl_syntax *syntax) {
@@ -19,57 +20,81 @@ void tcl_syntax_uninit(struct tcl_syntax *syntax) {
   free(syntax->chars);
 }
 
-struct tcl_syntax_node *tcl_syntax_push(struct tcl_syntax *syntax,
-                                        unsigned int depth,
-                                        unsigned int pos,
-                                        enum tcl_syntax_node_type type //,
-                                        // unsigned int strMaxLen
-                                        ) {
+void tcl_syntax_push(struct tcl_syntax *syntax,
+                     unsigned int depth,
+                     unsigned int pos,
+                     enum tcl_syntax_node_type type,
+                     const char *str,
+                     unsigned int strLen) {
 
-  //
-  struct tcl_syntax_node *top;
-  top=&syntax->nodes[syntax->nodesNext-1];
 
-  if(type==tcl_syntax_sep && top->depth==depth && top->type==tcl_syntax_sep) {
-    return top;
+
+  struct tcl_syntax_node *cur=NULL;
+
+  //try to reuse an existing node
+  if(syntax->nodesNext != 0) {
+    struct tcl_syntax_node *top;
+    top=&syntax->nodes[syntax->nodesNext-1];
+
+    if(type==tcl_syntax_sep && top->depth==depth && top->type==tcl_syntax_sep) {
+      cur=top;
+    } else if(type==tcl_syntax_sep && top->depth==depth && top->type==tcl_syntax_spc) {
+      top->type=tcl_syntax_sep;
+      cur=top;
+    } else if(type==tcl_syntax_str && top->depth==depth && top->type==tcl_syntax_str) {
+      cur=top;
+    }
   }
 
-  if(type==tcl_syntax_sep && top->depth==depth && top->type==tcl_syntax_spc) {
-    top->type=tcl_syntax_sep;
-    return top;
-  }
-
-  // if(type==tcl_syntax_str && top->depth==depth && top->type==tcl_syntax_str) {
-  //   return top;
-  // }
-
-  //
-  if(syntax->nodesNext >= syntax->nodesNum) {
-    (syntax->nodesNum)*=2;
-    syntax->nodes=(struct tcl_syntax_node*)realloc(syntax->nodes,sizeof(struct tcl_syntax_node)*syntax->nodesNum);
-  }
-
-  //
-  struct tcl_syntax_node *cur=&(syntax->nodes[syntax->nodesNext]);
-  cur->type=type;
-  cur->depth=depth;
-  cur->pos=pos;
-  cur->charsNum=0;
-  syntax->nodesNext++;
-
-  return cur;
-}
-
-char *tcl_syntax_str_push(struct tcl_syntax *syntax,unsigned int len) {
-  if(syntax->charsNext+len >= syntax->charsNum) {
-    while(syntax->charsNext+len >= syntax->charsNum) {
-      syntax->charsNum*=2;
+  //get new node
+  if(!cur) {
+    //allocate node
+    if(syntax->nodesNext >= syntax->nodesNum) {
+      (syntax->nodesNum)*=2;
+      size_t size=sizeof(struct tcl_syntax_node)*syntax->nodesNum;
+      syntax->nodes=(struct tcl_syntax_node*)realloc(syntax->nodes,size);
     }
 
-    syntax->chars=(char*)realloc(syntax->chars,syntax->charsNum);
+    //init node
+    cur=&(syntax->nodes[syntax->nodesNext]);
+    cur->type=type;
+    cur->depth=depth;
+    cur->pos=pos;
+    cur->charsNum=0;
+    syntax->nodesNext++;
+
+    // printf("-newnode\n");
+    // printf("--\n");
+  }else {
+    // printf("-oldnode\n");
   }
 
-  char *r=&syntax->chars[syntax->charsNext];
-  syntax->charsNext+=len;
-  return r;
+  //
+  if(strLen > 0) {
+    // printf("'%.*s'\n",strLen,str);
+    unsigned int initFrom=syntax->charsNum;
+
+    //
+    if(syntax->charsNext+strLen+1 >= syntax->charsNum) {
+      //calc new chars max num
+      while(syntax->charsNext+strLen+1 >= syntax->charsNum) {
+        syntax->charsNum*=2;
+      }
+
+      //realloc syntax chars and init
+      syntax->chars=(char*)realloc(syntax->chars,syntax->charsNum);
+      memset(&syntax->chars[initFrom],0,syntax->charsNum-initFrom);
+    }
+
+    //set syntax chars next before null terminator from prev
+    if(cur->charsNum>0) {
+      syntax->charsNext--;
+    }
+
+    //set str
+    memcpy(&syntax->chars[syntax->charsNext],str,strLen);
+    // printf("'%s'\n",&syntax->chars[syntax->charsNext]);
+    cur->charsNum+=strLen;
+    syntax->charsNext+=strLen+1;
+  }
 }

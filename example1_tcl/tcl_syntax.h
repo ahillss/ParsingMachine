@@ -33,15 +33,12 @@ extern "C" {
   void tcl_syntax_init(struct tcl_syntax *syntax);
   void tcl_syntax_uninit(struct tcl_syntax *syntax);
 
-  struct tcl_syntax_node *tcl_syntax_push(struct tcl_syntax *syntax,
-                                          unsigned int depth,
-                                          unsigned int pos,
-                                          enum tcl_syntax_node_type type//,
-                                          // unsigned int strMaxLen
-                                          );
-
-
-  char *tcl_syntax_str_push(struct tcl_syntax *syntax,unsigned int len);
+  void tcl_syntax_push(struct tcl_syntax *syntax,
+                       unsigned int depth,
+                       unsigned int pos,
+                       enum tcl_syntax_node_type type,
+                       const char *str,
+                       unsigned int strLen);
 
 #ifdef __cplusplus
 }
