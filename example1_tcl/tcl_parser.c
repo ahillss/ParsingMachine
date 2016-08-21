@@ -246,6 +246,7 @@ bool tcl_parser_parse_esc_a(PARMAC_POS *ppos,void *userdata) {
 
   if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='a') {
     (*ppos)+=2;
+    tp->errMsg=NULL;
     return true;
   }
 
@@ -257,6 +258,7 @@ bool tcl_parser_parse_esc_b(PARMAC_POS *ppos,void *userdata) {
 
   if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='b') {
     (*ppos)+=2;
+    tp->errMsg=NULL;
     return true;
   }
 
@@ -268,6 +270,7 @@ bool tcl_parser_parse_esc_f(PARMAC_POS *ppos,void *userdata) {
 
   if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='f') {
     (*ppos)+=2;
+    tp->errMsg=NULL;
     return true;
   }
 
@@ -279,6 +282,7 @@ bool tcl_parser_parse_esc_n(PARMAC_POS *ppos,void *userdata) {
 
   if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='n') {
     (*ppos)+=2;
+    tp->errMsg=NULL;
     return true;
   }
 
@@ -290,6 +294,7 @@ bool tcl_parser_parse_esc_r(PARMAC_POS *ppos,void *userdata) {
 
   if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='r') {
     (*ppos)+=2;
+    tp->errMsg=NULL;
     return true;
   }
 
@@ -301,6 +306,7 @@ bool tcl_parser_parse_esc_t(PARMAC_POS *ppos,void *userdata) {
 
   if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='t') {
     (*ppos)+=2;
+    tp->errMsg=NULL;
     return true;
   }
 
@@ -312,6 +318,7 @@ bool tcl_parser_parse_esc_v(PARMAC_POS *ppos,void *userdata) {
 
   if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='v') {
     (*ppos)+=2;
+    tp->errMsg=NULL;
     return true;
   }
 
@@ -323,6 +330,7 @@ bool tcl_parser_parse_esc_any(PARMAC_POS *ppos,void *userdata) {
 
   if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]!='\0') {
     (*ppos)+=2;
+    tp->errMsg=NULL;
     return true;
   }
 
@@ -334,6 +342,7 @@ bool tcl_parser_parse_esc_eol(PARMAC_POS *ppos,void *userdata) {
 
   if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='\n') {
     (*ppos)+=2;
+    tp->errMsg=NULL;
     return true;
   }
 
@@ -341,6 +350,7 @@ bool tcl_parser_parse_esc_eol(PARMAC_POS *ppos,void *userdata) {
      tp->src[*ppos+1]=='\r' &&
      tp->src[*ppos+2]=='\n') {
     (*ppos)+=3;
+    tp->errMsg=NULL;
     return true;
   }
 
