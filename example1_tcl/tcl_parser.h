@@ -17,6 +17,9 @@ extern "C" {
 #endif
 
   void tcl_parser_main_machine(struct parmac *p,PARMAC_POS pos);
+  void tcl_parser_qstr_machine(struct parmac *p,PARMAC_POS pos);
+  void tcl_parser_bstr_machine(struct parmac *p,PARMAC_POS pos);
+  void tcl_parser_cmd_machine(struct parmac *p,PARMAC_POS pos);
 
 #ifdef __cplusplus
 }

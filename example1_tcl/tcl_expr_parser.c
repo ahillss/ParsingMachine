@@ -1,6 +1,28 @@
 #include "tcl_expr_parser.h"
 #include <stdio.h>
 
+void tcl_expr_parser_on_lbracket(PARMAC_DEPTH stkDepth,
+                       const char *machine,
+                       const char *fromState,
+                       const char *toState,
+                       PARMAC_POS fromPos,
+                       PARMAC_POS toPos,
+                       void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("lbracket\n");
+}
+
+void tcl_expr_parser_on_rbracket(PARMAC_DEPTH stkDepth,
+                       const char *machine,
+                       const char *fromState,
+                       const char *toState,
+                       PARMAC_POS fromPos,
+                       PARMAC_POS toPos,
+                       void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("rbracket\n");
+}
+
 void tcl_expr_parser_on_int(PARMAC_DEPTH stkDepth,
                        const char *machine,
                        const char *fromState,
@@ -12,8 +34,6 @@ void tcl_expr_parser_on_int(PARMAC_DEPTH stkDepth,
   printf("int(%.*s)\n",(int)(toPos-fromPos),&tp->src[fromPos]);
 }
 
-
-
 void tcl_expr_parser_on_float(PARMAC_DEPTH stkDepth,
                          const char *machine,
                          const char *fromState,
@@ -23,9 +43,40 @@ void tcl_expr_parser_on_float(PARMAC_DEPTH stkDepth,
                          void *userdata) {
   struct tcl_parser *tp=(struct tcl_parser*)userdata;
   printf("float(%.*s)\n",(int)(toPos-fromPos),&tp->src[fromPos]);
-
 }
 
+void tcl_expr_parser_on_unary_plus(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("unary_plus\n");
+}
+
+void tcl_expr_parser_on_unary_minus(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("unary_minus\n");
+}
+
+void tcl_expr_parser_on_unary_not(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("unary_not\n");
+}
 
 void tcl_expr_parser_on_binary_add(PARMAC_DEPTH stkDepth,
                               const char *machine,
@@ -36,7 +87,150 @@ void tcl_expr_parser_on_binary_add(PARMAC_DEPTH stkDepth,
                               void *userdata) {
   struct tcl_parser *tp=(struct tcl_parser*)userdata;
   printf("binary_add\n");
+}
 
+void tcl_expr_parser_on_binary_sub(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_sub\n");
+}
+
+
+void tcl_expr_parser_on_binary_mul(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_mul\n");
+}
+
+void tcl_expr_parser_on_binary_div(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_div\n");
+}
+
+void tcl_expr_parser_on_binary_gt(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_gt\n");
+}
+
+void tcl_expr_parser_on_binary_ge(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_ge\n");
+}
+
+void tcl_expr_parser_on_binary_lt(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_lt\n");
+}
+
+void tcl_expr_parser_on_binary_le(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_le\n");
+}
+
+void tcl_expr_parser_on_binary_eq(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_eq\n");
+}
+
+void tcl_expr_parser_on_binary_ne(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_ne\n");
+}
+
+void tcl_expr_parser_on_binary_and(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_and\n");
+}
+
+void tcl_expr_parser_on_binary_or(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_or\n");
+}
+
+void tcl_expr_parser_on_binary_seq(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_seq\n");
+}
+
+void tcl_expr_parser_on_binary_sne(PARMAC_DEPTH stkDepth,
+                              const char *machine,
+                              const char *fromState,
+                              const char *toState,
+                              PARMAC_POS fromPos,
+                              PARMAC_POS toPos,
+                              void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  printf("binary_sne\n");
 }
 
 bool tcl_expr_parser_parse_comma(PARMAC_POS *ppos,void *userdata) {
@@ -66,7 +260,7 @@ bool tcl_expr_parser_parse_plus(PARMAC_POS *ppos,void *userdata) {
 bool tcl_expr_parser_parse_minus(PARMAC_POS *ppos,void *userdata) {
   struct tcl_parser *tp=(struct tcl_parser*)userdata;
 
-  if(tp->src[*ppos]=='+') {
+  if(tp->src[*ppos]=='-') {
     tp->errMsg=NULL;
     (*ppos)++;
     return true;
@@ -230,7 +424,6 @@ bool tcl_expr_parser_parse_not(PARMAC_POS *ppos,void *userdata) {
 
   return false;
 }
-
 
 bool tcl_expr_parser_parse_whitespace(PARMAC_POS *ppos,void *userdata) {
   struct tcl_parser *tp=(struct tcl_parser*)userdata;
@@ -461,7 +654,6 @@ void tcl_expr_parser_func_argsn(struct parmac *p,PARMAC_POS pos) {
       {&state_arg, &state_comma},
       {&state_arg, &state_rbracket},
       {&state_comma, &state_arg},
-      {&state_arg, &state_rbracket},
       {&state_rbracket, &state_end},
       PARMAC_TRANSITION_END};
 
@@ -497,9 +689,15 @@ void tcl_expr_parser_func_machine(struct parmac *p,PARMAC_POS pos) {
 void tcl_expr_parser_bracketed_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start", NULL,NULL, NULL,NULL},
-    state_lbracket={"lbracket", tcl_expr_parser_parse_lbracket,NULL, NULL,NULL},
-    state_rbracket={"rbracket", tcl_expr_parser_parse_rbracket,NULL, NULL,NULL},
-    state_main={"main", NULL,tcl_expr_parser_main_machine, NULL,NULL},
+    state_lbracket={"lbracket",
+                    tcl_expr_parser_parse_lbracket,NULL,
+                    tcl_expr_parser_on_lbracket,NULL},
+    state_rbracket={"rbracket",
+                    tcl_expr_parser_parse_rbracket,NULL,
+                    tcl_expr_parser_on_rbracket,NULL},
+    state_main={"main",
+                NULL,tcl_expr_parser_main_machine,
+                NULL,NULL},
     state_end={"end",NULL,NULL, NULL,NULL};
 
   static const struct parmac_transition trsns[]={
@@ -538,10 +736,18 @@ void tcl_expr_parser_val_machine(struct parmac *p,PARMAC_POS pos) {
 void tcl_expr_parser_ternary_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start",NULL,NULL, NULL,NULL},
-    state_question={"question", tcl_expr_parser_parse_question, NULL,NULL,NULL},
-    state_colon={"colon", tcl_expr_parser_parse_colon, NULL,NULL,NULL},
-    state_then={"then", NULL, tcl_expr_parser_main_machine,NULL,NULL},
-    state_else={"else", NULL, tcl_expr_parser_main_machine,NULL,NULL},
+    state_question={"question",
+                    tcl_expr_parser_parse_question,NULL,
+                    NULL,NULL},
+    state_colon={"colon",
+                 tcl_expr_parser_parse_colon, NULL,
+                 NULL,NULL},
+    state_then={"then",
+                NULL,tcl_expr_parser_main_machine,
+                NULL,NULL},
+    state_else={"else",
+                NULL,tcl_expr_parser_main_machine,
+                NULL,NULL},
     state_end={"end",NULL,NULL, NULL,NULL};
 
   static const struct parmac_transition trsns[]={
@@ -558,17 +764,23 @@ void tcl_expr_parser_ternary_machine(struct parmac *p,PARMAC_POS pos) {
 void tcl_expr_parser_unary_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start", NULL,NULL, NULL,NULL},
-    state_pos={"pos", tcl_expr_parser_parse_plus,NULL, NULL,NULL},
-    state_neg={"neg", tcl_expr_parser_parse_minus,NULL, NULL,NULL},
-    state_not={"not", tcl_expr_parser_parse_not,NULL, NULL,NULL},
+    state_plus={"plus",
+                tcl_expr_parser_parse_plus,NULL,
+                tcl_expr_parser_on_unary_plus,NULL},
+    state_minus={"minus",
+                 tcl_expr_parser_parse_minus,NULL,
+                 tcl_expr_parser_on_unary_minus,NULL},
+    state_not={"not",
+               tcl_expr_parser_parse_not,NULL,
+               tcl_expr_parser_on_unary_not,NULL},
     state_end={"end",NULL,NULL, NULL,NULL};
 
   static const struct parmac_transition trsns[]={
-    {&state_start, &state_pos},
-    {&state_start, &state_neg},
+    {&state_start, &state_plus},
+    {&state_start, &state_minus},
     {&state_start, &state_not},
-    {&state_pos, &state_end},
-    {&state_neg, &state_end},
+    {&state_plus, &state_end},
+    {&state_minus, &state_end},
     {&state_not, &state_end},
     PARMAC_TRANSITION_END};
 
@@ -578,18 +790,42 @@ void tcl_expr_parser_unary_machine(struct parmac *p,PARMAC_POS pos) {
 void tcl_expr_parser_binary_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start", NULL,NULL, NULL,NULL},
-    state_add={"add", tcl_expr_parser_parse_plus,NULL, tcl_expr_parser_on_binary_add,NULL},
-    state_sub={"sub", tcl_expr_parser_parse_minus,NULL, NULL,NULL},
-    state_mul={"mul", tcl_expr_parser_parse_mul,NULL, NULL,NULL},
-    state_div={"div", tcl_expr_parser_parse_div,NULL, NULL,NULL},
-    state_gt={"gt", tcl_expr_parser_parse_gt,NULL, NULL,NULL},
-    state_ge={"ge", tcl_expr_parser_parse_ge,NULL, NULL,NULL},
-    state_lt={"lt", tcl_expr_parser_parse_lt,NULL, NULL,NULL},
-    state_le={"le", tcl_expr_parser_parse_le,NULL, NULL,NULL},
-    state_eq={"eq", tcl_expr_parser_parse_eq,NULL, NULL,NULL},
-    state_ne={"ne", tcl_expr_parser_parse_ne,NULL, NULL,NULL},
-    state_seq={"seq", tcl_expr_parser_parse_seq,NULL, NULL,NULL},
-    state_sne={"sne", tcl_expr_parser_parse_sne,NULL, NULL,NULL},
+    state_add={"add",
+               tcl_expr_parser_parse_plus,NULL,
+               tcl_expr_parser_on_binary_add,NULL},
+    state_sub={"sub",
+               tcl_expr_parser_parse_minus,NULL,
+               tcl_expr_parser_on_binary_sub,NULL},
+    state_mul={"mul",
+               tcl_expr_parser_parse_mul,NULL,
+               tcl_expr_parser_on_binary_mul,NULL},
+    state_div={"div",
+               tcl_expr_parser_parse_div,NULL,
+               tcl_expr_parser_on_binary_div,NULL},
+    state_gt={"gt",
+              tcl_expr_parser_parse_gt,NULL,
+              tcl_expr_parser_on_binary_gt,NULL},
+    state_ge={"ge",
+              tcl_expr_parser_parse_ge,NULL,
+              tcl_expr_parser_on_binary_ge,NULL},
+    state_lt={"lt",
+              tcl_expr_parser_parse_lt,NULL,
+              tcl_expr_parser_on_binary_lt,NULL},
+    state_le={"le",
+              tcl_expr_parser_parse_le,NULL,
+              tcl_expr_parser_on_binary_le,NULL},
+    state_eq={"eq",
+              tcl_expr_parser_parse_eq,NULL,
+              tcl_expr_parser_on_binary_eq,NULL},
+    state_ne={"ne",
+              tcl_expr_parser_parse_ne,NULL,
+              tcl_expr_parser_on_binary_ne,NULL},
+    state_seq={"seq",
+               tcl_expr_parser_parse_seq,NULL,
+               tcl_expr_parser_on_binary_seq,NULL},
+    state_sne={"sne",
+               tcl_expr_parser_parse_sne,NULL,
+               tcl_expr_parser_on_binary_sne,NULL},
     state_end={"end",NULL,NULL, NULL,NULL};
 
   static const struct parmac_transition trsns[]={

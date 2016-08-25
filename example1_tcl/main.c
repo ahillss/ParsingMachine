@@ -145,8 +145,9 @@ int main() {
   tp.stk=(struct parmac*)malloc(sizeof(struct parmac)*tp.stkNum);
 
 
-  // tcl_parser_run(&tp,&syntax,txt);
-  tcl_expr_parser_run(&tp,&syntax,"1+2");
+  tcl_parser_run(&tp,&syntax,txt);
+  printf("\n\n");
+  tcl_expr_parser_run(&tp,&syntax,"1+-(+2*7)");
 
 
   free(tp.stk);
