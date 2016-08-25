@@ -5,6 +5,17 @@
 #include <stdbool.h>
 #endif
 
+struct tcl_parser {
+  struct tcl_syntax *syntax;
+  const char *errMsg;
+
+  const char *src;
+  unsigned int depth,sqrbCount;
+
+  unsigned int stkNum;
+  struct parmac *stk;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
