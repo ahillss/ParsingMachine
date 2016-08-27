@@ -14,6 +14,10 @@ enum tcl_syntax_node_type {
   tcl_syntax_sep,
 };
 
+struct tcl_syntax_block {
+
+};
+
 struct tcl_syntax_node {
   unsigned int depth,pos,row,col;
   enum tcl_syntax_node_type type;
@@ -21,7 +25,8 @@ struct tcl_syntax_node {
 };
 
 struct tcl_syntax {
-  unsigned int nodesNum,nodesNext,charsNum,charsNext;
+  unsigned int blocksNum,blocksNext,nodesNum,nodesNext,charsNum,charsNext;
+  struct tcl_syntax_block *blocks;
   struct tcl_syntax_node *nodes;
   char *chars;
 };
@@ -33,6 +38,7 @@ extern "C" {
   void tcl_syntax_init(struct tcl_syntax *syntax);
   void tcl_syntax_uninit(struct tcl_syntax *syntax);
 
+  // void tcl_syntax_push_block(struct tcl_syntax *syntax);
   void tcl_syntax_push(struct tcl_syntax *syntax,
                        unsigned int depth,
                        unsigned int pos,

@@ -255,9 +255,7 @@ bool parmac_run(struct parmac *stk,
 
     PARMAC_POS retPos=p->pos;
 
-    if( //p->trsnIt->event(&retPos, userdata)
-       p->trsnIt->toState->event(&retPos, userdata)
-       ) {
+    if(p->trsnIt->toState->event(&retPos, userdata)) {
       PARMAC_DEBUG_STEPS_PRINTF("=event success\n");
       PARMAC_DEBUG_CALLBACKS_PRINTF("\n");
 
