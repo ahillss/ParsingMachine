@@ -1,7 +1,7 @@
 puts "[set {a}]"; #hello
 func abc$$$$de
-ok ${qwe}y[]x
-
+ok ${qwe}y[]x #aa
+#yesc
 puts [set [set b]];
 
 puts {
@@ -11,5 +11,5 @@ world
 
 hello { world}
 set a\ b
-puts "qrs\
+puts "q\mrs\
 tuv"
