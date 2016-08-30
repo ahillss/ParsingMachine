@@ -378,7 +378,28 @@ bool tcl_parser_parse_sep(PARMAC_POS *ppos,void *userdata) {
   return true;
 }
 
-bool tcl_parser_parse_spc(PARMAC_POS *ppos,void *userdata) {
+bool tcl_parser_parse_spc0(PARMAC_POS *ppos,void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  PARMAC_POS start=*ppos;
+
+  while(true) {
+    if(tp->src[*ppos]==' ' ||
+       tp->src[*ppos]=='\t') {
+      (*ppos)++;
+    } else {
+      break;
+    }
+  }
+
+  if(start==*ppos) {
+    return false;
+  }
+
+  tp->errMsg=NULL;
+  return true;
+}
+
+bool tcl_parser_parse_spcn(PARMAC_POS *ppos,void *userdata) {
   struct tcl_parser *tp=(struct tcl_parser*)userdata;
   PARMAC_POS start=*ppos;
 
@@ -622,7 +643,9 @@ bool tcl_parser_parse_bstr(PARMAC_POS *ppos,void *userdata) {
       c--;
     }
 
-    if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='}') {
+    if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='{') {
+      (*ppos)+=2;
+    } else if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='}') {
       (*ppos)+=2;
     } else {
       (*ppos)++;
@@ -934,8 +957,8 @@ void tcl_parser_main_machine(struct parmac *p,PARMAC_POS pos) {
     state_start={"start", NULL,NULL, NULL,NULL},
     state_cmnt={"cmnt", tcl_parser_parse_cmnt,NULL, NULL,NULL},
     state_word={"word", NULL,tcl_parser_word_machine, tcl_parser_after_word,NULL},
-    state_spc0={"spc0", tcl_parser_parse_spc,NULL, NULL,NULL},
-    state_spcn={"spcn", tcl_parser_parse_spc,NULL, NULL,NULL},
+    state_spc0={"spc0", tcl_parser_parse_spc0,NULL, NULL,NULL},
+    state_spcn={"spcn", tcl_parser_parse_spcn,NULL, NULL,NULL},
     state_sep={"sep", tcl_parser_parse_sep,NULL, tcl_parser_after_stmt,NULL},
     state_end={"end", NULL,NULL, tcl_parser_after_stmt,NULL};
 
