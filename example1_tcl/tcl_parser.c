@@ -374,16 +374,6 @@ bool tcl_parser_parse_sstr(PARMAC_POS *ppos,void *userdata) {
       break;
     }
 
-    if(tp->src[*ppos]=='\\' &&
-       tp->src[*ppos+1]=='\r' &&
-       tp->src[*ppos+2]=='\n') {
-      break;
-    }
-
-    if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='\n') {
-      break;
-    }
-
     if(tp->sqrbCount!=0 && tp->src[*ppos]==']') {
       break;
     }
@@ -576,7 +566,7 @@ void tcl_parser_var_machine(struct parmac *p,PARMAC_POS pos) {
 void tcl_parser_sstr_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start", NULL,NULL, NULL,NULL},
-    state_sstr={"sstr", tcl_parser_parse_sstr,NULL, tcl_parser_on_str,NULL},
+    state_schr={"schr", tcl_parser_parse_sstr,NULL, tcl_parser_on_str,NULL},
     state_sesc={"sesc", tcl_parser_parse_esc_schar,NULL, tcl_parser_on_esc_char,NULL},
     state_var={"var", NULL,tcl_parser_var_machine, NULL,NULL},
     state_cmd={"cmd", NULL,tcl_parser_cmd_machine, NULL,NULL},
@@ -584,25 +574,25 @@ void tcl_parser_sstr_machine(struct parmac *p,PARMAC_POS pos) {
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_sesc},
-    {&state_start, &state_sstr},
+    {&state_start, &state_schr},
     {&state_start, &state_var},
     {&state_start, &state_cmd},
     {&state_var, &state_sesc},
-    {&state_var, &state_sstr},
+    {&state_var, &state_schr},
     {&state_var, &state_var},
     {&state_var, &state_cmd},
     {&state_var, &state_end},
     {&state_cmd, &state_sesc},
-    {&state_cmd, &state_sstr},
+    {&state_cmd, &state_schr},
     {&state_cmd, &state_var},
     {&state_cmd, &state_cmd},
     {&state_cmd, &state_end},
-    {&state_sstr, &state_sesc},
-    {&state_sstr, &state_var},
-    {&state_sstr, &state_cmd},
-    {&state_sstr, &state_end},
+    {&state_schr, &state_sesc},
+    {&state_schr, &state_var},
+    {&state_schr, &state_cmd},
+    {&state_schr, &state_end},
     {&state_sesc, &state_sesc},
-    {&state_sesc, &state_sstr},
+    {&state_sesc, &state_schr},
     {&state_sesc, &state_var},
     {&state_sesc, &state_cmd},
     {&state_sesc, &state_end},
@@ -616,7 +606,7 @@ void tcl_parser_qstr_machine(struct parmac *p,PARMAC_POS pos) {
     state_start={"start", NULL,NULL, NULL,NULL},
     state_lquote={"lquote", tcl_parser_parse_lquote,NULL, NULL,NULL},
     state_rquote={"rquote", tcl_parser_parse_rquote,NULL, NULL,NULL},
-    state_qstr={"qstr", tcl_parser_parse_qstr,NULL, tcl_parser_on_str,NULL},
+    state_qchr={"qchr", tcl_parser_parse_qstr,NULL, tcl_parser_on_str,NULL},
     state_qesc={"qesc", tcl_parser_parse_esc_schar,NULL, tcl_parser_on_esc_char,NULL},
     state_var={"var", NULL,tcl_parser_var_machine, NULL,NULL},
     state_cmd={"cmd", NULL,tcl_parser_cmd_machine, NULL,NULL},
@@ -626,26 +616,26 @@ void tcl_parser_qstr_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_start, &state_lquote},
     {&state_lquote, &state_rquote},
     {&state_lquote, &state_qesc},
-    {&state_lquote, &state_qstr},
+    {&state_lquote, &state_qchr},
     {&state_lquote, &state_var},
     {&state_lquote, &state_cmd},
     {&state_var, &state_rquote},
     {&state_var, &state_qesc},
-    {&state_var, &state_qstr},
+    {&state_var, &state_qchr},
     {&state_var, &state_var},
     {&state_var, &state_cmd},
     {&state_cmd, &state_rquote},
     {&state_cmd, &state_qesc},
-    {&state_cmd, &state_qstr},
+    {&state_cmd, &state_qchr},
     {&state_cmd, &state_var},
     {&state_cmd, &state_cmd},
-    {&state_qstr, &state_rquote},
-    {&state_qstr, &state_qesc},
-    {&state_qstr, &state_var},
-    {&state_qstr, &state_cmd},
+    {&state_qchr, &state_rquote},
+    {&state_qchr, &state_qesc},
+    {&state_qchr, &state_var},
+    {&state_qchr, &state_cmd},
     {&state_qesc, &state_rquote},
     {&state_qesc, &state_qesc},
-    {&state_qesc, &state_qstr},
+    {&state_qesc, &state_qchr},
     {&state_qesc, &state_var},
     {&state_qesc, &state_cmd},
     {&state_rquote, &state_end},
@@ -659,14 +649,14 @@ void tcl_parser_bstr_machine(struct parmac *p,PARMAC_POS pos) {
     state_start={"start", NULL,NULL, NULL,NULL},
     state_lbrace={"lbrace", tcl_parser_parse_lbrace,NULL, NULL,NULL},
     state_rbrace={"rbrace", tcl_parser_parse_rbrace,NULL, NULL,NULL},
-    state_bstr={"bstr", tcl_parser_parse_bstr,NULL, tcl_parser_on_str,NULL},
+    state_bchr={"bchr", tcl_parser_parse_bstr,NULL, tcl_parser_on_str,NULL},
     state_end={"end", NULL,NULL, NULL,NULL};
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_lbrace},
     {&state_lbrace, &state_rbrace},
-    {&state_lbrace, &state_bstr},
-    {&state_bstr, &state_rbrace},
+    {&state_lbrace, &state_bchr},
+    {&state_bchr, &state_rbrace},
     {&state_rbrace, &state_end},
     PARMAC_TRANSITION_END};
 
