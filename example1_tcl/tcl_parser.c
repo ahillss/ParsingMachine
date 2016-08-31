@@ -3,126 +3,6 @@
 #include <stdio.h>
 #include <stddef.h>
 
-void tcl_parser_on_esc_a(PARMAC_DEPTH stkDepth,
-                         const char *machine,
-                         const char *fromState,
-                         const char *toState,
-                         PARMAC_POS fromPos,
-                         PARMAC_POS toPos,
-                         void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-
-  tcl_syntax_push(tp->syntax,tp->depth,
-                  (unsigned int)fromPos,
-                  tcl_syntax_str,
-                  "\a",1);
-}
-
-void tcl_parser_on_esc_b(PARMAC_DEPTH stkDepth,
-                         const char *machine,
-                         const char *fromState,
-                         const char *toState,
-                         PARMAC_POS fromPos,
-                         PARMAC_POS toPos,
-                         void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-
-  tcl_syntax_push(tp->syntax,tp->depth,
-                  (unsigned int)fromPos,
-                  tcl_syntax_str,
-                  "\b",1);
-}
-
-void tcl_parser_on_esc_f(PARMAC_DEPTH stkDepth,
-                         const char *machine,
-                         const char *fromState,
-                         const char *toState,
-                         PARMAC_POS fromPos,
-                         PARMAC_POS toPos,
-                         void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-
-  tcl_syntax_push(tp->syntax,tp->depth,
-                  (unsigned int)fromPos,
-                  tcl_syntax_str,
-                  "\f",1);
-}
-
-void tcl_parser_on_esc_n(PARMAC_DEPTH stkDepth,
-                         const char *machine,
-                         const char *fromState,
-                         const char *toState,
-                         PARMAC_POS fromPos,
-                         PARMAC_POS toPos,
-                         void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-
-  tcl_syntax_push(tp->syntax,tp->depth,
-                  (unsigned int)fromPos,
-                  tcl_syntax_str,
-                  "\n",1);
-}
-
-void tcl_parser_on_esc_r(PARMAC_DEPTH stkDepth,
-                         const char *machine,
-                         const char *fromState,
-                         const char *toState,
-                         PARMAC_POS fromPos,
-                         PARMAC_POS toPos,
-                         void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-
-  tcl_syntax_push(tp->syntax,tp->depth,
-                  (unsigned int)fromPos,
-                  tcl_syntax_str,
-                  "\r",1);
-}
-
-void tcl_parser_on_esc_t(PARMAC_DEPTH stkDepth,
-                         const char *machine,
-                         const char *fromState,
-                         const char *toState,
-                         PARMAC_POS fromPos,
-                         PARMAC_POS toPos,
-                         void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-
-  tcl_syntax_push(tp->syntax,tp->depth,
-                  (unsigned int)fromPos,
-                  tcl_syntax_str,
-                  "\t",1);
-}
-
-void tcl_parser_on_esc_v(PARMAC_DEPTH stkDepth,
-                         const char *machine,
-                         const char *fromState,
-                         const char *toState,
-                         PARMAC_POS fromPos,
-                         PARMAC_POS toPos,
-                         void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-
-  tcl_syntax_push(tp->syntax,tp->depth,
-                  (unsigned int)fromPos,
-                  tcl_syntax_str,
-                  "\v",1);
-}
-
-void tcl_parser_on_esc_eol(PARMAC_DEPTH stkDepth,
-                           const char *machine,
-                           const char *fromState,
-                           const char *toState,
-                           PARMAC_POS fromPos,
-                           PARMAC_POS toPos,
-                           void *data) {
-  struct tcl_parser *tp=(struct tcl_parser*)data;
-
-  tcl_syntax_push(tp->syntax,tp->depth,
-                  (unsigned int)fromPos,
-                  tcl_syntax_str,
-                  " ",1);
-}
-
 void tcl_parser_on_esc_char(PARMAC_DEPTH stkDepth,
                             const char *machine,
                             const char *fromState,
@@ -130,13 +10,29 @@ void tcl_parser_on_esc_char(PARMAC_DEPTH stkDepth,
                             PARMAC_POS fromPos,
                             PARMAC_POS toPos,
                             void *data) {
+  static const char cs[256]={
+    0,1,2,3,4,5,6,7,8,9,' ',11,12,13,14,15,16,17,18,19,20,21,22,23,
+    24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,
+    45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,
+    66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,
+    87,88,89,90,91,92,93,94,95,96,'\a','\b',99,100,101,'\f',103,104,
+    105,106,107,108,109,'\n',111,112,113,'\r',115,'\t',117,'\v',119,
+    120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,
+    136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,
+    152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,
+    168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,
+    184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,
+    200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,
+    216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,
+    232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,
+    248,249,250,251,252,253,254,255};
 
   struct tcl_parser *tp=(struct tcl_parser*)data;
 
   tcl_syntax_push(tp->syntax,tp->depth,
                   (unsigned int)fromPos,
                   tcl_syntax_str,
-                  &tp->src[fromPos+1],1);
+                  &cs[tp->src[toPos-1]],1);
 }
 
 void tcl_parser_on_str(PARMAC_DEPTH stkDepth,
@@ -246,10 +142,14 @@ void tcl_parser_on_leave_cmd(PARMAC_DEPTH stkDepth,
   tp->depth--;
 }
 
-bool tcl_parser_parse_esc_a(PARMAC_POS *ppos,void *userdata) {
+bool tcl_parser_parse_esc_schar(PARMAC_POS *ppos,void *userdata) {
   struct tcl_parser *tp=(struct tcl_parser*)userdata;
 
-  if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='a') {
+  if(tp->src[*ppos]!='\\') {
+    return false;
+  }
+
+  if(tp->src[*ppos+1]!='\0') {
     (*ppos)+=2;
     tp->errMsg=NULL;
     return true;
@@ -258,103 +158,21 @@ bool tcl_parser_parse_esc_a(PARMAC_POS *ppos,void *userdata) {
   return false;
 }
 
-bool tcl_parser_parse_esc_b(PARMAC_POS *ppos,void *userdata) {
+bool tcl_parser_parse_esc_qchar(PARMAC_POS *ppos,void *userdata) {
   struct tcl_parser *tp=(struct tcl_parser*)userdata;
 
-  if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='b') {
-    (*ppos)+=2;
-    tp->errMsg=NULL;
-    return true;
+  if(tp->src[*ppos]!='\\') {
+    return false;
   }
 
-  return false;
-}
-
-bool tcl_parser_parse_esc_f(PARMAC_POS *ppos,void *userdata) {
-  struct tcl_parser *tp=(struct tcl_parser*)userdata;
-
-  if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='f') {
-    (*ppos)+=2;
-    tp->errMsg=NULL;
-    return true;
-  }
-
-  return false;
-}
-
-bool tcl_parser_parse_esc_n(PARMAC_POS *ppos,void *userdata) {
-  struct tcl_parser *tp=(struct tcl_parser*)userdata;
-
-  if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='n') {
-    (*ppos)+=2;
-    tp->errMsg=NULL;
-    return true;
-  }
-
-  return false;
-}
-
-bool tcl_parser_parse_esc_r(PARMAC_POS *ppos,void *userdata) {
-  struct tcl_parser *tp=(struct tcl_parser*)userdata;
-
-  if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='r') {
-    (*ppos)+=2;
-    tp->errMsg=NULL;
-    return true;
-  }
-
-  return false;
-}
-
-bool tcl_parser_parse_esc_t(PARMAC_POS *ppos,void *userdata) {
-  struct tcl_parser *tp=(struct tcl_parser*)userdata;
-
-  if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='t') {
-    (*ppos)+=2;
-    tp->errMsg=NULL;
-    return true;
-  }
-
-  return false;
-}
-
-bool tcl_parser_parse_esc_v(PARMAC_POS *ppos,void *userdata) {
-  struct tcl_parser *tp=(struct tcl_parser*)userdata;
-
-  if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='v') {
-    (*ppos)+=2;
-    tp->errMsg=NULL;
-    return true;
-  }
-
-  return false;
-}
-
-bool tcl_parser_parse_esc_any(PARMAC_POS *ppos,void *userdata) {
-  struct tcl_parser *tp=(struct tcl_parser*)userdata;
-
-  if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]!='\0') {
-    (*ppos)+=2;
-    tp->errMsg=NULL;
-    return true;
-  }
-
-  return false;
-}
-
-bool tcl_parser_parse_esc_eol(PARMAC_POS *ppos,void *userdata) {
-  struct tcl_parser *tp=(struct tcl_parser*)userdata;
-
-  if(tp->src[*ppos]=='\\' && tp->src[*ppos+1]=='\n') {
-    (*ppos)+=2;
-    tp->errMsg=NULL;
-    return true;
-  }
-
-  if(tp->src[*ppos]=='\\' &&
-     tp->src[*ppos+1]=='\r' &&
-     tp->src[*ppos+2]=='\n') {
+  if(tp->src[*ppos+1]=='\r' && tp->src[*ppos+2]=='\n') {
     (*ppos)+=3;
+    tp->errMsg=NULL;
+    return true;
+  }
+
+  if(tp->src[*ppos+1]!='\0') {
+    (*ppos)+=2;
     tp->errMsg=NULL;
     return true;
   }
@@ -755,46 +573,11 @@ void tcl_parser_var_machine(struct parmac *p,PARMAC_POS pos) {
   parmac_set(p,pos,"t_var",&state_start,&state_end,trsns);
 }
 
-void tcl_parser_sesc_machine(struct parmac *p,PARMAC_POS pos) {
-  static const struct parmac_state
-    state_start={"start", NULL,NULL, NULL,NULL},
-    state_a={"a", tcl_parser_parse_esc_a,NULL, tcl_parser_on_esc_a,NULL},
-    state_b={"b", tcl_parser_parse_esc_b,NULL, tcl_parser_on_esc_b,NULL},
-    state_f={"f", tcl_parser_parse_esc_f,NULL, tcl_parser_on_esc_f,NULL},
-    state_n={"n", tcl_parser_parse_esc_n,NULL, tcl_parser_on_esc_n,NULL},
-    state_r={"r", tcl_parser_parse_esc_r,NULL, tcl_parser_on_esc_r,NULL},
-    state_t={"t", tcl_parser_parse_esc_t,NULL, tcl_parser_on_esc_t,NULL},
-    state_v={"v", tcl_parser_parse_esc_v,NULL, tcl_parser_on_esc_v,NULL},
-    state_any={"any", tcl_parser_parse_esc_any,NULL, tcl_parser_on_esc_char,NULL},
-    state_end={"end", NULL,NULL, NULL,NULL};
-
-  static const struct parmac_transition trsns[]={
-    {&state_start, &state_a},
-    {&state_start, &state_b},
-    {&state_start, &state_f},
-    {&state_start, &state_n},
-    {&state_start, &state_r},
-    {&state_start, &state_t},
-    {&state_start, &state_v},
-    {&state_start, &state_any},
-    {&state_a, &state_end},
-    {&state_b, &state_end},
-    {&state_f, &state_end},
-    {&state_n, &state_end},
-    {&state_r, &state_end},
-    {&state_t, &state_end},
-    {&state_v, &state_end},
-    {&state_any, &state_end},
-    PARMAC_TRANSITION_END};
-
-  parmac_set(p,pos,"t_sesc",&state_start,&state_end,trsns);
-}
-
 void tcl_parser_sstr_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start", NULL,NULL, NULL,NULL},
     state_sstr={"sstr", tcl_parser_parse_sstr,NULL, tcl_parser_on_str,NULL},
-    state_sesc={"sesc", NULL,tcl_parser_sesc_machine, NULL,NULL},
+    state_sesc={"sesc", tcl_parser_parse_esc_schar,NULL, tcl_parser_on_esc_char,NULL},
     state_var={"var", NULL,tcl_parser_var_machine, NULL,NULL},
     state_cmd={"cmd", NULL,tcl_parser_cmd_machine, NULL,NULL},
     state_end={"end", NULL,NULL, NULL,NULL};
@@ -828,30 +611,13 @@ void tcl_parser_sstr_machine(struct parmac *p,PARMAC_POS pos) {
   parmac_set(p,pos,"t_sstr",&state_start,&state_end,trsns);
 }
 
-void tcl_parser_qesc_machine(struct parmac *p,PARMAC_POS pos) {
-  static const struct parmac_state
-    state_start={"start", NULL,NULL, NULL,NULL},
-    state_eol={"eol", tcl_parser_parse_esc_eol,NULL, tcl_parser_on_esc_eol,NULL},
-    state_sesc={"sesc", NULL,tcl_parser_sesc_machine, NULL,NULL},
-    state_end={"end", NULL,NULL, NULL,NULL};
-
-  static const struct parmac_transition trsns[]={
-    {&state_start, &state_eol},
-    {&state_start, &state_sesc},
-    {&state_eol, &state_end},
-    {&state_sesc, &state_end},
-    PARMAC_TRANSITION_END};
-
-  parmac_set(p,pos,"t_qesc",&state_start,&state_end,trsns);
-}
-
 void tcl_parser_qstr_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start", NULL,NULL, NULL,NULL},
     state_lquote={"lquote", tcl_parser_parse_lquote,NULL, NULL,NULL},
     state_rquote={"rquote", tcl_parser_parse_rquote,NULL, NULL,NULL},
     state_qstr={"qstr", tcl_parser_parse_qstr,NULL, tcl_parser_on_str,NULL},
-    state_qesc={"qesc", NULL,tcl_parser_qesc_machine, NULL,NULL},
+    state_qesc={"qesc", tcl_parser_parse_esc_schar,NULL, tcl_parser_on_esc_char,NULL},
     state_var={"var", NULL,tcl_parser_var_machine, NULL,NULL},
     state_cmd={"cmd", NULL,tcl_parser_cmd_machine, NULL,NULL},
     state_end={"end", NULL,NULL, NULL,NULL};
