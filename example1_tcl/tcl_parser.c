@@ -267,9 +267,9 @@ bool tcl_parser_parse_cmnt(PARMAC_POS *ppos,void *userdata) {
   }
 
   //unnecessary but cleaner...
-  if(tp->src[*ppos] != '\r' && tp->src[*ppos+1] != '\n') {
+  if(tp->src[*ppos] == '\r' && tp->src[*ppos+1] == '\n') {
     (*ppos)+=2;
-  } else if(tp->src[*ppos] != '\n') {
+  } else if(tp->src[*ppos] == '\n') {
    (*ppos)++;
   }
 
