@@ -171,6 +171,12 @@ void tcl_parser_on_var(PARMAC_DEPTH stkDepth,
                   tcl_syntax_str,
                   "set",3);
 
+  //spc
+  tcl_syntax_push(tp->syntax,tp->depth+1,
+                  (unsigned int)toPos,
+                  tcl_syntax_spc,
+                  NULL,0);
+
   //var_name
   tcl_syntax_push(tp->syntax,tp->depth+1,
                   (unsigned int)fromPos,
@@ -660,38 +666,7 @@ bool tcl_parser_parse_bstr(PARMAC_POS *ppos,void *userdata) {
   return true;
 }
 
-bool tcl_parser_parse_var_str(PARMAC_POS *ppos,void *userdata) {
-  struct tcl_parser *tp=(struct tcl_parser*)userdata;
-  PARMAC_POS start=*ppos;
-  unsigned int c=0;
-
-  while(true) {
-    if(c==0 && tp->src[*ppos]=='}') {
-      break;
-    }
-
-    if(tp->src[*ppos]=='\0') {
-      break;
-    }
-
-    if(tp->src[*ppos]=='{') {
-      c++;
-    } else if(tp->src[*ppos]=='}') {
-      c--;
-    }
-
-    (*ppos)++;
-  }
-
-  if(start==*ppos) {
-    return false;
-  }
-
-  tp->errMsg=NULL;
-  return true;
-}
-
-bool tcl_parser_parse_var_idn(PARMAC_POS *ppos,void *userdata) {
+bool tcl_parser_parse_idn(PARMAC_POS *ppos,void *userdata) {
   struct tcl_parser *tp=(struct tcl_parser*)userdata;
   PARMAC_POS start=*ppos;
 
@@ -760,8 +735,8 @@ void tcl_parser_var_machine(struct parmac *p,PARMAC_POS pos) {
   static const struct parmac_state
     state_start={"start", NULL,NULL, NULL,NULL},
     state_dollar={"dollar", tcl_parser_parse_dollar,NULL, NULL,NULL},
-    state_idn={"idn", tcl_parser_parse_var_idn,NULL, tcl_parser_on_var,NULL},
-    state_str={"str", tcl_parser_parse_var_str,NULL, tcl_parser_on_var,NULL},
+    state_idn={"idn", tcl_parser_parse_idn,NULL, tcl_parser_on_var,NULL},
+    state_str={"str", tcl_parser_parse_bstr,NULL, tcl_parser_on_var,NULL},
     state_lbrace={"lbrace", tcl_parser_parse_lbrace,NULL, NULL,NULL},
     state_rbrace={"rbrace", tcl_parser_parse_rbrace,NULL, NULL,NULL},
     state_end={"end", NULL,NULL, NULL,NULL};
