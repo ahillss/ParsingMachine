@@ -266,13 +266,6 @@ bool tcl_parser_parse_cmnt(PARMAC_POS *ppos,void *userdata) {
    (*ppos)++;
   }
 
-  //unnecessary but cleaner...
-  if(tp->src[*ppos] == '\r' && tp->src[*ppos+1] == '\n') {
-    (*ppos)+=2;
-  } else if(tp->src[*ppos] == '\n') {
-   (*ppos)++;
-  }
-
   //
   tp->errMsg=NULL;
   return true;
@@ -402,7 +395,7 @@ bool tcl_parser_parse_sstr(PARMAC_POS *ppos,void *userdata) {
 
 bool tcl_parser_parse_qstr(PARMAC_POS *ppos,void *userdata) {
   struct tcl_parser *tp=(struct tcl_parser*)userdata;
-  PARMAC_POS start=*ppos;
+  // PARMAC_POS start=*ppos;
 
   while(true) {
     if(tp->src[*ppos]=='"' ||
@@ -429,9 +422,25 @@ bool tcl_parser_parse_qstr(PARMAC_POS *ppos,void *userdata) {
     (*ppos)++;
   }
 
-  if(start==*ppos) {
-    return false;
+  // if(start==*ppos) {
+  //   return false;
+  // }
+
+  tp->errMsg=NULL;
+  return true;
+}
+
+bool tcl_parser_parse_vstr(PARMAC_POS *ppos,void *userdata) {
+  struct tcl_parser *tp=(struct tcl_parser*)userdata;
+  // PARMAC_POS start=*ppos;
+
+  while(tp->src[*ppos]!='}') {
+    (*ppos)++;
   }
+
+  // if(start==*ppos) {
+  //   return false;
+  // }
 
   tp->errMsg=NULL;
   return true;
@@ -439,7 +448,7 @@ bool tcl_parser_parse_qstr(PARMAC_POS *ppos,void *userdata) {
 
 bool tcl_parser_parse_bstr(PARMAC_POS *ppos,void *userdata) {
   struct tcl_parser *tp=(struct tcl_parser*)userdata;
-  PARMAC_POS start=*ppos;
+  // PARMAC_POS start=*ppos;
   unsigned int c=0;
 
   while(true) {
@@ -466,9 +475,9 @@ bool tcl_parser_parse_bstr(PARMAC_POS *ppos,void *userdata) {
     }
   }
 
-  if(start==*ppos) {
-    return false;
-  }
+  // if(start==*ppos) {
+  //   return false;
+  // }
 
   tp->errMsg=NULL;
   return true;
@@ -544,7 +553,7 @@ void tcl_parser_var_machine(struct parmac *p,PARMAC_POS pos) {
     state_start={"start", NULL,NULL, NULL,NULL},
     state_dollar={"dollar", tcl_parser_parse_dollar,NULL, NULL,NULL},
     state_idn={"idn", tcl_parser_parse_idn,NULL, tcl_parser_on_var,NULL},
-    state_str={"str", tcl_parser_parse_bstr,NULL, tcl_parser_on_var,NULL},
+    state_str={"str", tcl_parser_parse_vstr,NULL, tcl_parser_on_var,NULL},
     state_lbrace={"lbrace", tcl_parser_parse_lbrace,NULL, NULL,NULL},
     state_rbrace={"rbrace", tcl_parser_parse_rbrace,NULL, NULL,NULL},
     state_end={"end", NULL,NULL, NULL,NULL};
@@ -553,7 +562,7 @@ void tcl_parser_var_machine(struct parmac *p,PARMAC_POS pos) {
     {&state_start, &state_dollar},
     {&state_dollar, &state_lbrace},
     {&state_dollar, &state_idn},
-    {&state_lbrace, &state_rbrace},
+    // {&state_lbrace, &state_rbrace},
     {&state_lbrace, &state_str},
     {&state_str, &state_rbrace},
     {&state_rbrace, &state_end},
@@ -614,30 +623,30 @@ void tcl_parser_qstr_machine(struct parmac *p,PARMAC_POS pos) {
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_lquote},
-    {&state_lquote, &state_rquote},
+    // {&state_lquote, &state_rquote},
     {&state_lquote, &state_qesc},
-    {&state_lquote, &state_qchr},
     {&state_lquote, &state_var},
     {&state_lquote, &state_cmd},
+    {&state_lquote, &state_qchr},
     {&state_var, &state_rquote},
     {&state_var, &state_qesc},
-    {&state_var, &state_qchr},
     {&state_var, &state_var},
     {&state_var, &state_cmd},
+    {&state_var, &state_qchr},
     {&state_cmd, &state_rquote},
     {&state_cmd, &state_qesc},
-    {&state_cmd, &state_qchr},
     {&state_cmd, &state_var},
     {&state_cmd, &state_cmd},
+    {&state_cmd, &state_qchr},
     {&state_qchr, &state_rquote},
     {&state_qchr, &state_qesc},
     {&state_qchr, &state_var},
     {&state_qchr, &state_cmd},
     {&state_qesc, &state_rquote},
     {&state_qesc, &state_qesc},
-    {&state_qesc, &state_qchr},
     {&state_qesc, &state_var},
     {&state_qesc, &state_cmd},
+    {&state_qesc, &state_qchr},
     {&state_rquote, &state_end},
     PARMAC_TRANSITION_END};
 
@@ -654,7 +663,7 @@ void tcl_parser_bstr_machine(struct parmac *p,PARMAC_POS pos) {
 
   static const struct parmac_transition trsns[]={
     {&state_start, &state_lbrace},
-    {&state_lbrace, &state_rbrace},
+    // {&state_lbrace, &state_rbrace},
     {&state_lbrace, &state_bchr},
     {&state_bchr, &state_rbrace},
     {&state_rbrace, &state_end},

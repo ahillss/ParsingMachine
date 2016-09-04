@@ -87,8 +87,12 @@ void tcl_parser_run(struct tcl_parser *tp,
     printf("%u : %u : ",cur->depth,cur->pos);
 
     if(cur->type==tcl_syntax_str) {
-      printf("str '%s'",&tp->syntax->chars[c]);
-      c+=cur->charsNum+1;
+      if(cur->charsNum==0) {
+        printf("str ''");
+      } else {
+        printf("str '%s'",&tp->syntax->chars[c]);
+        c+=cur->charsNum+1;
+      }
     } else if(cur->type==tcl_syntax_spc) {
       printf("spc");
     } else if(cur->type==tcl_syntax_sep) {

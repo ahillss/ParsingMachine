@@ -8,10 +8,11 @@ puts {
 hello 
 world
 }
-
+puts ${\}
 hello { world}
 set a\ b
 puts "q\mrs\
 tuv"
 puts "\a\b\f\r\n\t\v\ \
 end"
+puts ${}

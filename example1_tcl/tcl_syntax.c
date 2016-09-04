@@ -62,11 +62,6 @@ void tcl_syntax_push(struct tcl_syntax *syntax,
     cur->pos=pos;
     cur->charsNum=0;
     syntax->nodesNext++;
-
-    // printf("-newnode\n");
-    // printf("--\n");
-  }else {
-    // printf("-oldnode\n");
   }
 
   //
@@ -93,7 +88,6 @@ void tcl_syntax_push(struct tcl_syntax *syntax,
 
     //set str
     memcpy(&syntax->chars[syntax->charsNext],str,strLen);
-    // printf("'%s'\n",&syntax->chars[syntax->charsNext]);
     cur->charsNum+=strLen;
     syntax->charsNext+=strLen+1;
   }
