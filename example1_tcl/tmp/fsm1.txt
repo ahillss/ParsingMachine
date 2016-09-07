@@ -1,0 +1,83 @@
+
+main {
+	start => eol | spc0 | sep | word | cmnt | end
+	spc0 =>  eol | spc0 | sep | word | cmnt | end
+	eol =>   eol | spc0 | sep | word | cmnt | end
+	sep =>   eol | spc0 | sep | word | cmnt | end
+	spcn =>  eol | spcn | sep | word | end
+	word =>  eol | spcn | sep | end
+	cmnt =>  eol | end
+}
+
+word {
+	start => qstr | bstr | sstr
+	qstr => end
+	bstr => end
+	sstr => end
+}
+
+bstr {
+	start => lbrace 
+	lbrace => rbrace | bstr | bchr
+	bstr => rbrace | bstr | bchr
+	bchr => rbrace | bchr
+	rbrace => end
+}
+
+qstr {
+	start => lquote 
+	lquote => rquote | qesc | var | cmd | chr
+	var =>    rquote | qesc | var | cmd | chr
+	cmd =>    rquote | qesc | var | cmd | chr
+	chr =>    rquote | qesc | var | cmd | chr
+	qesc =>   rquote | qesc | var | cmd | chr
+	rquote => end 
+}
+
+sstr {
+	start => sesc | var | cmd | schr
+	var =>   sesc | var | cmd | schr | end
+	cmd =>   sesc | var | cmd | schr | end 
+	schr =>  sesc | var | cmd | schr | end
+	sesc =>  sesc | var | cmd | schr | end 
+}
+
+var {
+	start => dollar 
+	dollar => lbrace | vidn | lbrkt
+	lbrkt => rbrkt | varray
+	vidn => lbrkt | end
+	lbrace => rbrace | vchr
+	vchr => rbrace | vchr
+	rbrace => end 
+}
+
+cmd {
+	start => lsqr 
+	lsqr => rsqr | main 
+	main => rsqr 
+	rsqr => end 
+}
+
+bchr = [\\][{}] | [^{}]
+schr = [^\r][^\n] | [^\s\t\n;] #also not ']' when sqrbCount!=0
+chr = .
+
+dollar = [$]
+vidn = [_a-zA-Z0-9]
+varray = [^)]
+vchr = [^}]
+lbrace = [{]
+rbrace = [}]
+lsqr = [\[]
+rsqr = [\]]
+lquote = ["]
+rquote = ["]
+cmnt = [#]([^\r][^\n] | [^\n])*
+spc0 = [\s\t]
+spcn = [\s\t] | [\\][\r][\n] | [\\][\n]
+sep = [;]
+eol = [\r][\n] | [\n]
+
+esc_schar = [\\].
+esc_qchar = [\\]( . | [\r][\n] )

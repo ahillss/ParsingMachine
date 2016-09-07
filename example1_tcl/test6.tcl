@@ -16,3 +16,5 @@ tuv"
 puts "\a\b\f\r\n\t\v\ \
 end"
 puts ${}
+puts ""
+puts {}
