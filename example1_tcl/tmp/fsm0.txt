@@ -1,0 +1,79 @@
+
+main {
+	start => cmnt | eol | spc0 | word | end | sep
+	cmnt => eol | end
+	word => spcn | eol | end | sep
+	spc0 => cmnt | eol | word | end | sep
+	spcn => eol | word | end | sep
+	eol => cmnt | spc0 | word | end | sep
+	sep => cmnt | spc0 | eol | word | end
+}
+
+word {
+	start => qstr | bstr | sstr
+	qstr => end
+	bstr => end
+	sstr => end
+}
+
+bstr {
+	start => lbrace 
+	lbrace => rbrace | bchrs
+	bchrs => rbrace 
+	rbrace => end
+}
+
+qstr {
+	start => lquote 
+	lquote => rquote | qesc | qchrs | var | cmd
+	var => rquote | qesc | qchrs | var | cmd 
+	cmd => rquote | qesc | qchrs | var | cmd 
+	qchrs => rquote | qesc | var | cmd 
+	qesc => rquote | qesc | qchrs | var | cmd 
+	rquote => end 
+}
+
+sstr {
+	start => sesc | schrs | var | cmd
+	var => sesc | schrs | var | cmd | end 
+	cmd => sesc | schrs | var | cmd | end 
+	schrs => sesc | var | cmd | end 
+	sesc => sesc | schrs | var | cmd | end 
+}
+
+var {
+	start => dollar 
+	dollar => lbrace | idn 
+	lbrace => rbrace | bchrs 
+	bchrs => rbrace 
+	rbrace => end 
+	idn => end 
+}
+
+cmd {
+	start => lsqr 
+	lsqr => rsqr | main 
+	main => rsqr 
+	rsqr => end 
+}
+
+bchrs = ( [\\][{}] | [^{}] | (todo match braces) )+ 
+qchrs = ( [^"\[\\] | [$][^_a-zA-Z0-9\({] )+
+schrs = ( [^\r][^\n] | [^\[\s\t;\n\\] | [$][^_a-zA-Z0-9\({] )+
+
+dollar = [$]
+idn = [_a-zA-Z0-9]*( [(][^)]*[)] )?
+lbrace = [{]
+rbrace = [}]
+lsqr = [\[]
+rsqr = [\]]
+lquote = ["]
+rquote = ["]
+cmnt = [#]([^\r][^\n] | [^\n])*
+spc0 = [\s\t]+
+spcn = ( [\s\t] | [\\][\r][\n] | [\\][\n] )+
+sep = [;]+
+eol = ( [\r][\n] | [\n] )+
+
+esc_schar = [\\].
+esc_qchar = [\\]( . | [\r][\n] )
