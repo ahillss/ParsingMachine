@@ -2,7 +2,7 @@
 
 A parser written in C which uses a stacked([?](https://gamedev.stackexchange.com/questions/25854/gamestate-management-hierarchical-fsm-vs-stack-based-fsm/25859#25859)) finite state machine. Where the **state** declarations, state **enter/leave** callbacks, **transition** table declarations, **events** functions and **machine** functions are declared by the user.
 
-The motivation for this library is to allow the creation of parsers using hierarchical FSMs without the need for a code generator.
+The motivation for this library is to allow the creation of parsers using stacked FSMs without the need for a code generator.
 
 ## Usage
 
@@ -106,7 +106,7 @@ void root_machine(struct parmac *p,PARMAC_POS pos) {
 ```
 
 ### Running
-The *stkDepth* must be intialised to zero. The *stk* must be initialised with the root machine and the parsing position initialised to zero. The *stk* must be large enough to contain the max depth of the hierahical FSM specified.
+The *stkDepth* must be intialised to zero. The *stk* must be initialised with the root machine and the parsing position initialised to zero. The *stk* must be large enough to contain the max depth of the stacked FSM specified.
 
 If the machine is recursive (i.e. no max depth) then the stack must always have at least a max depth of one past the current depth. Then in the while loop check if the stack depth==maxDepth and if so then you must resize the stack before calling *parmac_run* again, otherwise you may get a stack overflow.
 
