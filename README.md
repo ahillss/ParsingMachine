@@ -7,6 +7,7 @@ The motivation for this library is to allow the creation of parsers using stacke
 ## Usage
 
 ### State Declaration
+
 A state is a struct that has five fields. A *name* used by the state callbacks and for debugging. An *event* and a *machine* function pointers. An optional *enter* callback and an optional *leave* callback. All fields but the *name* are optional.
 
 A state can either contain an event or a machine, if neither is specified then that transition will always succeed. It cannot accept both an event and a machine.
@@ -22,6 +23,7 @@ static const struct parmac_state
 ```
 
 ### Enter State Callback
+
 The *from state* is the previous state being left and the *to state* is the state being entered. The *fromPos* parameter is the position from before the state was entered, and *toPos* parameter is the position after the state was entered.
 
 ```C
@@ -38,7 +40,8 @@ void on_enter_state_A(PARMAC_DEPTH stkDepth,
 }
 ```
 
-###Leave State Callback
+### Leave State Callback
+
 The *from state* is the state being left and the *to state* is the next state being entered.
 
 ```C
@@ -55,7 +58,8 @@ void on_leave_state_A(PARMAC_DEPTH stkDepth,
 
 ```
 
-###Transition Table Declaration
+### Transition Table Declaration
+
 A transition has two fields. The *to* and *from* state pointers.
 
 A machine must always have a separate designated start and end states. The end state must always being transition to and not from, and the start state must always be transitioned from and not to.
@@ -70,7 +74,8 @@ The end of the transition table must end with the ```PARMAC_TRANSITION_END``` ma
 
 ```
 
-###Event
+### Event
+
 A function representing an event, it is used in a *transition*. The return boolean determines whether or not the event succeeds. The *postPtr* is a pointer to a variable containing the current parsing position. If the event returns true then the current position will be updated with the value being pointed to. The *userdata* is used to point to the data being parsed.
 
 ```C
