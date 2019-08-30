@@ -76,7 +76,7 @@ The end of the transition table must end with the ```PARMAC_TRANSITION_END``` ma
 
 ### Event
 
-A function representing an event, it is used in a *transition*. The return boolean determines whether or not the event succeeds. The *postPtr* is a pointer to a variable containing the current parsing position. If the event returns true then the current position will be updated with the value being pointed to. The *userdata* is used to point to the data being parsed.
+A function representing an event, it is used in a *transition*. The return boolean determines whether or not the event succeeds. The *posPtr* is a pointer to a variable containing the current parsing position. If the event returns true then the current position will be updated with the value being pointed to. The *userdata* is used to point to the data being parsed.
 
 ```C
 bool event_A(PARMAC_POS *posPtr,void *userdata) {
